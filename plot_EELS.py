@@ -20,7 +20,7 @@ if_real_material = 1 ## if epsilon_2 is constant or not. if is real material, ep
 if if_real_material == 1:
     label_png = '_real'
     material = 'Si'     ## default
-    # material = 'Ge'
+    material = 'Ge'
 else:
     material = 'Si'
     
@@ -52,7 +52,7 @@ L = 1 # lenght of propagation in microns
 
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 0
+ind = 1
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -68,7 +68,7 @@ energy_0 = 1
 ze_0 = 10*1e-3 ## microns 
 ze_0 = 25*1e-3 ## microns 
 if if_real_material == 1:
-    epsi2 = epsilon2(energy_0) 
+    epsi2 = epsilon2(energy_0,material) 
 else:
     epsi2 = Re_epsi2 +  1j*Im_epsi2
 
@@ -162,7 +162,7 @@ def EELS_color_map(k_parallel,energy):
     # print(beta)
     if if_real_material == 1:
         
-        epsi2 = epsilon2(energy)         
+        epsi2 = epsilon2(energy,material)         
     return np.real(EELS_function(energy,u,ze_0,d,beta0,epsi2))
 
 listx, listy = list_k_parallel, list_energy_eV_2 
@@ -190,7 +190,8 @@ vmin1, vmax1 = np.nanmin(Z_EELS), np.nanmax(Z_EELS)
 if if_real_material == 0:   
     bounds =   np.logspace(np.log10(vmin1+1e-4), np.log10(vmax1), n_color) 
 else:
-    bounds =   np.logspace(np.log10(vmin1 +1e-4), np.log10(vmax1)  , n_color) 
+    bounds =   np.logspace(np.log10(vmin1 + 1e-3), np.log10(vmax1)  , n_color) 
+    # bounds =   np.logspace(np.log10(vmin1 +1e-2), np.log10(vmax1)  , n_color) 
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
 plt.figure(figsize=tamfig)
@@ -206,6 +207,7 @@ else:
     im_EELS = plt.imshow(Z_EELS, extent = limits, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower',norm = norm) 
     plt.xticks(np.arange(1,7,1))
     plt.yticks(np.arange(0.1,0.9,0.1))
+    plt.yticks(np.arange(0.1,3,0.5))
 cbar = plt.colorbar(im_EELS, fraction=0.046, pad=0.04, orientation = 'vertical')
 plt.plot(np.array(listy)/(aux*beta0),np.array(listy),'--',color = 'green')   ## electron velocity 
 plt.plot(np.array(listx),np.array(listx)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
@@ -216,7 +218,7 @@ else:
     list_re_epsi2 = []
     for y in listy: 
         os.chdir(path_epsi2)
-        list_re_epsi2.append(np.real(np.sqrt(epsilon2(y))))
+        list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
 
     plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
     
@@ -242,7 +244,7 @@ def EELS_integrated_over_k_par_color_map(energy,ze_nm):
     ze = ze_nm*1e-3
     if if_real_material == 1:
         os.chdir(path_epsi2)
-        epsi2 = epsilon2(energy) 
+        epsi2 = epsilon2(energy,material) 
     return np.real(EELS_integrated_over_k_par(energy,ze,d,beta,epsi2))
 
 listx2, listy2 = list_energy_eV, list_ze_nm

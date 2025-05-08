@@ -116,7 +116,7 @@ if plot_epsilon == 1:
     import matplotlib.pyplot as plt
     
     material = 'Si'
-    material = 'Ge'
+    # material = 'Ge'
     
     N = int(1e3)
     listx = np.linspace(1, 7, N)
