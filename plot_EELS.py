@@ -36,7 +36,6 @@ else:
 
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS')
-path_epsi2 = os.path.join(pwd,'permittivities')
 
 #%%
 hb,c,alpha,me_c2_eV = constants()
@@ -144,7 +143,6 @@ beta0 = 0.99
 print('2-Plot the EELS without integration as a function of (k_paralllel, energy), ze=%i nm, beta = %.2f'%(ze_0*1e3,beta0))
 
 if if_real_material == 1:
-    os.chdir(path_epsi2)
     list_energy_eV_2 = np.linspace(0.01,0.8,int(N*2)) ## non absorption part
     list_energy_eV_2 = np.linspace(0.01,3,int(N*2)) ##  absorption part
     list_k_parallel = np.linspace(0.01,6,int(N*2))    ## 
@@ -161,7 +159,6 @@ def EELS_color_map(k_parallel,energy):
     u = k_parallel/omegac
     # print(beta)
     if if_real_material == 1:
-        
         epsi2 = epsilon2(energy,material)         
     return np.real(EELS_function(energy,u,ze_0,d,beta0,epsi2))
 
@@ -217,7 +214,6 @@ if if_real_material==0:
 else:
     list_re_epsi2 = []
     for y in listy: 
-        os.chdir(path_epsi2)
         list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
 
     plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
@@ -243,7 +239,6 @@ print('3-Plot the EELS integrated over k_parallel as function of (energy,ze)')
 def EELS_integrated_over_k_par_color_map(energy,ze_nm):
     ze = ze_nm*1e-3
     if if_real_material == 1:
-        os.chdir(path_epsi2)
         epsi2 = epsilon2(energy,material) 
     return np.real(EELS_integrated_over_k_par(energy,ze,d,beta,epsi2))
 

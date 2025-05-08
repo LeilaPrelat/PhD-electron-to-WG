@@ -16,7 +16,6 @@ import os
 #pwd = os.getcwd()
 pwd = os.path.dirname(__file__) 
 data_path = os.path.join(pwd,'permittivities')
-os.chdir(data_path)
 
 convert_nk_to_epsilon = 0
 plot_epsilon = 1
@@ -24,7 +23,9 @@ plot_epsilon = 1
 #%%
 
 if convert_nk_to_epsilon == 1: 
-
+    
+    os.chdir(data_path)
+    
     material = 'Si'
     material = 'Ge'
     
@@ -76,6 +77,7 @@ def epsilon(hbw,material='Si'):
     permittivity of Si/Ge from 
     https://refractiveindex.info/?shelf=main&book=Si&page=Aspnes  
     """
+    os.chdir(data_path)
     
     table = np.loadtxt('permittivity_%s.txt'%(material),delimiter='\t',skiprows=1)
     table = np.transpose(table)
