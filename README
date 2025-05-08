@@ -1,0 +1,20 @@
+Electron coupling to a waveguide mode
+
+project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
+
+.- /figures: schemes and figures
+
+.- /permittivities: data of real materials, permittivities from Refractive Index 
+
+.- global_constants.py: define universal constants to import in all codes 
+
+.- permittivity_epsilon.py: define \epsilon(\omega) of different materials
+
+.- EELS.py: define functions for the EELS from Eq. 3 #paper 228
+
+.- plot_EELS.py: 
+	- plot the EELS(k_parallel,w) to find the waveguide modes of
+		- real materials. import function \epsilon_2(\omega)
+		- fake materials adding Im(epsi_2) = 0.1 to make the EELS wider and see it better
+	- plot the EELS(ze,w) integrated over k_parallel. 
+		- ze is an important parameter and it determinates which modes are being excited
