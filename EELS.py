@@ -84,7 +84,10 @@ def Fresnel_coefficient(omegac,u,d,mode,epsi2):
 
     return  r123(mode)
 
-def EELS_function(energy,u,ze,d,beta,epsi2):
+
+## EELS no relativistic, we need to take into account the relativists effects because 
+## of the range of electron velocities we will use
+def EELS_no_relativistic(energy,u,ze,d,beta,epsi2):
     """    
     Parameters
     ----------
@@ -123,9 +126,9 @@ def EELS_function(energy,u,ze,d,beta,epsi2):
 
     return  (function_s + function_p)*factor_Gamma_norm_Lc
 
-
-
-def EELS_integrated_over_k_par(energy,ze,d,beta,epsi2):
+## EELS no relativistic, we need to take into account the relativists effects because 
+## of the range of electron velocities we will use
+def EELS_integrated_over_k_par_no_relativistic(energy,ze,d,beta,epsi2):
     """    
     Parameters
     ----------
@@ -163,6 +166,174 @@ def EELS_integrated_over_k_par(energy,ze,d,beta,epsi2):
     # print(Integral_s,Integral_p)
 
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+
+    return  (Integral_s + Integral_p)*factor_Gamma_norm_Lc 
+
+
+
+def EELS_relativistic(energy,kx_norm_k,ze,d,beta,epsi2):
+    """    
+    Parameters
+    ----------
+    energy : hbar*omega in eV
+    kx_norm_k: k_x/(omega/c)
+    ze: position of electron in microns
+    d: thickness of the plane in microns
+    beta: v/c
+    epsi2: permittivity of medium 2 
+    Returns
+    -------
+    Re(EELS) from paper 149 Eq. 25
+    divided by L/c and in Gaussian units
+    (dimensionless) without integration
+    """
+    # epsi2 = epsilon(hbw,material)
+    L = 1
+    
+    omegac = energy/(aux)
+    k = omegac
+    
+    def epsilon(i):
+        if i == 1:
+            return epsi1
+        elif i == 2: 
+            return epsi2 
+                                
+        elif i == 3:
+            return epsi3 
+    
+    u = np.sqrt(kx_norm_k**2 + (1/beta)**2)
+    ## for python add +1j*0 inside kz as \sqrt{ .. + 1j*0}  
+    
+    # def k(i):
+    #     return np.sqrt(epsilon(i))*k
+            
+    def kz(i): ## divided by k, but this will cancel on the fresnel coeff
+        value = np.sqrt(epsilon(i) - u**2  + 1j*0) ## u: k_parallel/(omega/c)
+        if np.imag(value) <= 0: ## has to be positive for convergency 
+            value = - value
+        return value
+    
+
+    ## integration variable u = k_par_over_omegac (dimensionless)
+    r123_s =  Fresnel_coefficient(omegac,u,d,'s',epsi2)
+    r123_p =  Fresnel_coefficient(omegac,u,d,'p',epsi2)
+
+
+    factor_s = (kx_norm_k*beta/kz(1))**2
+    final_function =  np.real(kz(1)*np.exp(2*1j*kz(1)*k*ze)*(r123_s*factor_s - r123_p/epsi1))/(u**2)
+    
+    factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    
+    return final_function*factor_Gamma_norm_Lc
+
+
+
+def EELS_integrated_over_k_par_relativistic(energy,ze,d,beta,epsi2):
+    """    
+    Parameters
+    ----------
+    energy : hbar*omega in eV
+    ze: position of electron in microns
+    d: thickness of the plane in microns
+    beta: v/c
+    epsi2: permittivity of medium 2 
+    Returns
+    -------
+    Re(EELS) from paper 149 Eq. 25
+    divided by L/c and in Gaussian units
+    (dimensionless)
+    """
+    # epsi2 = epsilon(hbw,material)
+    L = 1
+    omegac = energy/(aux)
+    k = omegac
+    
+    u = lambda kx_norm_k : np.sqrt(kx_norm_k**2 + (1/beta)**2) 
+
+    ## for python add +1j*0 inside kz as \sqrt{ .. + 1j*0}  
+    
+    argument = lambda kx_norm_k : np.sqrt(epsi1 - u(kx_norm_k)**2  + 1j*0)
+    kz1 = lambda kx_norm_k : argument(kx_norm_k) if np.imag(argument(kx_norm_k))>0  else  - argument(kx_norm_k) ## u: k_parallel/(omega/c)
+    
+    # if np.imag(kz1) <= 0:
+    #     kz1 = - kz1
+    
+    
+
+    ## integration variable u = k_par_over_omegac (dimensionless)
+    r123_s = lambda qx:  Fresnel_coefficient(omegac,u(qx),d,'s',epsi2)
+    r123_p = lambda qx: Fresnel_coefficient(omegac,u(qx),d,'p',epsi2)
+
+ 
+
+    
+    final_function = lambda qx : kz1(qx)*np.exp(2*1j*kz1(qx)*k*ze)*(r123_s(qx)*(qx*beta/kz1(qx))**2 - r123_p(qx)/epsi1)/(u(qx)**2)
+    final_function_re = lambda qx : np.real(final_function(qx))
+
+
+    factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    
+    
+    limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
+    
+    limit2 = 1.3*(1/beta)   ## already zero for this upper limit
+    limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
+ 
+    limit2 = 50*omegac
+    
+    
+    Integral = quad(final_function_re, limit1, limit2)[0]
+ 
+    
+    return  Integral*factor_Gamma_norm_Lc 
+
+
+
+
+
+
+def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
+    """    
+    Parameters
+    ----------
+    energy : hbar*omega in eV
+    b: position of electron in microns
+    d: thickness of the plane in microns
+    beta: v/c
+    epsi2: permittivity of medium 2 
+    Returns
+    -------
+    Re(EELS) from paper 228 Eq. 3
+    divided by \eta*c and in Gaussian units
+    (dimensionless) integrated over
+    electron trajectory and over k_parallel
+    (see notes)
+    """
+    # epsi2 = epsilon(hbw,material)
+    omegac = energy/(aux)
+    k = omegac
+    gamma_e = 1/np.sqrt(1-epsi1*beta**2)
+    
+    ## integration variable u = k_par_over_omegac (dimensionless)
+    r123_s = lambda u : np.imag(Fresnel_coefficient(omegac,u,d,'s',epsi2))
+    r123_p = lambda u : np.imag(Fresnel_coefficient(omegac,u,d,'p',epsi2))
+    
+    function_s = lambda u : np.real(1/np.sqrt(u**2 - (1/beta)**2 + 1j*0 ))*np.sqrt(gamma_e/u)*np.exp(-2*u*k*b)*r123_s(u)
+    function_p = lambda u : np.real(1/np.sqrt(u**2 - (1/beta)**2 + 1j*0 ))*np.sqrt(gamma_e/u)*np.exp(-2*u*k*b)*r123_p(u)
+    
+    limit1 = 1.001*(1/beta) ## integral from omega/v
+    
+    limit2 = 1.3*(1/beta)   ## already zero for this upper limit
+    limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
+ 
+    Integral_s = quad(function_s, limit1, limit2)[0]
+    Integral_p = quad(function_p, limit1, limit2)[0]
+    
+    # print(Integral_s,Integral_p)
+
+    factor_Gamma_norm_Lc  = alpha*2/(np.pi*beta**2) ## without \eta*c
+    factor_Leff_without_eta = beta*np.exp()
 
     return  (Integral_s + Integral_p)*factor_Gamma_norm_Lc 
 
