@@ -10,17 +10,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 from global_constants import constants 
 import matplotlib as mpl
+import matplotlib.ticker as ticker
+
 import os
 from EELS import EELS_function, EELS_integrated_over_k_par
 from permittivity_epsilon import epsilon as epsilon2
 
+def fmt(x, pos):
+    a, b = '{:.2e}'.format(x).split('e')
+    b = int(b)
+    return r'$10^{{{}}}$'.format(b)
+
+formatt=ticker.FuncFormatter(fmt)
+    
 create_data = 1      ## run data for the color maps 
 if_real_material = 1 ## if epsilon_2 is constant or not. if is real material, epsi2 = epsilon(omega)
 
+if if_real_material == 1: 
+    real_units = 1 ## Gamma in real units or normalized by c (then Gamma dimensionless)
+else:
+    real_units = 0
+    
+zoom = 1 # zoom to the dispersion relation
+
 if if_real_material == 1:
+    
     label_png = '_real'
     material = 'Si'     ## default
-    material = 'Ge'
+    # material = 'Ge'
 else:
     material = 'Si'
     
@@ -44,7 +61,7 @@ epsi1, epsi3 = 1, 1
 
 #omegac_WG = (np.pi/d)/np.sqrt(np.real(epsilon2)-1) ## omega_WG/c
 
-d_microns = 1 
+d_microns = 0.1 
 d = d_microns
 L = 1 # lenght of propagation in microns 
 # propagation<infty if im(epsi2)!=0
@@ -62,10 +79,15 @@ beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 N = 100
 list_energy_eV = np.linspace(0.05,3,N)
 list_ze_nm =  np.linspace(1,150,N)
+list_ze_nm =  np.logspace(-1,3,N)
+
+energy_0 = 1
 
 energy_0 = 1
 ze_0 = 10*1e-3 ## microns 
 ze_0 = 25*1e-3 ## microns 
+ze_0 = 1*1e-3 ## microns 
+
 if if_real_material == 1:
     epsi2 = epsilon2(energy_0,material) 
 else:
@@ -101,6 +123,8 @@ print('1-Plot the EELS without integration as a function of k_parallel, energy =
 list_EELS_re = []
 list_EELS_im = []
 for u in list_u: 
+    if if_real_material == 1:
+        epsi2 = epsilon2(energy_0,material) 
     value = EELS_function(energy_0,u,ze_0,d,beta,epsi2)
     # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
     list_EELS_re.append(np.real(value))
@@ -109,11 +133,15 @@ for u in list_u:
 #%% 
 
 labelx = r'Parallel wave vector normalized $k_\parallel/(\omega/c)$'
-labely = r'$\Gamma_{\parallel}(k_\parallel) c/L$'
-if if_real_material == 0:
-    title1 = r'EELS for $d = %i$ $\mu$m, Re($\epsilon_2$) = %i, Im($\epsilon_2$) = %.1e' %(d,Re_epsi2,Im_epsi2)
+if real_units == 0: 
+    labely = r'$\Gamma_{\parallel}(k_\parallel) c/L$'
 else:
-    title1 = r'EELS for $d = %i$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$' %(d,material)
+    labely = r'$\Gamma_{\parallel}(k_\parallel)/L$ (s/$\mu$m)'
+
+if if_real_material == 0:
+    title1 = r'EELS for $d = %.1f$ $\mu$m, Re($\epsilon_2$) = %i, Im($\epsilon_2$) = %.1e' %(d,Re_epsi2,Im_epsi2)
+else:
+    title1 = r'EELS for $d = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$' %(d,material)
 title2 = r'$\hbar\omega = %.1f$ eV, $z_{\text{e}} = %i$ nm, $v = %.2fc$,' %(energy_0,ze_0*1e3,beta)
 
 if if_real_material == 0:
@@ -147,6 +175,12 @@ if if_real_material == 1:
     list_energy_eV_2 = np.linspace(0.01,3,int(N*2)) ##  absorption part
     list_k_parallel = np.linspace(0.01,6,int(N*2))    ## 
     
+    if zoom == 0:
+        list_energy_eV_2 = np.linspace(0.01,10,int(N*2)) ##  absorption part
+        list_k_parallel = np.linspace(0.01,80,int(N*2))    ## 
+    else:
+        list_energy_eV_2 = np.linspace(0.01,3.5,int(N*2)) ##  absorption part
+        list_k_parallel = np.linspace(0.01,30,int(N*2))    ## 
 else:
     omegac_WG = (np.pi/d)/np.sqrt(np.real(Re_epsi2)-1) ## omega_WG/c
     energy_WG = omegac_WG*aux
@@ -171,7 +205,7 @@ Z_EELS = f_EELS(X, Y)
 
 labelx = r'Parallel wave vector $k_\parallel$ (1/$\mu$m)'
 labely = r'Electron energy loss $\hbar\omega$ (eV)'
-labelz = r'$\Gamma_{\parallel}(k_\parallel) c/kL$'
+labelz = r'$\Gamma_{\parallel}(k_\parallel) c/L$'
 
 if if_real_material == 0:
     Z_EELS = np.array(Z_EELS)/np.max(Z_EELS)
@@ -179,17 +213,24 @@ if if_real_material == 0:
     # units of EELS arbitrary because it is not integrated, is divided by L and multiplied by c
     # so i normalized by the maximum
 
-
+delta = 1e-8 ## vmin can be zero
 limits = [np.nanmin(listx) , np.nanmax(listx),np.nanmin(listy) , np.nanmax(listy)]
-cmap = plt.cm.RdBu  # define the colormap
+cmap = plt.cm.YlOrRd  # define the colormap
 n_color = 21
 vmin1, vmax1 = np.nanmin(Z_EELS), np.nanmax(Z_EELS)
+vmin = vmin1 + delta
 if if_real_material == 0:   
     bounds =   np.logspace(np.log10(vmin1+1e-4), np.log10(vmax1), n_color) 
 else:
     bounds =   np.logspace(np.log10(vmin1 + 1e-3), np.log10(vmax1)  , n_color) 
+    bounds =   np.logspace(np.log10(vmin), np.log10(vmax1)  , n_color) 
     # bounds =   np.logspace(np.log10(vmin1 +1e-2), np.log10(vmax1)  , n_color) 
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+
+maxlog = int(np.ceil( np.log10( np.abs(vmax1) )))
+minlog = int(np.ceil( np.log10( np.abs(vmin) ))) 
+ticks_z = [(10.0**x) for x in np.linspace(minlog,maxlog-1, int(np.sign(vmax1)*maxlog) - int(np.sign(vmin)*minlog) ) ]
+# ticks_z = [(10.0**x) for x in np.linspace(-8, 0, 9) ]
 
 plt.figure(figsize=tamfig)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
@@ -201,25 +242,39 @@ if if_real_material == 0:
         plt.xticks(np.arange(1,8,1))
         plt.yticks(np.arange(0.1,0.8,0.1))
 else:
-    im_EELS = plt.imshow(Z_EELS, extent = limits, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower',norm = norm) 
-    plt.xticks(np.arange(1,7,1))
-    plt.yticks(np.arange(0.1,0.9,0.1))
-    plt.yticks(np.arange(0.1,3,0.5))
-cbar = plt.colorbar(im_EELS, fraction=0.046, pad=0.04, orientation = 'vertical')
-plt.plot(np.array(listy)/(aux*beta0),np.array(listy),'--',color = 'green')   ## electron velocity 
-plt.plot(np.array(listx),np.array(listx)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
-if if_real_material==0:     
+    im_EELS = plt.imshow(Z_EELS, extent = limits, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm = norm) 
     
-    plt.plot(np.array(listx),np.array(listx)*aux/np.sqrt(Re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
-else:
-    list_re_epsi2 = []
-    for y in listy: 
-        list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
+    # plt.xticks(np.arange(1,7,1))
+    # plt.yticks(np.arange(0.1,0.9,0.1))
+    # plt.yticks(np.arange(0.1,3,0.5))
+    
+cbar = plt.colorbar(im_EELS, fraction=0.046, pad=0.04, orientation = 'vertical',format=formatt)
+plt.plot(np.array(listy)/(aux*beta0),np.array(listy),'-',color = 'green')   ## electron velocity 
 
-    plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
+#plt.plot(np.array(listx),np.array(listx)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
+# if if_real_material==0:     
     
+#     plt.plot(np.array(listx),np.array(listx)*aux/np.sqrt(Re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
+# else:
+#     list_re_epsi2 = []
+#     for y in listy: 
+#         list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
+
+#     plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
+cbar.set_ticks(ticks_z)
 plt.xlim(np.nanmin(listx) , np.nanmax(listx))
 plt.ylim(np.nanmin(listy) , np.nanmax(listy))
+
+if zoom == 0:
+    plt.text(11, 4,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
+    plt.xticks(np.arange(10,90,10),['','20','','40','','60','','80'])
+    plt.yticks(np.arange(1,11,1),['','2','','4','','6','','8','','10'])
+
+else:
+    # plt.text(0.5, 0.5,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
+    plt.xticks(np.arange(5,35,5),['5','10','15','20','25','30' ])
+    plt.yticks(np.arange(0.5,3.5,0.5),['0.5','1.0','1.5','2.0','2.5','3.0' ])
+
 cbar.ax.set_title(labelz,fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum, width=0.1, length = 0,pad = 2)
 data_figure = title1 + r', $z_{\text{e}} = %i$ nm, $\beta$ = %.2f' %(ze_0*1e3,beta0)
@@ -242,25 +297,26 @@ def EELS_integrated_over_k_par_color_map(energy,ze_nm):
         epsi2 = epsilon2(energy,material) 
     return np.real(EELS_integrated_over_k_par(energy,ze,d,beta,epsi2))
 
-listx2, listy2 = list_energy_eV, list_ze_nm
+listx2, listy2 = list_energy_eV , list_ze_nm
 
-os.chdir(path_save)
+total_label = label_png + label_Ee + '_zoom%i.txt' %(zoom)
 if create_data == 1:
 
     X, Y = np.meshgrid(listx2,listy2)
     f_EELS_2 = np.vectorize(EELS_integrated_over_k_par_color_map)
     Z_EELS_2 = f_EELS_2(X, Y)
-     
+    
+    os.chdir(path_save)
     header = title1 + r', $\beta$ = %.2f. Re(EELS) from paper 228 Eq. 3 divided by L/c and in Gaussian units (dimensionless) ' %(beta)
-    np.savetxt('Z_EELS_norm_%s'%(material)  + label_png + label_Ee + '.txt' ,Z_EELS_2, fmt='%.10f', delimiter='\t', header = header, encoding=None)
-    np.savetxt('list_x_energy_eV_%s'%(material)  + label_png + label_Ee + '.txt' ,listx2, fmt='%.10f', delimiter='\t', header = header, encoding=None)
-    np.savetxt('list_y_ze_nm_%s'%(material)  + label_png + label_Ee + '.txt' ,listy2, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    np.savetxt('Z_EELS_norm_%s'%(material)  + total_label  ,Z_EELS_2, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    np.savetxt('list_x_energy_eV_%s'%(material)  + total_label,listx2, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    np.savetxt('list_y_ze_nm_%s'%(material)  + total_label ,listy2, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
 else:
-    
-    Z_EELS_2 = np.loadtxt('Z_EELS_norm_%s'%(material)  + label_png + label_Ee + '.txt'  , delimiter='\t', skiprows = 1)
-    listx2 = np.loadtxt('list_x_energy_eV_%s'%(material)  + label_png + label_Ee + '.txt'  , delimiter='\t', skiprows = 1)
-    listy2 = np.loadtxt('list_y_ze_nm_%s'%(material)  + label_png + label_Ee + '.txt'  , delimiter='\t', skiprows = 1)
+    os.chdir(path_save)
+    Z_EELS_2 = np.loadtxt('Z_EELS_norm_%s'%(material)  + total_label , delimiter='\t', skiprows = 1)
+    listx2 = np.loadtxt('list_x_energy_eV_%s'%(material)  + total_label  , delimiter='\t', skiprows = 1)
+    listy2 = np.loadtxt('list_y_ze_nm_%s'%(material)  + total_label , delimiter='\t', skiprows = 1)
     
     Z_EELS_2 = np.transpose(Z_EELS_2)
     listx2 = np.transpose(listx2)
@@ -289,18 +345,18 @@ plt.figure(figsize=tamfig)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'  ) 
-cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'vertical' )
+im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm = norm ) 
+cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'vertical' ,format=formatt)
 cbar.ax.set_title(labelz,fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum , width=0.1, length = 0,pad = 2)
-plt.xticks(np.arange(0,3.5,0.5))
-plt.yticks(np.arange(0,175,25))
+# plt.xticks(np.arange(0,3.5,0.5))
+# plt.yticks(np.arange(0,175,25))
 plt.xlim(np.min(listx2) , np.max(listx2))
 plt.ylim(np.min(listy2) , np.max(listy2))
 data_figure = title1 + r', $\beta$ = %.2f' %(beta)
 #plt.title(data_figure,fontsize=tamtitle)
 os.chdir(path_save)
-label_figure = 'EELS_' + material + label_png + label_Ee 
+label_figure = 'EELS_' + material + total_label
 np.savetxt("info_of_" + label_figure + ".txt", [data_figure], fmt='%s')
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show()
