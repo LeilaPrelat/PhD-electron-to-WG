@@ -4,17 +4,25 @@ project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
 
 .- /figures: schemes and figures
 
-.- /permittivities: data of real materials, permittivities from Refractive Index 
+.- /permittivities: data of real materials, permittivities from Refractive Index (Si and Ge)
 
 .- global_constants.py: define universal constants to import in all codes 
 
 .- permittivity_epsilon.py: define \epsilon(\omega) of different materials
 
-.- EELS.py: define functions for the EELS from Eq. 3 #paper 228
+.- EELS.py: define functions for the EELS from Eq. 3 #paper 228, Eq. 25 paper 149.
+this is defined per unit lenght. Later we define an effective lenght propagation Leff
+and we integrate over the electron's trajectory.
 
-.- plot_EELS.py: 
+.- plot_EELS_norm_Leff.py: plot the EELS per unit lenght (not integrated over e trajectory)
 	- plot the EELS(k_parallel,w) to find the waveguide modes of
 		- real materials. import function \epsilon_2(\omega)
 		- fake materials adding Im(epsi_2) = 0.1 to make the EELS wider and see it better
 	- plot the EELS(ze,w) integrated over k_parallel. 
 		- ze is an important parameter and it determinates which modes are being excited
+
+.- plot_compare_EELS_QE_approx.py : read issue#01
+
+.- plot_EELS.py : plot EELS integrated over the y-coordinate and over k_parallel
+
+.- plot_EELS_integrated_over_omega.py : plot EELS integrated over the y-coordinate, over k_parallel, and over omega

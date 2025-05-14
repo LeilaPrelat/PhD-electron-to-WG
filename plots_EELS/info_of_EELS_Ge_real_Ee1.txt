@@ -1,1 +1,0 @@
-EELS for $d = 1$ $\mu$m, $\epsilon_2 = \epsilon_{Ge}(\omega)$, $\beta$ = 0.33

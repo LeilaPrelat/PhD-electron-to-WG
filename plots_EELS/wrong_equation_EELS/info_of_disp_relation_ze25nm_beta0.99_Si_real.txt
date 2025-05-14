@@ -1,0 +1,1 @@
+EELS for $d = 0$ $\mu$m, $\epsilon_2 = \epsilon_{Si}(\omega)$, $z_{\text{e}} = 25$ nm, $\beta$ = 0.99

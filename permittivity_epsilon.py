@@ -18,7 +18,7 @@ pwd = os.path.dirname(__file__)
 data_path = os.path.join(pwd,'permittivities')
 
 convert_nk_to_epsilon = 0
-plot_epsilon = 0
+plot_epsilon = 1
 
 #%%
 
@@ -95,7 +95,11 @@ def epsilon(hbw,material='Si'):
         rta = f_real(max_Elist) + 1j*f_imag(max_Elist)
     else:
         rta = f_real(hbw) + 1j*f_imag(hbw)
-        
+    
+    # if f_imag(hbw) < 0.1: 
+    #     f_imag(hbw) = 0.1
+    
+    
     return rta
     
 if plot_epsilon == 1:
@@ -147,6 +151,7 @@ if plot_epsilon == 1:
     plt.plot(listx,listy_im,'-',label = r'Im($\epsilon$)')
     plt.xticks(ticksx)
     plt.yticks(ticksy)
+    plt.xscale('log')
     plt.tick_params(labelsize = tamnum,direction="in", width=1, length = 1.5,pad = 1)
     plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1)
     plt.savefig('permittivity_%s.png' %(material), format='png',bbox_inches='tight',pad_inches = 0.008,dpi = dpi)
