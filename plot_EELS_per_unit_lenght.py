@@ -15,7 +15,7 @@ from global_constants import constants
 import matplotlib as mpl
 import matplotlib.ticker as ticker
 import os
-from EELS import EELS_no_QE,EELS_QE, EELS_integrated_over_k_par_no_QE
+from EELS import EELS_no_QE, EELS_QE, EELS_integrated_over_k_par_no_QE
 from permittivity_epsilon import epsilon as epsilon2
 
 def fmt(x, pos):
@@ -33,7 +33,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 1 # zoom to the dispersion relation
+zoom = 0 # zoom to the dispersion relation
 
 if if_real_material == 1:
     
@@ -63,14 +63,14 @@ epsi1, epsi3 = 1, 1
 
 #omegac_WG = (np.pi/d)/np.sqrt(np.real(epsilon2)-1) ## omega_WG/c
 
-d_microns = 0.1
+d_microns = 0.2
 d = d_microns
 L = 1 # lenght of propagation in microns 
 # propagation<infty if im(epsi2)!=0
 
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 1
+ind = 2
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -97,11 +97,12 @@ else:
 
 energy_0 = 1
 
-energy_0 = 5
+energy_0 = 10
 omegac_0 = energy_0/aux
 ze_0 = 10*1e-3 ## microns 
 ze_0 = 25*1e-3 ## microns 
 ze_0 = 10*1e-3 ## microns 
+ze_nm = ze_0*1e3
 
 if if_real_material == 1:
     epsi2 = epsilon2(energy_0,material) 
@@ -120,8 +121,8 @@ limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
     
 list_u =  np.linspace(limit1,1.4*(1/beta),N) ## integration of EELS is from k_parallel = \omega/v
 list_u =  np.linspace(limit1,50*omegac_0,N) ## integration of EELS is from k_parallel = \omega/v
-list_u =  np.linspace(0.001*omegac_0,50*omegac_0,N) ## integration of EELS is from k_parallel = \omega/v
-# list_u =  np.linspace(0.00001,40,N) ## integration of EELS is from k_parallel = \omega/v
+list_u =  np.linspace(energy_0*1e-5,energy_0*100,N) ## integration of EELS is from k_parallel = \omega/v
+# list_u =  np.linspace(1e-6,30,N) ## integration of EELS is from k_parallel = \omega/v
 
 #%%
  
@@ -205,9 +206,14 @@ if if_real_material == 1:
         
         list_energy_eV_2 = np.logspace(-1,np.log10(4),int(N*2))   ##  absorption part
         list_k_parallel = np.logspace(-1,np.log10(40),int(N*2))    ## 
-        
-        list_energy_eV_2 = np.linspace(1e-1,10,int(N*2))   ##  absorption part
-        list_k_parallel = np.linspace(1e-1,40,int(N*2))    ## 
+        if ze_nm == 10:
+            list_energy_eV_2 = np.linspace(1e-1,10,int(N*2))   ##  absorption part
+            list_k_parallel = np.linspace(1e-1,80,int(N*2))    ## 
+            
+        else:
+            list_energy_eV_2 = np.linspace(1e-1,6,int(N*2))   ##  absorption part
+            list_k_parallel = np.linspace(1e-1,60,int(N*2))    ## 
+            
         
     else:
         list_energy_eV_2 = np.linspace(0.001,4,int(N*2))  ##  absorption part
@@ -216,8 +222,8 @@ if if_real_material == 1:
         list_energy_eV_2 = np.logspace(-1,np.log10(10),int(N*2))   ##  absorption part
         list_k_parallel = np.logspace(-1,np.log10(60),int(N*2))    ## 
         
-        list_energy_eV_2 = np.linspace(1e-2,10,int(N*2))   ##  absorption part
-        list_k_parallel = np.linspace(1e-3,60,int(N*2))    ## 
+        list_energy_eV_2 = np.linspace(1e-2,2,int(N*2))   ##  absorption part
+        list_k_parallel = np.linspace(1e-2,20,int(N*2))    ## 
         
 else:
     omegac_WG = (np.pi/d)/np.sqrt(np.real(Re_epsi2)-1) ## omega_WG/c
@@ -226,13 +232,22 @@ else:
     list_energy_eV_2 = np.linspace(0.01,4*energy_WG,int(N*2)) ## paper 370. Fig S6
     list_k_parallel = np.linspace(0.01,8*omegac_WG,int(N*2))  ## paper 370. Fig S6
 
-def EELS_color_map(k_parallel,energy):
+def EELS_color_map(k_par,energy):
     omegac = energy/aux
-    u = k_parallel/omegac
+    u = k_par/omegac
+    # kx_norm_k = kx/omegac
+    kx_norm_k = np.sqrt(u**2-(1/beta)**2+1j*0)
+    # print(u**2-(1/beta)**2)
     # print(beta)
     if if_real_material == 1:
-        epsi2 = epsilon2(energy,material)         
-    return np.real(EELS_no_QE(energy,u,ze_0,d,beta0,epsi2))
+        epsi2 = epsilon2(energy,material)    
+    
+    if u >= 1/beta: ## kx has to be positive. The formula from paper #149 ("EELS_no_QE") is defined for positive kx
+                    ## 2025/04/15 comments. see #issue02
+        value = EELS_no_QE(energy,kx_norm_k,ze_0,d,beta0,epsi2)
+    else:
+        value = 1e-9 ## small number  (cannot use zero because I use log scale)
+    return np.real(value)
 
 listx, listy = list_k_parallel, list_energy_eV_2 
 X, Y = np.meshgrid(listx,listy)
@@ -252,37 +267,24 @@ if if_real_material == 0:
     # units of EELS arbitrary because it is not integrated, is divided by L and multiplied by c
     # so i normalized by the maximum
 
-list_k_parallel_for_disp_relation = []
-for j in range(len(listx)): 
-    energy = listy[j]
-    x = listx[j]
-    omegac = energy/aux
-    list_k_parallel_for_disp_relation.append(np.sqrt(x**2 +  (omegac/beta)**2))
-
-
-saturation_number = -5
+saturation_number = -6
 delta = 1e-8 ## vmin can be zero
-limits = [np.nanmin(list_k_parallel_for_disp_relation) , np.nanmax(list_k_parallel_for_disp_relation),np.nanmin(listy) , np.nanmax(listy)]
+limits = [np.nanmin(listx) , np.nanmax(listx),np.nanmin(listy) , np.nanmax(listy)]
 cmap = plt.cm.hot  # define the colormap
 n_color = 21
 vmin1, vmax1 = np.nanmin(Z_EELS), np.nanmax(Z_EELS)
 vmin = vmin1 + delta
 vmax = vmax1 + delta
-if if_real_material == 0:   
-    bounds =   np.logspace(np.log10(vmin1+1e-4), np.log10(vmax1), n_color) 
-else:
-    bounds =   np.logspace(np.log10(vmin1 + 1e-3), np.log10(vmax1)  , n_color) 
-    bounds =   np.logspace( saturation_number, np.log10(vmax1) , n_color) 
+bounds =   np.logspace(  np.log10(vmin1), np.log10(vmax1) , n_color)
+bounds =   np.logspace( saturation_number, np.log10(vmax1) , n_color)
 
-    # bounds =   np.logspace(-5, np.log10(vmax1) , n_color) 
-    # bounds =   np.linspace(1e-16, vmax1 , n_color) 
-    # bounds =   np.logspace(np.log10(vmin1 +1e-2), np.log10(vmax1)  , n_color) 
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
 maxlog = int(np.ceil( np.log10( np.abs(vmax) )))
 minlog = int(np.ceil( np.log10( np.abs(vmin) ))) 
-# ticks_z = [(10.0**x) for x in np.linspace(saturation_number,maxlog-1, int(np.sign(vmax1)*maxlog) - int(saturation_number) ) ]
-# ticks_z = [(10.0**x) for x in np.linspace(-8, 0, 9) ]
+ticks_z = [(10.0**x) for x in np.linspace(minlog,maxlog-1, int(np.sign(vmax1)*maxlog) -  int(np.sign(vmin1)*minlog) ) ]
+ticks_z = [(10.0**x) for x in np.linspace(saturation_number,maxlog-1, int(np.sign(vmax1)*maxlog) -  int(saturation_number) ) ]
+ 
 
 plt.figure(figsize=tamfig)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
@@ -300,24 +302,23 @@ else:
     # plt.yticks(np.arange(0.1,0.9,0.1))
     # plt.yticks(np.arange(0.1,3,0.5))
     
-cbar = plt.colorbar(im_EELS, fraction=0.046, pad=0.04, orientation = 'vertical'    )
+cbar = plt.colorbar(im_EELS, fraction=0.046, pad=0.04, orientation = 'vertical'  ,format = formatt  )
 
-
-plt.plot(np.array(listy)/(aux*beta0),np.array(listy),'-',color = 'green')   ## electron velocity 
-
-plt.plot(np.array(list_k_parallel_for_disp_relation),np.array(list_k_parallel_for_disp_relation)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
-# if if_real_material==0:     
+plt.plot(np.array(listy)/(aux*beta0),np.array(listy),'--',color = 'green')   ## electron velocity 
+plt.plot(np.array(listx),np.array(listx)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
+if zoom == 1:
+    if if_real_material==0:     
+        
+        plt.plot(np.array(listx),np.array(listx)*aux/np.sqrt(Re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
+    else:
+        list_re_epsi2 = []
+        for y in listy: 
+            list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
     
-#     plt.plot(np.array(listx),np.array(listx)*aux/np.sqrt(Re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
-# else:
-#     list_re_epsi2 = []
-#     for y in listy: 
-#         list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
+        plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}
 
-#     plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}
-
-# cbar.set_ticks(ticks_z)
-plt.xlim(np.nanmin(list_k_parallel_for_disp_relation) , np.nanmax(list_k_parallel_for_disp_relation))
+cbar.set_ticks(ticks_z)
+plt.xlim(np.nanmin(listx) , np.nanmax(listx))
 plt.ylim(np.nanmin(listy) , np.nanmax(listy))
 # plt.xticks(np.arange(10,60,10))
 # if zoom == 0:
@@ -392,6 +393,7 @@ if if_real_material == 0:
 
 limits2 = [np.min(listx2) , np.max(listx2),np.min(listy2) , np.max(listy2)]
 delta = 1e-8 ## vmin can be zero
+delta = 0 ## vmin can be zero
 cmap = plt.cm.hot  # define the colormap
 n_color = 21
 vmin12, vmax12 = np.nanmin(Z_EELS_2), np.nanmax(Z_EELS_2)
@@ -409,7 +411,7 @@ plt.figure(figsize=tamfig)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'   ) 
+im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'  ) 
 cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'vertical'  )
 cbar.ax.set_title(labelz,fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum , width=0.1, length = 0,pad = 2)
@@ -428,7 +430,6 @@ plt.show()
         
  #%%   
  
-
 time.sleep(1)
 end = time.time()
 

@@ -87,12 +87,12 @@ def Fresnel_coefficient(omegac,u,d,mode,epsi2):
 
 
 ## EELS under QE approximation
-def EELS_QE(energy,u,ze,d,beta,epsi2):
+def EELS_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     """    
     Parameters
     ----------
     energy : hbar*omega in eV
-    u: k_parallel/(omega/c)
+    kx_norm_k: k_x/(omega/c)
     ze: position of electron in microns
     d: thickness of the plane in microns
     beta: v/c
@@ -109,6 +109,8 @@ def EELS_QE(energy,u,ze,d,beta,epsi2):
     
     omegac = energy/(aux)
     k = omegac
+    
+    u = np.sqrt(kx_norm_k**2 + (1/beta)**2)
     
     ## integration variable u = k_par_over_omegac (dimensionless)
     r123_s =   np.imag(Fresnel_coefficient(omegac,u,d,'s',epsi2))
@@ -243,7 +245,7 @@ def EELS_integrated_over_k_par_no_QE(energy,ze,d,beta,epsi2):
     -------
     Re(EELS) from paper 149 Eq. 25
     divided by L/c and in Gaussian units
-    (dimensionless)
+    (dimensionless) integrated over kx
     """
     # epsi2 = epsilon(hbw,material)
     L = 1
@@ -276,12 +278,15 @@ def EELS_integrated_over_k_par_no_QE(energy,ze,d,beta,epsi2):
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
     
     
-    limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
+    limit1 = 0.001*omegac ## variable is qx integral from 0
     
-    limit2 = 1.3*(1/beta)   ## already zero for this upper limit
-    limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
+    # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
+    # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
  
     limit2 = 50*omegac
+    
+    limit1 = 0.001 ## variable is qx integral from 0
+    limit2 = 50
     
     
     Integral = quad(final_function_re, limit1, limit2)[0]

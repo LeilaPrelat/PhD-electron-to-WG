@@ -38,19 +38,14 @@ and we integrate over the electron's trajectory.
 2025/04/15 comments: 
 	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
 	-plot of dispersion relation was wrong. label x was kx instead of kpar 
-
+	In addition, the formula from paper #149 ("EELS_no_QE") is defined for positive kx,
+	then if I plot as a function of kx I need to be careful with this
+	
 GM may 15 feedback
 thickness = 0.2 microns
-resolve before 1eV 
-see the guide modes 
-until which electron distance we can 
-excite modes
-see in each case where i am in the
-dispersion relation
-
-reduce the energy electron loss up to 1 eV or 10 eV 
-at most
-
-close enough in ze so we still excite after guide
-modes . in that plot we dont need a zoom
+-resolve before 1eV to see the waveguide modes 
+-know until which electron distance (ze) we can excite modes
+-see in each case where i am in the dispersion relation
+-reduce the energy electron loss up to 1 eV or 10 eV at most
+-if we are close enough in ze, we can still excite after the guide modes (in that plot we dont need a zoom)
 
