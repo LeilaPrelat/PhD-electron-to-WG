@@ -37,7 +37,7 @@ d_microns = 0.1 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 1
+ind = 0
 list_Ee_electron = [ 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -159,7 +159,13 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
 
     Integral = 0
     N = 150
-    list_eV = np.logspace(-1,upper_eV_limit,N)
+    
+
+    
+    # list_eV = np.logspace(-1,upper_eV_limit,N)
+    delta_hbw = 0.005
+    list_eV = np.arange(0.01, upper_eV_limit + delta_hbw ,delta_hbw)
+    N = int(len(list_eV))
     
     for k in range(N-1):
         eV = list_eV[k]
@@ -206,13 +212,14 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
             
             Integral = Integral + Integral0*delta_qx*delta_energy
         
-    return  Integral 
+    return  Integral ,N
     
 #%%
 
 print('1-Plot the EELS integrated over k_par, over the trajectory, and over energy as a function of the upper limit of integration, for different b')
 
 labelx = r'Upper integration limit $\hbar\omega_{\text{f}}$ (eV)'
+labelx = r'Cutoff energy $\hbar\omega_{\text{f}}$ (eV)'
 labely = r'$\Gamma_{\parallel}/L_0$ (1/$\mu$m)'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
@@ -229,8 +236,8 @@ if create_data == 1:
         k = 0
         for eV in list_upper_eV_limit:  
             
-            value = EELS_double_integral_as_sum(eV,b,d,beta)
-            print(k, value)
+            value,Nvalue = EELS_double_integral_as_sum(eV,b,d,beta)
+            print(k, value,Nvalue)
             # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
             list_EELS_re.append(np.real(value))
             list_EELS_im.append(np.imag(value))
