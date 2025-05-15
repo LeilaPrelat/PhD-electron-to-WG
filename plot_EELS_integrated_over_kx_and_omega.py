@@ -8,6 +8,7 @@ see paper#228 Eqs. 3
 see paper#149 Eqs. 25
 integrated over electron's trajectory
 for real materials (\epsilon(\omega))
+and over the frequency : total EELS
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,8 +22,8 @@ create_data = 1      ## run data for the color maps
 real_units = 1 ## Gamma in real units or normalized by c (then Gamma dimensionless)
     
 label_png = '_real'
-material = 'Si' +  label_png  ## default
-# material = 'Ge' + label_png
+material = 'Si'   ## default
+# material = 'Ge'  
 
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS')
@@ -36,18 +37,18 @@ d_microns = 0.1 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 2
-list_Ee_electron = [30 , 100 , 200]   ## keV
+ind = 1
+list_Ee_electron = [ 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
-label_Ee = '_Ee%i' %(ind+1)
+label_Ee = label_png +  '_Ee%i' %(ind+1)
 
 beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 gamma_e = 1/np.sqrt(1-epsi1*beta**2)
 
-N = 100
+N = 50
 list_energy_eV = np.linspace(0.01,20,N)
-list_upper_eV_limit = np.logspace(-2,1,N)
+list_upper_eV_limit = np.logspace(-1,1,N)
 
 list_b_nm = [10,50,80]
 
@@ -112,9 +113,10 @@ def EELS_integrated_over_electron_trayectory_and_energy(upper_eV_limit,b,d,beta)
     gamma_e = 1/(np.sqrt(epsi1-beta**2))
     me_over_hb = 8.648539271254356*1e-9 ## seconds/microns^2
     
-    
-    factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*np.sqrt(c)) ## Gamma/L0 in unis of seconds/microns
-    ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k
+    aux2 = np.sqrt(c)*hb ## add hb because the integral is over energy and not over frequency ------------------------------------- IMPORTANT 
+    factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*aux2) ## Gamma/L0 in unis of seconds/microns
+    ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k --> part with omega is inside function
+    ## because I am integrating over energy
     
     ############ integration over k_parallel ##################
     k_par1 = lambda eV: 0.001*omegac(eV) ## integration from 0
@@ -130,12 +132,87 @@ def EELS_integrated_over_electron_trayectory_and_energy(upper_eV_limit,b,d,beta)
     Integral = dblquad(final_function_re, eV1, eV2, k_par1, k_par2)[0]
     
     return  Integral*factor_Gamma_norm_L0 
+
+
+
+#EELS integrated over y-coordinate and over frequency
+def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
+    """    
+    Parameters
+    ----------
+    upper_eV_limit : upper limit of the integral over energy in eV
+    b: minimum position of electron along z coordinate in microns
+    (most close to the plane)
+    d: thickness of the plane in microns
+    beta: v/c
+    Returns
+    -------
+    Re(EELS) from paper 149 Eq. 25
+    divided by L0 and in Gaussian units
+    (1/microns) integrated over
+    electron trajectory Leff(k_par)
+    integrate over k_parallel
+    and over energy
+    (see notes)
+    """
+    # epsi2 = epsilon(hbw,material)
+
+    Integral = 0
+    N = 150
+    list_eV = np.logspace(-1,upper_eV_limit,N)
+    
+    for k in range(N-1):
+        eV = list_eV[k]
+        omegac = eV/(aux)
+        
+        list_kx_norm_k = np.linspace(0.001*omegac,50*omegac,N)
+        
+        delta_energy =  list_eV[k+1] - list_eV[k]
+        
+        for j in range(N-1):
+            kx_norm_k = list_kx_norm_k[j]
+            
+            delta_qx = list_kx_norm_k[j+1] - list_kx_norm_k[j]
+            
+            qx = kx_norm_k
+            u =  np.sqrt(kx_norm_k**2 + (1/beta)**2) ## u = k_parallel/k with kx variable and ky = \omega/v
+        
+            ## for python add +1j*0 inside kz as \sqrt{ .. + 1j*0}  
+            
+            argument =  np.sqrt(epsi1 - u**2  + 1j*0) ## kz = sqrt(k^2 - k_parallel^2)
+            kz1 = argument if np.imag(argument)>0  else  - argument  
+            
+            # if np.imag(kz1) <= 0:
+            #     kz1 = - kz1
+            epsi2 =  epsilon2(eV,material)
+            
+            ## integration variable u = k_par_over_omegac (dimensionless)
+            r123_s =  Fresnel_coefficient(omegac,u,d,'s',epsi2)
+            r123_p = Fresnel_coefficient(omegac,u,d,'p',epsi2)
+        
+            final_function =  kz1*np.exp(2*1j*kz1*omegac*b)*(r123_s*(qx*beta/kz1)**2 - r123_p/epsi1)/(u**(5/2)*np.sqrt(omegac))
+            final_function_re =  np.real(final_function)
+        
+            gamma_e = 1/(np.sqrt(epsi1-beta**2))
+            me_over_hb = 8.648539271254356*1e-9 ## seconds/microns^2
+            
+            aux2 = np.sqrt(c)*hb ## add hb because the integral is over energy and not over frequency ------------------------------------- IMPORTANT 
+            factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*aux2) ## Gamma/L0 in unis of seconds/microns
+            ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k --> part with omega is inside function
+         
+ 
+            
+            Integral0 = final_function_re*factor_Gamma_norm_L0
+            
+            Integral = Integral + Integral0*delta_qx*delta_energy
+        
+    return  Integral 
     
 #%%
 
 print('1-Plot the EELS integrated over k_par, over the trajectory, and over energy as a function of the upper limit of integration, for different b')
 
-labelx = r'Upper integration limit $\hbar\omega$ (eV)'
+labelx = r'Upper integration limit $\hbar\omega_{\text{f}}$ (eV)'
 labely = r'$\Gamma_{\parallel}/L_0$ (1/$\mu$m)'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
@@ -149,13 +226,15 @@ if create_data == 1:
         b = b_nm*1e-3
         list_EELS_re = []
         list_EELS_im = []
+        k = 0
         for eV in list_upper_eV_limit:  
             
-            value = EELS_integrated_over_electron_trayectory_and_energy(eV,b,d,beta)
-            # print(value)
+            value = EELS_double_integral_as_sum(eV,b,d,beta)
+            print(k, value)
             # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
             list_EELS_re.append(np.real(value))
             list_EELS_im.append(np.imag(value))
+            k = k + 1
             
         list_EELS_re_tot.append(list_EELS_re)
         list_EELS_im_tot.append(list_EELS_im)
@@ -186,12 +265,12 @@ plt.title(title,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 for j in range(len(list_b_nm)):
-    plt.plot(list_energy_eV, np.array(list_EELS_re_tot[j]) ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
+    plt.plot(list_upper_eV_limit, np.array(list_EELS_re_tot[j]) ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
  
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 label_figure = 'EELS_int_energy_' + material + label_png + label_Ee
-plt.xscale('log')
+# plt.xscale('log')
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 

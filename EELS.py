@@ -127,7 +127,7 @@ def EELS_QE(energy,u,ze,d,beta,epsi2):
 
     return  (function_p+function_s)*factor_Gamma_norm_Lc
 
-
+# EELS per unit lenght
 def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     """    
     Parameters
@@ -141,7 +141,7 @@ def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     Returns
     -------
     Re(EELS) from paper 149 Eq. 25
-    divided by L/c and in Gaussian units
+    divided by Leff/c and in Gaussian units
     (dimensionless) without integration
     no QE approximation made
     """
@@ -199,7 +199,7 @@ def EELS_integrated_over_k_par_QE(energy,ze,d,beta,epsi2):
     Returns
     -------
     Re(EELS) from paper 228 Eq. 3
-    divided by L/c and in Gaussian units
+    divided by Leff/c and in Gaussian units
     (dimensionless)
     using the QE approx (kz = i*k_par)
     """
@@ -341,8 +341,8 @@ def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
     gamma_e = 1/(np.sqrt(epsi1-beta**2))
     me_over_hb = 8.648539271254356*1e-9 ## seconds/microns^2
     
-    omega = omegac*c
-    factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*np.sqrt(omega)) ## Gamma/L0 in unis of seconds/microns
+    omega_sqrt = np.sqrt(omegac*c) 
+    factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*omega_sqrt) ## Gamma/L0 in unis of seconds/microns
     ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k
     
     limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
@@ -358,4 +358,71 @@ def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
     return  Integral*factor_Gamma_norm_L0 
  
 
+
+
+# function before is without integratation over kx/k
+# EELS integrand over y-coordinate: Leff(k_par)
+# the other EELS are per unit lenght
+def EELS_integrand_over_electron_trayectory(kx_norm_k,energy,b,d,beta,epsi2):
+    """    
+    Parameters
+    ----------
+    kx_norm_k : kx/k
+    energy : hbar*omega in eV
+    b: minimum position of electron along z coordinate in microns
+    (most close to the plane)
+    d: thickness of the plane in microns
+    beta: v/c
+    epsi2: permittivity of medium 2 
+    Returns
+    -------
+    Re(EELS) from paper 149 Eq. 25
+    divided by L0 and in Gaussian units
+    (seconds/microns) using Leff 
+    as a function of kx/k
+    (see notes)
+    """
+    # epsi2 = epsilon(hbw,material)
+
+    omegac = energy/(aux)
+    k = omegac
+    
+    u =   np.sqrt(kx_norm_k**2 + (1/beta)**2) ## u: k_parallel/(omega/c)
+
+    ## for python add +1j*0 inside kz as \sqrt{ .. + 1j*0}  
+    
+    argument =  np.sqrt(epsi1 - u**2  + 1j*0) ## kz = sqrt(k^2 - k_parallel^2)
+    kz1 =   argument if np.imag(argument)>0  else  - argument 
+    
+    # if np.imag(kz1) <= 0:
+    #     kz1 = - kz1
+    
+    
+
+    ## integration variable u = k_par_over_omegac (dimensionless)
+    r123_s =  Fresnel_coefficient(omegac,u,d,'s',epsi2)
+    r123_p =  Fresnel_coefficient(omegac,u,d,'p',epsi2)
+
+ 
+
+    
+    final_function =   kz1*np.exp(2*1j*kz1*k*b)*(r123_s*(kx_norm_k*beta/kz1)**2 - r123_p/epsi1)/(u**(5/2))
+    final_function_re =   np.real(final_function)
+
+    gamma_e = 1/(np.sqrt(epsi1-beta**2))
+    me_over_hb = 8.648539271254356*1e-9 ## seconds/microns^2
+    
+    omega_sqrt = np.sqrt(omegac*c) 
+    factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*omega_sqrt) ## Gamma/L0 in unis of seconds/microns
+    ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k
+    
+    limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
+    
+    # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
+    # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
+ 
+    limit2 = 50*omegac
+ 
+    
+    return  final_function_re*factor_Gamma_norm_L0 
  

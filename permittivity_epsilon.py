@@ -18,7 +18,7 @@ pwd = os.path.dirname(__file__)
 data_path = os.path.join(pwd,'permittivities')
 
 convert_nk_to_epsilon = 0
-plot_epsilon = 1
+plot_epsilon = 0
 
 #%%
 
