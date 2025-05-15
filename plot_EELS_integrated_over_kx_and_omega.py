@@ -166,16 +166,16 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
     delta_hbw = 0.005
     list_eV = np.arange(0.01, upper_eV_limit + delta_hbw ,delta_hbw)
     N = int(len(list_eV))
-    
+    Nk = 150
     for k in range(N-1):
         eV = list_eV[k]
         omegac = eV/(aux)
         
-        list_kx_norm_k = np.linspace(0.001*omegac,50*omegac,N)
+        list_kx_norm_k = np.linspace(0.001*omegac,50*omegac,Nk)
         
         delta_energy =  list_eV[k+1] - list_eV[k]
         
-        for j in range(N-1):
+        for j in range(Nk-1):
             kx_norm_k = list_kx_norm_k[j]
             
             delta_qx = list_kx_norm_k[j+1] - list_kx_norm_k[j]
