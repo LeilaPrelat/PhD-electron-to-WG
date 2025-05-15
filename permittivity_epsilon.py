@@ -88,17 +88,17 @@ def epsilon(hbw,material='Si'):
     
     min_Elist, max_Elist = np.min(eV_list), np.max(eV_list)
     
+    delta = 1e-2
     if hbw<min_Elist:
-        rta = f_real(min_Elist) + 1j*f_imag(min_Elist)
+        rta = f_real(min_Elist) + 1j*(f_imag(min_Elist) + delta)
         
     elif hbw>max_Elist:
-        rta = f_real(max_Elist) + 1j*f_imag(max_Elist)
+        rta = f_real(max_Elist) + 1j*(f_imag(max_Elist) + delta)
     else:
-        rta = f_real(hbw) + 1j*f_imag(hbw)
+        rta = f_real(hbw) + 1j*(f_imag(hbw) + delta)
     
     # if f_imag(hbw) < 0.1: 
     #     f_imag(hbw) = 0.1
-    
     
     return rta
     

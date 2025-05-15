@@ -19,7 +19,7 @@ from scipy.integrate import dblquad
 from permittivity_epsilon import epsilon as epsilon2
 
 create_data = 1      ## run data for the color maps 
-real_units = 1 ## Gamma in real units or normalized by c (then Gamma dimensionless)
+real_units = 1       ## Gamma in real units or normalized by c (then Gamma dimensionless)
     
 label_png = '_real'
 material = 'Si'   ## default

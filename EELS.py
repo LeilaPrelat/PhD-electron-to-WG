@@ -162,7 +162,7 @@ def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     
     u = np.sqrt(kx_norm_k**2 + (1/beta)**2)
     ## for python add +1j*0 inside kz as \sqrt{ .. + 1j*0}  
-    
+    # kx_norm_k = np.sqrt(u**2 - (1/beta)**2 + 1j*0)
     # def k(i):
     #     return np.sqrt(epsilon(i))*k
             
@@ -176,7 +176,6 @@ def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     ## integration variable u = k_par_over_omegac (dimensionless)
     r123_s =  Fresnel_coefficient(omegac,u,d,'s',epsi2)
     r123_p =  Fresnel_coefficient(omegac,u,d,'p',epsi2)
-
 
     factor_s = (kx_norm_k*beta/kz(1))**2
     final_function =  np.real(kz(1)*np.exp(2*1j*kz(1)*k*ze)*(r123_s*factor_s - r123_p/epsi1))/(u**2)

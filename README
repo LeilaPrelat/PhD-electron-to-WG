@@ -14,7 +14,7 @@ project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
 this is defined per unit lenght. Later we define an effective lenght propagation Leff
 and we integrate over the electron's trajectory.
 
-.- plot_EELS.py: EELS per unit lenght. 
+.- plot_EELS.py: EELS per unit lenght: see the guide modes for different Ee 
    plot the dEELS/dy (EELS per unit lenght, not integrated over e- trajectory)
 	- plot the EELS(k_parallel,w) to find the waveguide modes of
 		- real materials. import function \epsilon_2(\omega)
@@ -22,7 +22,7 @@ and we integrate over the electron's trajectory.
 	- plot the EELS(ze,w) integrated over k_parallel. 
 		- ze is an important parameter and it determinates which modes are being excited
 
-.- plot_EELS_integrated_over_kx.py : EELS's spectrum.
+.- plot_EELS_integrated_over_kx.py : EELS's spectrum using Leff.
    plot EELS integrated over the y-coordinate by using Leff(k_par)=L0*f(k_par) and integrating over kx from 0 to infty
 		 - EELS/L0 vs omega
 		 
@@ -34,3 +34,23 @@ and we integrate over the electron's trajectory.
    -- will approximate the integrals to a sum to see premilinar results 
 
 .- plot_compare_EELS_QE_approx.py : read issue#01
+
+2025/04/15 comments: 
+	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
+	-plot of dispersion relation was wrong. label x was kx instead of kpar 
+
+GM may 15 feedback
+thickness = 0.2 microns
+resolve before 1eV 
+see the guide modes 
+until which electron distance we can 
+excite modes
+see in each case where i am in the
+dispersion relation
+
+reduce the energy electron loss up to 1 eV or 10 eV 
+at most
+
+close enough in ze so we still excite after guide
+modes . in that plot we dont need a zoom
+
