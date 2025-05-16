@@ -33,7 +33,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 1 # zoom to the dispersion relation
+zoom = 0 # zoom to the dispersion relation
 
 if if_real_material == 1:
     
@@ -69,7 +69,7 @@ L = 1 # lenght of propagation in microns
 # propagation<infty if im(epsi2)!=0
 
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 2
+ind = 1
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -93,7 +93,7 @@ energy_0 = 10
 omegac_0 = energy_0/aux
 ze_0 = 10*1e-3 ## microns 
 ze_0 = 25*1e-3 ## microns 
-ze_0 = 10*1e-3 ## microns 
+ze_0 = 80*1e-3 ## microns 
 ze_nm = ze_0*1e3
 
 if if_real_material == 1:
@@ -254,7 +254,7 @@ if if_real_material == 0:
     # units of EELS arbitrary because it is not integrated, is divided by L and multiplied by c
     # so i normalized by the maximum
 
-saturation_number = -6
+saturation_number = -7
 delta = 1e-8 ## vmin can be zero
 limits = [np.nanmin(listx) , np.nanmax(listx),np.nanmin(listy) , np.nanmax(listy)]
 cmap = plt.cm.hot  # define the colormap
@@ -416,10 +416,10 @@ if if_real_material == 0:
     labelz = r'$\Gamma_{\parallel}$ (a.u.)'
 
 limits2 = [np.min(listx2) , np.max(listx2),np.min(listy2) , np.max(listy2)]
-delta = 1e-8 ## vmin can be zero
+delta = 1e-2 ## vmin can be zero
 delta = 0 ## vmin can be zero
 cmap = plt.cm.hot  # define the colormap
-n_color = 21
+n_color = 45
 vmin12, vmax12 = np.nanmin(Z_EELS_2), np.nanmax(Z_EELS_2)
 vmin2 = vmin12 + delta
 vmax2 = vmax12 + delta
@@ -428,6 +428,7 @@ if if_real_material == 0:
 else:
     bounds2 =   np.logspace(np.log10(vmin12 + 1e-3), np.log10(vmax12)  , n_color) 
     bounds2 =   np.logspace(np.log10(vmin2), np.log10(vmax2) , n_color) 
+    bounds2 =   np.linspace(vmin12, vmax12 - delta , n_color) 
     # bounds =   np.logspace(np.log10(vmin1 +1e-2), np.log10(vmax1)  , n_color) 
 norm2 = mpl.colors.BoundaryNorm(bounds2, cmap.N)
 
@@ -435,8 +436,8 @@ plt.figure(figsize=tamfig)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'  ) 
-cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'vertical'  )
+im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm = norm2  ) 
+cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'vertical'  ,format = '%.3f')
 cbar.ax.set_title(labelz,fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum , width=0.1, length = 0,pad = 2)
 # plt.xticks(np.arange(0,3.5,0.5))
@@ -456,6 +457,6 @@ plt.show()
  
 time.sleep(1)
 end = time.time()
-
-print("Total runtime of the program is ", end - start ," seconds")
+if create_data == 1:
+    print("Total runtime of the program is ", end - start ," seconds")
 
