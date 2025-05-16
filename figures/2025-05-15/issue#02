@@ -1,0 +1,24 @@
+2025/04/15 comments: 
+	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
+	-plot of dispersion relation was wrong. label x was kx instead of kpar 
+	In addition, the formula from paper #149 ("EELS_no_QE") is defined for positive kx,
+	then if I plot as a function of kx I need to be careful with this.
+	
+	New definition: 
+	
+	def EELS_color_map(k_par,energy):
+	    omegac = energy/aux
+	    u = k_par/omegac
+	    # kx_norm_k = kx/omegac
+	    kx_norm_k = np.sqrt(u**2-(1/beta)**2+1j*0)
+	    # print(u**2-(1/beta)**2)
+	    # print(beta)
+	    if if_real_material == 1:
+		epsi2 = epsilon2(energy,material)    
+	    
+	    if u >= 1/beta: ## kx has to be positive. The formula from paper #149 ("EELS_no_QE") is defined for positive kx
+		            ## 2025/04/15 comments. see #issue02
+		value = EELS_no_QE(energy,kx_norm_k,ze_0,d,beta0,epsi2)
+	    else:
+		value = 1e-9 ## small number  (cannot use zero because I use log scale)
+	    return np.real(value)

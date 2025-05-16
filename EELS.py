@@ -179,8 +179,11 @@ def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     r123_s =  Fresnel_coefficient(omegac,u,d,'s',epsi2)
     r123_p =  Fresnel_coefficient(omegac,u,d,'p',epsi2)
 
+
+    # r123_s = 0
     factor_s = (kx_norm_k*beta/kz(1))**2
     final_function =  np.real(kz(1)*np.exp(2*1j*kz(1)*k*ze)*(r123_s*factor_s - r123_p/epsi1))/(u**2)
+    
     # final_function =  np.real(kz(1)*np.exp(2*1j*kz(1)*k*ze)*(r123_s*factor_s - r123_p/epsi1))/(u*kx_norm_k)
     
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
@@ -232,7 +235,7 @@ def EELS_integrated_over_k_par_QE(energy,ze,d,beta,epsi2):
 
 
 # EELS per unit lenght
-def EELS_integrated_over_k_par_no_QE(energy,ze,d,beta,epsi2):
+def EELS_integrated_over_kx_no_QE(energy,ze,d,beta,epsi2):
     """    
     Parameters
     ----------
@@ -272,21 +275,24 @@ def EELS_integrated_over_k_par_no_QE(energy,ze,d,beta,epsi2):
 
     
     final_function = lambda qx : kz1(qx)*np.exp(2*1j*kz1(qx)*k*ze)*(r123_s(qx)*(qx*beta/kz1(qx))**2 - r123_p(qx)/epsi1)/(u(qx)**2)
-    final_function_re = lambda qx : np.real(final_function(qx))
+    #final_function_re = lambda qx : np.real(final_function(qx)) if u(qx) >= 1/beta else 1e-9 ## small number  (cannot use zero because I use log scale)
+    final_function_re = lambda qx : np.real(final_function(qx)) 
+    
+    ## this EELS is defined for kx > 0 which implies k_par > omega/v
 
 
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
     
     
-    limit1 = 0.001*omegac ## variable is qx integral from 0
+    limit1 = 1e-4*omegac ## variable is qx integral from 0
     
     # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
     # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
  
-    limit2 = 50*omegac
+    limit2 = 30*omegac
     
-    limit1 = 0.001 ## variable is qx integral from 0
-    limit2 = 50
+    # limit1 = 0.001 ## variable is qx integral from 0
+    # limit2 = 50
     
     
     Integral = quad(final_function_re, limit1, limit2)[0]
@@ -312,7 +318,7 @@ def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
     Re(EELS) from paper 149 Eq. 25
     divided by L0 and in Gaussian units
     (seconds/microns) integrated over
-    electron trajectory and over k_parallel
+    electron trajectory and over kx
     (see notes)
     """
     # epsi2 = epsilon(hbw,material)
@@ -349,7 +355,7 @@ def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
     factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*omega_sqrt) ## Gamma/L0 in unis of seconds/microns
     ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k
     
-    limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
+    limit1 = 1e-4*omegac ## variable is qx integral from0 omega/v
     
     # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
     # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone

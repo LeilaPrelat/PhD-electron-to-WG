@@ -24,6 +24,7 @@ real_units = 1       ## Gamma in real units or normalized by c (then Gamma dimen
 label_png = '_real'
 material = 'Si'   ## default
 # material = 'Ge'  
+zoom = 1
 
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS')
@@ -33,24 +34,29 @@ hb,c,alpha,me_c2_eV = constants()
 aux = hb*c
 epsi1, epsi3 = 1, 1
 
-d_microns = 0.1 # microns
+d_microns = 0.2 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 0
-list_Ee_electron = [ 100 , 200]   ## keV
+ind = 1
+list_Ee_electron = [30, 100 , 200]   ## keV . dont use the first value 
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
-label_Ee = label_png +  '_Ee%i' %(ind+1)
+label_Ee = '_Ee%i' %(ind+1)
 
 beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 gamma_e = 1/np.sqrt(1-epsi1*beta**2)
 
-N = 50
-list_energy_eV = np.linspace(0.01,20,N)
-list_upper_eV_limit = np.logspace(-1,1,N)
+N = 100
+if zoom == 0:
+    list_upper_eV_limit = np.linspace(0.1,10,N) ## cutoff energy
+else:
+    list_upper_eV_limit = np.linspace(0.1,2,N) ## cutoff energy
 
 list_b_nm = [10,50,80]
+
+ 
+total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
 
 #%%
  
@@ -119,12 +125,12 @@ def EELS_integrated_over_electron_trayectory_and_energy(upper_eV_limit,b,d,beta)
     ## because I am integrating over energy
     
     ############ integration over k_parallel ##################
-    k_par1 = lambda eV: 0.001*omegac(eV) ## integration from 0
+    k_par1 = lambda eV: 1e-4*omegac(eV) ## integration from 0
     
     # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
     # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
  
-    k_par2 = lambda eV: 50*omegac(eV)
+    k_par2 = lambda eV: 30*omegac(eV)
     ###########################################################
     ############ integration over energy ######################
     eV1, eV2 = 0.001, upper_eV_limit
@@ -171,7 +177,7 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
         eV = list_eV[k]
         omegac = eV/(aux)
         
-        list_kx_norm_k = np.linspace(0.001*omegac,50*omegac,Nk)
+        list_kx_norm_k = np.linspace(1e-4*omegac,30*omegac,Nk)
         
         delta_energy =  list_eV[k+1] - list_eV[k]
         
@@ -219,12 +225,11 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
 print('1-Plot the EELS integrated over k_par, over the trajectory, and over energy as a function of the upper limit of integration, for different b')
 
 labelx = r'Upper integration limit $\hbar\omega_{\text{f}}$ (eV)'
-labelx = r'Cutoff energy $\hbar\omega_{\text{f}}$ (eV)'
+labelx = r'Cutoff energy $\hbar\omega_f$ (eV)'
 labely = r'$\Gamma_{\parallel}/L_0$ (1/$\mu$m)'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
- 
-total_label = material + label_Ee  
+
 if create_data == 1:
     
     list_EELS_re_tot = []
@@ -276,7 +281,7 @@ for j in range(len(list_b_nm)):
  
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
-label_figure = 'EELS_int_energy_' + material + label_png + label_Ee
+label_figure = 'EELS_int_energy_' + total_label
 # plt.xscale('log')
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
