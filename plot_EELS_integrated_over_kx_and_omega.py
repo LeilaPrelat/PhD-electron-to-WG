@@ -18,8 +18,8 @@ from EELS import Fresnel_coefficient
 from scipy.integrate import dblquad
 from permittivity_epsilon import epsilon as epsilon2
 
-create_data = 1      ## run data for the color maps 
-real_units = 1       ## Gamma in real units or normalized by c (then Gamma dimensionless)
+create_data = 0      ## run data for the color maps 
+normalization = 1   ## normalize to the integral over omega from 0 to infty 
     
 label_png = '_real'
 material = 'Si'   ## default
@@ -142,11 +142,13 @@ def EELS_integrated_over_electron_trayectory_and_energy(upper_eV_limit,b,d,beta)
 
 
 #EELS integrated over y-coordinate and over frequency
-def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
+def EELS_double_integral_as_sum(lower_eV_limit,upper_eV_limit,delta_hbw,b,d,beta):
     """    
     Parameters
     ----------
-    upper_eV_limit : upper limit of the integral over energy in eV
+    lower_eV_limit : lower limit of the integral over energy in eV (omega_f)
+    upper_eV_limit : upper limit of the integral over energy in eV (omega_f)
+    delta_hbw : discretization of the omega_f in eV
     b: minimum position of electron along z coordinate in microns
     (most close to the plane)
     d: thickness of the plane in microns
@@ -169,8 +171,8 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
 
     
     # list_eV = np.logspace(-1,upper_eV_limit,N)
-    delta_hbw = 0.005
-    list_eV = np.arange(0.01, upper_eV_limit + delta_hbw ,delta_hbw)
+    
+    list_eV = np.arange(lower_eV_limit, upper_eV_limit + delta_hbw ,delta_hbw)
     N = int(len(list_eV))
     Nk = 150
     for k in range(N-1):
@@ -222,14 +224,18 @@ def EELS_double_integral_as_sum(upper_eV_limit,b,d,beta):
     
 #%%
 
+delta_hbw = 0.005
+ev_initial = 0.01
+
 print('1-Plot the EELS integrated over k_par, over the trajectory, and over energy as a function of the upper limit of integration, for different b')
 
 labelx = r'Upper integration limit $\hbar\omega_{\text{f}}$ (eV)'
 labelx = r'Cutoff energy $\hbar\omega_f$ (eV)'
 labely = r'$\Gamma_{\parallel}/L_0$ (1/$\mu$m)'
+labely2 = r'$\Gamma_{\parallel}/\Gamma_{\text{tot}}$'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
-
+header = title + r', $\beta$ = %.2f. Re(EELS) from paper 149 Eq. 25 divided by L0 in Gaussian units (1/microns), integrated over k_par, trajectory, and eV' %(beta)
 if create_data == 1:
     
     list_EELS_re_tot = []
@@ -241,7 +247,7 @@ if create_data == 1:
         k = 0
         for eV in list_upper_eV_limit:  
             
-            value,Nvalue = EELS_double_integral_as_sum(eV,b,d,beta)
+            value,Nvalue = EELS_double_integral_as_sum(ev_initial,eV,delta_hbw,b,d,beta)
             print(k, value,Nvalue)
             # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
             list_EELS_re.append(np.real(value))
@@ -253,10 +259,9 @@ if create_data == 1:
         
     os.chdir(path_save)
 #    header = title1 + r', $\beta$ = %.2f. Re(EELS) from paper 228 Eq. 3 divided by L/c and in Gaussian units (dimensionless) ' %(beta)
-    header = title + r', $\beta$ = %.2f. Re(EELS) from paper 149 Eq. 25 divided by L0 in Gaussian units (1/microns), integrated over k_par, trajectory, and eV' %(beta)
+    
     for j in range(len(list_b_nm)):
         b_nm = list_b_nm[j]
-        
         np.savetxt('list_EELS_over_L0_%s'%(material)  + total_label + '_b%inm.txt' %(b_nm) ,list_EELS_re_tot[j], fmt='%.10f', delimiter='\t', header = header, encoding=None)
     np.savetxt('list_eV_upper_limit_%s'%(material)  + total_label+ '.txt' ,list_upper_eV_limit, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
@@ -266,8 +271,7 @@ else:
     for j in range(len(list_b_nm)):
         b_nm = list_b_nm[j]    
         listy = np.loadtxt('list_EELS_over_L0_%s'%(material)  + total_label + '_b%inm.txt' %(b_nm) , delimiter='\t', skiprows = 1)
-        
-    list_EELS_re_tot.append(listy)
+        list_EELS_re_tot.append(listy)
     list_energy_eV = np.loadtxt('list_eV_upper_limit_%s'%(material)  + total_label+ '.txt' , delimiter='\t', skiprows = 1)
 
 #%% 
@@ -286,6 +290,46 @@ label_figure = 'EELS_int_energy_' + total_label
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
+
+ev_initial = list_upper_eV_limit[-1] 
+ev_final = 30
+delta_hbw = 0.05
+if normalization == 1: 
+    
+    list_EELS_re_norm = []
+    list_EELS_im_norm = []
+    j = 0
+    for b_nm in list_b_nm:
+        b = b_nm*1e-3
+
+        value, Nvalue = EELS_double_integral_as_sum(ev_initial,ev_final,delta_hbw,b,d,beta) + list_EELS_re_tot[j][-1] ## sum the last value to continue the integration
+        print(value, Nvalue)
+        # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
+        list_EELS_re_norm.append(np.real(value))
+        list_EELS_im_norm.append(np.imag(value))
+        os.chdir(path_save)
+        np.savetxt('EELS_normalization%s'%(material)  + total_label + '_b%inm.txt' %(b_nm) ,[value], fmt='%.10f', delimiter='\t', header = header, encoding=None)
+        j = j + 1
+
+plt.figure(figsize=tamfig)
+plt.title(title,fontsize=tamtitle)
+plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
+plt.ylabel(labely2,fontsize=tamletra,labelpad =labelpady)
+for j in range(len(list_b_nm)):
+    plt.plot(list_upper_eV_limit, np.array(list_EELS_re_tot[j])/list_EELS_re_norm[j] ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
+ 
+plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
+label_figure = 'EELS_int_energy_norm' + total_label
+# plt.xscale('log')
+os.chdir(path_save)
+plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
+plt.show() 
+
+
+
+
+
 
 
 

@@ -23,6 +23,7 @@ real_units = 1     ## Gamma in real units or normalized by c (then Gamma dimensi
 label_png = '_real' 
 material = 'Si'     ## default
 # material = 'Ge'  
+zoom = 1
 
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS')
@@ -36,7 +37,7 @@ d_microns = 0.2 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 1
+ind = 2
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -46,10 +47,21 @@ beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 gamma_e = 1/np.sqrt(1-epsi1*beta**2)
 
 N = 100
-list_energy_eV = np.linspace(0.01,20,N)
-list_energy_eV = np.logspace(-1,1,N)
+if d == 0.2:
+    if zoom == 0:
+        list_energy_eV = np.linspace(0.1,10,N) ## cutoff energy
+    else:
+        list_energy_eV = np.linspace(0.1,2,N) ## cutoff energy
+else:
+    if zoom == 0:
+        list_energy_eV = np.linspace(0.1,20,N) ## cutoff energy
+    else:
+        list_energy_eV = np.linspace(0.1,4,N) ## cutoff energy
 
 list_b_nm = [50,100,200]
+list_b_nm = [10,50,80]
+
+total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
 
 #%%
  
@@ -72,9 +84,9 @@ dpi = 500
 
 energy0 = 50
 omegac0 = energy0/aux
-list_qx = np.linspace(0.001*omegac0, 50*omegac0, N)
-list_qx = np.linspace(0.001, 50, N)
-list_qx = np.logspace(-3, 2, N)
+list_qx = np.linspace(1e-4*omegac0, 30*omegac0, N)
+# list_qx = np.linspace(0.001, 50, N)
+# list_qx = np.logspace(-3, 2, N)
 
 
 print('1-Plot the EELS with Leff as a function of kx/k, for different b, for fix energy = %.2f eV'  %(energy0 ) )
@@ -106,7 +118,7 @@ plt.title(title,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 for j in range(len(list_b_nm)):
-    plt.plot(list_energy_eV, np.array(list_EELS_2_re_tot[j]) ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
+    plt.plot(list_qx, np.array(list_EELS_2_re_tot[j]) ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
  
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 

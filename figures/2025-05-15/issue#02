@@ -1,4 +1,4 @@
-2025/04/15 comments: 
+2025/04/15 after GM comments: 
 	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
 	-plot of dispersion relation was wrong. label x was kx instead of kpar 
 	In addition, the formula from paper #149 ("EELS_no_QE") is defined for positive kx,

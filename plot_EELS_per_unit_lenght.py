@@ -33,7 +33,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 0 # zoom to the dispersion relation
+zoom = 1 # zoom to the dispersion relation
 
 if if_real_material == 1:
     
@@ -69,7 +69,7 @@ L = 1 # lenght of propagation in microns
 # propagation<infty if im(epsi2)!=0
 
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 1
+ind = 2
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -120,26 +120,38 @@ list_u =  np.linspace(omegac_0*1e-5,omegac_0*50,N) ## integration of EELS is fro
 # list_u =  np.linspace(1e-6,30,N) ## integration of EELS is from k_parallel = \omega/v
 
 if if_real_material == 1:
-    
-    if zoom == 0:
-        list_energy_eV_2 = np.linspace(0.001,10,N)   ##  absorption part
-        list_k_parallel = np.linspace(0.001,50,N)    ## 
-        
-        list_energy_eV_2 = np.logspace(-1,np.log10(4),N)   ##  absorption part
-        list_k_parallel = np.logspace(-1,np.log10(40),N)    ## 
-        if ze_nm == 10:
-            list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
-            list_k_parallel = np.linspace(1e-1,80,N)    ## 
+    if d_microns == 0.2:
+        if zoom == 0:
+            if ze_nm == 10:
+                list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,80,N)    ## 
+                
+                list_energy_eV_2 = np.linspace(1e-1,6,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,60,N)    ## 
+                
+            else:
+                list_energy_eV_2 = np.linspace(1e-1,6,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,60,N)    ## 
             
         else:
-            list_energy_eV_2 = np.linspace(1e-1,6,N)   ##  absorption part
-            list_k_parallel = np.linspace(1e-1,60,N)    ## 
-        
+            
+            list_energy_eV_2 = np.linspace(1e-2,2,N)   ##  absorption part
+            list_k_parallel = np.linspace(1e-2,20,N)    ## 
     else:
+        if zoom == 0:
+            if ze_nm == 10:
+                list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,80,N)    ## 
         
-        list_energy_eV_2 = np.linspace(1e-2,2,N)   ##  absorption part
-        list_k_parallel = np.linspace(1e-2,20,N)    ## 
-        
+                
+            else:
+                list_energy_eV_2 = np.linspace(1e-1,6,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,60,N)    ## 
+            
+        else:
+            
+            list_energy_eV_2 = np.linspace(1e-2,4,N)   ##  absorption part
+            list_k_parallel = np.linspace(1e-2,40,N)    ## 
 else:
     omegac_WG = (np.pi/d)/np.sqrt(np.real(Re_epsi2)-1) ## omega_WG/c
     energy_WG = omegac_WG*aux
@@ -254,7 +266,8 @@ if if_real_material == 0:
     # units of EELS arbitrary because it is not integrated, is divided by L and multiplied by c
     # so i normalized by the maximum
 
-saturation_number = -7
+saturation_number_inf = -5
+saturation_number_up = -2
 delta = 1e-8 ## vmin can be zero
 limits = [np.nanmin(listx) , np.nanmax(listx),np.nanmin(listy) , np.nanmax(listy)]
 cmap = plt.cm.hot  # define the colormap
@@ -263,14 +276,14 @@ vmin1, vmax1 = np.nanmin(Z_EELS), np.nanmax(Z_EELS)
 vmin = vmin1 + delta
 vmax = vmax1 + delta
 bounds =   np.logspace(  np.log10(vmin1), np.log10(vmax1) , n_color)
-bounds =   np.logspace( saturation_number, np.log10(vmax1) , n_color)
+bounds =   np.logspace( saturation_number_inf, saturation_number_up , n_color)
 
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
 maxlog = int(np.ceil( np.log10( np.abs(vmax) )))
 minlog = int(np.ceil( np.log10( np.abs(vmin) ))) 
 ticks_z = [(10.0**x) for x in np.linspace(minlog,maxlog-1, int(np.sign(vmax1)*maxlog) -  int(np.sign(vmin1)*minlog) ) ]
-ticks_z = [(10.0**x) for x in np.linspace(saturation_number,maxlog-1, int(np.sign(vmax1)*maxlog) -  int(saturation_number) ) ]
+ticks_z = [(10.0**x) for x in np.linspace(saturation_number_inf,saturation_number_up, int(saturation_number_up) -  int(saturation_number_inf) +1 ) ]
  
 
 plt.figure(figsize=tamfig)
@@ -323,7 +336,7 @@ cbar.ax.tick_params(labelsize = tamnum, width=0.1, length = 0,pad = 2)
 data_figure = title1 + r', $z_{\text{e}} = %i$ nm, $\beta$ = %.2f' %(ze_0*1e3,beta)
 #plt.title(data_figure,fontsize=tamtitle)
 os.chdir(path_save)
-label_figure ='disp_relation_ze%inm_beta%.2f_' %(ze_0*1e3,beta) + material + label_png  
+label_figure ='disp_relation_ze%inm_beta%.2f_h%inm' %(ze_0*1e3,beta,d*1e3) + material + label_png  
 np.savetxt("info_of_" + label_figure + ".txt", [data_figure], fmt='%s')
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show()

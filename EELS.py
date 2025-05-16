@@ -360,7 +360,7 @@ def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
     # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
     # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
  
-    limit2 = 50*omegac
+    limit2 = 30*omegac
     
     
     Integral = quad(final_function_re, limit1, limit2)[0]
