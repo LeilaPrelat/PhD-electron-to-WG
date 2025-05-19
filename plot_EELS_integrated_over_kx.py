@@ -59,7 +59,7 @@ else:
         list_energy_eV = np.linspace(0.1,4,N) ## cutoff energy
 
 list_b_nm = [50,100,200]
-list_b_nm = [10,50,80]
+list_b_nm = [0,10,50,80]
 
 total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
 

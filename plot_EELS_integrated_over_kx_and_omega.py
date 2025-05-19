@@ -53,7 +53,7 @@ if zoom == 0:
 else:
     list_upper_eV_limit = np.linspace(0.1,2,N) ## cutoff energy
 
-list_b_nm = [10,50,80]
+list_b_nm = [0,10,50,80]
 
  
 total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
@@ -262,17 +262,17 @@ if create_data == 1:
     
     for j in range(len(list_b_nm)):
         b_nm = list_b_nm[j]
-        np.savetxt('list_EELS_over_L0_%s'%(material)  + total_label + '_b%inm.txt' %(b_nm) ,list_EELS_re_tot[j], fmt='%.10f', delimiter='\t', header = header, encoding=None)
-    np.savetxt('list_eV_upper_limit_%s'%(material)  + total_label+ '.txt' ,list_upper_eV_limit, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+        np.savetxt('list_EELS_over_L0_' + total_label + '_b%inm.txt' %(b_nm) ,list_EELS_re_tot[j], fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    np.savetxt('list_eV_upper_limit_' + total_label + '.txt' ,list_upper_eV_limit, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
 else:
     list_EELS_re_tot = []
     os.chdir(path_save)
     for j in range(len(list_b_nm)):
         b_nm = list_b_nm[j]    
-        listy = np.loadtxt('list_EELS_over_L0_%s'%(material)  + total_label + '_b%inm.txt' %(b_nm) , delimiter='\t', skiprows = 1)
+        listy = np.loadtxt('list_EELS_over_L0_' + total_label + '_b%inm.txt' %(b_nm) , delimiter='\t', skiprows = 1)
         list_EELS_re_tot.append(listy)
-    list_energy_eV = np.loadtxt('list_eV_upper_limit_%s'%(material)  + total_label+ '.txt' , delimiter='\t', skiprows = 1)
+    list_energy_eV = np.loadtxt('list_eV_upper_limit_' + total_label + '.txt' , delimiter='\t', skiprows = 1)
 
 #%% 
 
@@ -291,6 +291,10 @@ os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
 
+#%% 
+
+print('Calculate the total integral from 0 to infinity to use as normalization')
+
 ev_initial = list_upper_eV_limit[-1] 
 ev_final = 30
 delta_hbw = 0.05
@@ -308,7 +312,7 @@ if normalization == 1:
         list_EELS_re_norm.append(np.real(value))
         list_EELS_im_norm.append(np.imag(value))
         os.chdir(path_save)
-        np.savetxt('EELS_normalization%s'%(material)  + total_label + '_b%inm.txt' %(b_nm) ,[value], fmt='%.10f', delimiter='\t', header = header, encoding=None)
+        np.savetxt('EELS_normalization'  + total_label + '_b%inm.txt' %(b_nm) ,[value], fmt='%.10f', delimiter='\t', header = header, encoding=None)
         j = j + 1
 
 plt.figure(figsize=tamfig)
@@ -325,11 +329,5 @@ label_figure = 'EELS_int_energy_norm' + total_label
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
-
-
-
-
-
-
 
 
