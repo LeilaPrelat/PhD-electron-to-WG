@@ -25,8 +25,9 @@ material = 'Si'     ## default
 # material = 'Ge'  
 zoom = 1
 
+delta = 1e-1 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
-path_save =  os.path.join(pwd,'plots_EELS')
+path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
 #%%
 hb,c,alpha,me_c2_eV = constants()
@@ -98,7 +99,7 @@ for b_nm in list_b_nm:
     list_EELS_2_re = []
     list_EELS_2_im = []
     for qx in list_qx: 
-        epsi2 = epsilon2(energy0,material) 
+        epsi2 = epsilon2(energy0,delta,material) 
         value = EELS_integrand_over_electron_trayectory(qx,energy0,b,d,beta,epsi2)
         # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
         list_EELS_2_re.append(np.real(value))
@@ -137,7 +138,7 @@ for b_nm in list_b_nm:
     list_EELS_re = []
     list_EELS_im = []
     for eV in list_energy_eV: 
-        epsi2 = epsilon2(eV,material) 
+        epsi2 = epsilon2(eV,delta,material) 
         value = EELS_integrated_over_electron_trayectory(eV,b,d,beta,epsi2)
         # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
         list_EELS_re.append(np.real(value))

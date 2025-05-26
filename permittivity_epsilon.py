@@ -67,11 +67,12 @@ if convert_nk_to_epsilon == 1:
     header = 'Energy (eV)    Re(epsi)    Im(epsi), %s from https://refractiveindex.info/?shelf=main&book=Si&page=Aspnes'
     np.savetxt('permittivity_%s.txt'%(material),table, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
-def epsilon(hbw,material='Si'):
+def epsilon(hbw,delta,material='Si'):
     """    
     Parameters
     ----------
-    hbw : energy in eV 
+    hbw : energy in eV
+    delta: extra loss for the imaginary part in eV
     Returns
     -------
     permittivity of Si/Ge from 
@@ -88,7 +89,7 @@ def epsilon(hbw,material='Si'):
     
     min_Elist, max_Elist = np.min(eV_list), np.max(eV_list)
     
-    delta = 1e-2
+    #delta = 1e-1
     if hbw<min_Elist:
         rta = f_real(min_Elist) + 1j*(f_imag(min_Elist) + delta)
         

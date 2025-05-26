@@ -1,0 +1,2 @@
+# EELS for $h = 0.2$ $\mu$m, $\epsilon_2 = \epsilon_{Si}(\omega)$, $v = 0.70c$, $\beta$ = 0.70. Re(EELS) from paper 149 Eq. 25 divided by L0 in Gaussian units (1/microns), integrated over k_par, trajectory, and eV
+1569.8650960366

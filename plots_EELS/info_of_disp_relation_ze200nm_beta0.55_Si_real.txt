@@ -1,1 +1,0 @@
-EELS for $h = 0.2$ $\mu$m, $\epsilon_2 = \epsilon_{Si}(\omega)$, $z_{\text{e}} = 200$ nm, $\beta$ = 0.55

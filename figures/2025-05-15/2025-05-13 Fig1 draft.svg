@@ -7,7 +7,7 @@
    viewBox="0 0 528 290.875"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.1 (1:1.4.1+202503302257+93de688d07)"
+   inkscape:version="1.4.2 (1:1.4.2+202505120738+ebf0e940d0)"
    xml:space="preserve"
    sodipodi:docname="2025-05-13 Fig1 draft.svg"
    inkscape:export-filename="2024-12-20 jga 2.png"
@@ -28,15 +28,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="0.74208049"
-     inkscape:cx="996.52263"
-     inkscape:cy="649.52523"
-     inkscape:window-width="2490"
-     inkscape:window-height="1403"
-     inkscape:window-x="1990"
-     inkscape:window-y="0"
+     inkscape:cx="793.04066"
+     inkscape:cy="758.00403"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="1510"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
-     showguides="true"><sodipodi:guide
+     showguides="false"><sodipodi:guide
        position="92.34454,237.03706"
        orientation="0,-1"
        id="guide2"
@@ -4511,7 +4511,13 @@
   </defs><g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1"><image
+     id="layer1"><rect
+       style="opacity:0.977344;fill:#e8902e;fill-opacity:0.603922;fill-rule:evenodd;stroke:#e9912f;stroke-width:0.104049;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.6;stroke-opacity:1;paint-order:stroke fill markers"
+       id="rect7-7-8-4-6"
+       width="523.86029"
+       height="12.202103"
+       x="2.3054106"
+       y="83.200569" /><image
        width="106.2736"
        height="77.571594"
        preserveAspectRatio="none"
@@ -4686,7 +4692,7 @@
        inkscape:transform-center-x="-29.604195"
        inkscape:transform-center-y="-38.908369" /><g
        inkscape:label=""
-       transform="matrix(0.45750806,0,0,0.45750806,108.79884,95.63336)"
+       transform="matrix(0.45750806,0,0,0.45750806,107.28616,86.557189)"
        id="g26"><g
    id="surface3-1-1-1"
    transform="matrix(1.76389,0,0,1.76389,-162.807,-132.364)">
@@ -4907,7 +4913,7 @@
   </g>
 </g><g
        inkscape:label=""
-       transform="matrix(0.45750806,0,0,0.45750806,368.55895,95.633206)"
+       transform="matrix(0.45750806,0,0,0.45750806,370.07163,86.557189)"
        id="g4"><g
    id="surface44"
    transform="matrix(1.76389,0,0,1.76389,-162.807,-132.364)">
@@ -5175,12 +5181,12 @@
     </g>
   </g>
 </g><rect
-       style="opacity:0.977344;fill:#e8902e;fill-opacity:0.603922;fill-rule:evenodd;stroke:#e9912f;stroke-width:0.0273682;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.6;stroke-opacity:1;paint-order:stroke fill markers"
+       style="opacity:0.977344;fill:#e8902e;fill-opacity:0.603922;fill-rule:evenodd;stroke:#e9912f;stroke-width:0.0268183;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:3.6;stroke-opacity:1;paint-order:stroke fill markers"
        id="rect7-7-8-4"
-       width="201.54784"
-       height="2.1942353"
-       x="80.262787"
-       y="-264.17801"
+       width="193.48074"
+       height="2.1947854"
+       x="95.389336"
+       y="-264.17828"
        transform="rotate(90)" /><g
        inkscape:label=""
        transform="matrix(0.43580646,0,0,0.43580646,466.9144,54.888534)"

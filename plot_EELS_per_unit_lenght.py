@@ -25,7 +25,7 @@ def fmt(x, pos):
 
 formatt = ticker.FuncFormatter(fmt)
     
-create_data = 0      ## run data for the color maps 
+create_data = 1      ## run data for the color maps 
 if_real_material = 1 ## if epsilon_2 is constant or not. if is real material, epsi2 = epsilon(omega)
 
 if if_real_material == 1: 
@@ -33,7 +33,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 1 # zoom to the dispersion relation
+zoom = 0 # zoom to the dispersion relation
 
 if if_real_material == 1:
     
@@ -53,8 +53,9 @@ else:
     label_png = ''
     Im_epsi2 = 1e-1  ## value of EELS depends on this Im_epsi2
 
+delta = 1e-1 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
-path_save =  os.path.join(pwd,'plots_EELS')
+path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
 #%%
 hb,c,alpha,me_c2_eV = constants()
@@ -78,6 +79,7 @@ label_Ee = '_Ee%i' %(ind+1)
 beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 gamma_e = 1/np.sqrt(1-epsi1*beta**2)
 
+N = 150
 N = 100
 list_ze_nm =  np.linspace(0.1,200,N)
 if ind == 1:
@@ -93,11 +95,11 @@ energy_0 = 10
 omegac_0 = energy_0/aux
 ze_0 = 10*1e-3 ## microns 
 ze_0 = 25*1e-3 ## microns 
-ze_0 = 80*1e-3 ## microns 
+ze_0 = 50*1e-3 ## microns 
 ze_nm = ze_0*1e3
 
 if if_real_material == 1:
-    epsi2 = epsilon2(energy_0,material) 
+    epsi2 = epsilon2(energy_0,delta,material) 
     Re_epsi2 = np.real(epsi2)
 else:
     epsi2 = Re_epsi2 +  1j*Im_epsi2
@@ -126,12 +128,12 @@ if if_real_material == 1:
                 list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
                 list_k_parallel = np.linspace(1e-1,80,N)    ## 
                 
-                list_energy_eV_2 = np.linspace(1e-1,6,N)   ##  absorption part
-                list_k_parallel = np.linspace(1e-1,60,N)    ## 
+                list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,80,N)    ## 
                 
             else:
-                list_energy_eV_2 = np.linspace(1e-1,6,N)   ##  absorption part
-                list_k_parallel = np.linspace(1e-1,60,N)    ## 
+                list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
+                list_k_parallel = np.linspace(1e-1,80,N)   
             
         else:
             
@@ -161,7 +163,8 @@ else:
     
 #%%
 
-tamfig = [4, 3]
+#tamfig = [3.5, 3]
+tamfig = [4.5, 3]
 tamletra = 13
 tamtitle  = 10
 tamnum = tamletra
@@ -184,7 +187,7 @@ list_EELS_re = []
 list_EELS_im = []
 for kx_norm in list_u: 
     if if_real_material == 1:
-        epsi2 = epsilon2(energy_0,material) 
+        epsi2 = epsilon2(energy_0,delta,material) 
         
     u = np.sqrt(kx_norm**2 + 1/beta**2 )
     if u >= 1/beta:
@@ -237,7 +240,7 @@ def EELS_color_map(k_par,energy):
     omegac = energy/aux
     u = k_par/omegac
     if if_real_material == 1:
-        epsi2 = epsilon2(energy,material)    
+        epsi2 = epsilon2(energy,delta,material)    
     
     if u >= 1/beta: ## kx has to be positive. The formula from paper #149 ("EELS_no_QE") is defined for positive kx
                     ## 2025/04/15 comments. see #issue02
@@ -302,7 +305,8 @@ else:
     # plt.yticks(np.arange(0.1,0.9,0.1))
     # plt.yticks(np.arange(0.1,3,0.5))
     
-cbar = plt.colorbar(im_EELS, fraction=0.046, pad=0.04, orientation = 'vertical'  ,format = formatt  )
+#cbar = plt.colorbar(im_EELS, fraction=0.2, pad=0.04, location = 'top'  ,format = formatt  )
+cbar = plt.colorbar(im_EELS, fraction=0.2, pad=0.04 , format = formatt  )
 
 plt.plot(np.array(listy)/(aux*beta),np.array(listy),'--',color = 'green')   ## electron velocity 
 plt.plot(np.array(listx),np.array(listx)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
@@ -313,26 +317,29 @@ if zoom == 1:
     else:
         list_re_epsi2 = []
         for y in listy: 
-            list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,material))))
+            list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,delta,material))))
     
         plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}
 
 cbar.set_ticks(ticks_z)
 plt.xlim(np.nanmin(listx) , np.nanmax(listx))
 plt.ylim(np.nanmin(listy) , np.nanmax(listy))
-# plt.xticks(np.arange(10,60,10))
+if zoom == 0:
+    plt.xticks(np.arange(10,90,10))
 # if zoom == 0:
-#     plt.text(11, 4,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
-#     plt.xticks(np.arange(10,90,10),['','20','','40','','60','','80'])
-#     plt.yticks(np.arange(1,11,1),['','2','','4','','6','','8','','10'])
+#      plt.text(11, 4,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
+#      plt.text(11, 8,r"$k_\parallel = \omega/c$",color = 'green', rotation=52,fontsize = tamletra)
+# #     plt.xticks(np.arange(10,90,10),['','20','','40','','60','','80'])
+# #     plt.yticks(np.arange(1,11,1),['','2','','4','','6','','8','','10'])
 
 # else:
-#     # plt.text(0.5, 0.5,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
+#       plt.text(0.5, 0.5,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
+#       plt.text(0.5, 1,r"$k_\parallel = \omega/c$",color = 'green', rotation=52,fontsize = tamletra)
 #     plt.xticks(np.arange(5,35,5),['5','10','15','20','25','30' ])
 #     plt.yticks(np.arange(0.5,3.5,0.5),['0.5','1.0','1.5','2.0','2.5','3.0' ])
 # plt.xticks(np.arange(10,60,10))
-cbar.ax.set_title(labelz,fontsize=tamletra)
-cbar.ax.tick_params(labelsize = tamnum, width=0.1, length = 0,pad = 2)
+cbar.ax.set_title(labelz,fontsize=tamletra,pad = pad+8)
+cbar.ax.tick_params(labelsize = tamnum, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
 data_figure = title1 + r', $z_{\text{e}} = %i$ nm, $\beta$ = %.2f' %(ze_0*1e3,beta)
 #plt.title(data_figure,fontsize=tamtitle)
 os.chdir(path_save)
@@ -348,7 +355,7 @@ print('3-Verification: Plot the EELS integrated over kx as function of energy fo
 def EELS_integrated_over_k_par_color_map(energy,ze_nm):
     ze = ze_nm*1e-3
     if if_real_material == 1:
-        epsi2 = epsilon2(energy,material) 
+        epsi2 = epsilon2(energy,delta,material) 
     return np.real(EELS_integrated_over_kx_no_QE(energy,ze,d,beta,epsi2))
 
 list_EELS_int_re = []
@@ -365,7 +372,7 @@ if if_real_material == 0:
     title1 = r'EELS for $h = %.1f$ $\mu$m, Re($\epsilon_2$) = %i, Im($\epsilon_2$) = %.1e' %(d,Re_epsi2,Im_epsi2)
 else:
     title1 = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$' %(d,material)
-title2 = r'$\hbar\omega = %.1f$ eV, $z_{\text{e}} = %i$ nm, $v = %.2fc$,' %(energy_0,ze_0*1e3,beta)
+title2 = r'$z_{\text{e}} = %i$ nm, $v = %.2fc$,' %(ze_0*1e3,beta)
 
 if if_real_material == 0:
     list_EELS_re = np.array(list_EELS_re)/np.max(list_EELS_re)
@@ -382,6 +389,12 @@ plt.plot(list_energy_eV_2, np.array(list_EELS_int_re) ,'.-',lw = 1.5 )
 # plt.plot(list_u, np.array(list_EELS_im) ,'.-',lw = 1.5 )
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 #plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
+os.chdir(path_save)
+data_figure = title2
+total_label = label_png + label_Ee + '_zoom%i_ze%inm'  %(zoom,ze_nm) 
+label_figure = 'EELS_2D' + material + total_label
+np.savetxt("info_of_" + label_figure + ".txt", [data_figure], fmt='%s')
+plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
 
 #%%
@@ -450,13 +463,14 @@ plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm = norm2  ) 
-cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'vertical'  ,format = '%.3f')
+cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'horizontal'  ,format = '%.3f')
 cbar.ax.set_title(labelz,fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum , width=0.1, length = 0,pad = 2)
 # plt.xticks(np.arange(0,3.5,0.5))
 # plt.yticks(np.arange(0,175,25))
 # plt.xlim(np.min(listx2) , np.max(listx2))
 # plt.ylim(np.min(listy2) , np.max(listy2))
+plt.plot(listx2,np.ones(len(listx2))*ze_nm)
 plt.yscale('log')
 data_figure = title1 + r', $\beta$ = %.2f' %(beta)
 #plt.title(data_figure,fontsize=tamtitle)

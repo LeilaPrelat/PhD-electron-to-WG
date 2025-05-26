@@ -18,16 +18,17 @@ from EELS import Fresnel_coefficient
 from scipy.integrate import dblquad
 from permittivity_epsilon import epsilon as epsilon2
 
-create_data = 0      ## run data for the color maps 
-normalization = 1   ## normalize to the integral over omega from 0 to infty 
+create_data = 1      ## run data for the color maps 
+normalization = 0   ## normalize to the integral over omega from 0 to infty 
     
 label_png = '_real'
 material = 'Si'   ## default
 # material = 'Ge'  
-zoom = 1
+zoom = 0
 
+delta = 1e-1 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
-path_save =  os.path.join(pwd,'plots_EELS')
+path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
 #%%
 hb,c,alpha,me_c2_eV = constants()
@@ -38,7 +39,7 @@ d_microns = 0.2 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 1
+ind = 2
 list_Ee_electron = [30, 100 , 200]   ## keV . dont use the first value 
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -107,7 +108,7 @@ def EELS_integrated_over_electron_trayectory_and_energy(upper_eV_limit,b,d,beta)
     
     # if np.imag(kz1) <= 0:
     #     kz1 = - kz1
-    epsi2 = lambda eV: epsilon2(eV,material)
+    epsi2 = lambda eV: epsilon2(eV,delta,material)
     omegac = lambda eV: eV/(aux)
     ## integration variable u = k_par_over_omegac (dimensionless)
     r123_s = lambda qx,eV:  Fresnel_coefficient(omegac(eV),u(qx),d,'s',epsi2(eV))
@@ -198,7 +199,7 @@ def EELS_double_integral_as_sum(lower_eV_limit,upper_eV_limit,delta_hbw,b,d,beta
             
             # if np.imag(kz1) <= 0:
             #     kz1 = - kz1
-            epsi2 =  epsilon2(eV,material)
+            epsi2 =  epsilon2(eV,delta,material)
             
             ## integration variable u = k_par_over_omegac (dimensionless)
             r123_s =  Fresnel_coefficient(omegac,u,d,'s',epsi2)
@@ -248,7 +249,7 @@ if create_data == 1:
         for eV in list_upper_eV_limit:  
             
             value,Nvalue = EELS_double_integral_as_sum(ev_initial,eV,delta_hbw,b,d,beta)
-            print(k, value,Nvalue)
+            print(b_nm, k, value, Nvalue)
             # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
             list_EELS_re.append(np.real(value))
             list_EELS_im.append(np.imag(value))
@@ -293,10 +294,10 @@ plt.show()
 
 #%% 
 
-print('Calculate the total integral from 0 to infinity to use as normalization')
+print('Calculate the total integral from 0 to infinity to use it as normalization')
 
 ev_initial = list_upper_eV_limit[-1] 
-ev_final = 30
+ev_final = 50
 delta_hbw = 0.05
 if normalization == 1: 
     
@@ -315,19 +316,19 @@ if normalization == 1:
         np.savetxt('EELS_normalization'  + total_label + '_b%inm.txt' %(b_nm) ,[value], fmt='%.10f', delimiter='\t', header = header, encoding=None)
         j = j + 1
 
-plt.figure(figsize=tamfig)
-plt.title(title,fontsize=tamtitle)
-plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
-plt.ylabel(labely2,fontsize=tamletra,labelpad =labelpady)
-for j in range(len(list_b_nm)):
-    plt.plot(list_upper_eV_limit, np.array(list_EELS_re_tot[j])/list_EELS_re_norm[j] ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
- 
-plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
-label_figure = 'EELS_int_energy_norm' + total_label
-# plt.xscale('log')
-os.chdir(path_save)
-plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
-plt.show() 
+    plt.figure(figsize=tamfig)
+    plt.title(title,fontsize=tamtitle)
+    plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
+    plt.ylabel(labely2,fontsize=tamletra,labelpad =labelpady)
+    for j in range(len(list_b_nm)):
+        plt.plot(list_upper_eV_limit, np.array(list_EELS_re_tot[j])/list_EELS_re_norm[j] ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
+     
+    plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+    plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
+    label_figure = 'EELS_int_energy_norm' + total_label
+    # plt.xscale('log')
+    os.chdir(path_save)
+    plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
+    plt.show() 
 
 
