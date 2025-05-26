@@ -33,7 +33,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 1 # zoom in energy (if = 1 better definition of the modes in the dispersion relation) 
+zoom = 0 # zoom in energy (if = 1 better definition of the modes in the dispersion relation) 
 
 if if_real_material == 1:
     
@@ -70,7 +70,7 @@ L = 1 # lenght of propagation in microns
 # propagation<infty if im(epsi2)!=0
 
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 1
+ind = 2
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
