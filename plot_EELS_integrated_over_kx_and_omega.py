@@ -18,13 +18,14 @@ from EELS import Fresnel_coefficient
 from scipy.integrate import dblquad
 from permittivity_epsilon import epsilon as epsilon2
 
-create_data = 1      ## run data for the color maps 
-normalization = 0   ## normalize to the integral over omega from 0 to infty 
+create_data = 0      ## run data for the color maps 
+normalization = 1    ## normalize to the integral over omega from 0 to infty 
+load_normalization = 0
     
 label_png = '_real'
 material = 'Si'   ## default
 # material = 'Ge'  
-zoom = 0
+zoom = 1
 
 delta = 1e-1 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
@@ -39,7 +40,7 @@ d_microns = 0.2 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 2
+ind = 1
 list_Ee_electron = [30, 100 , 200]   ## keV . dont use the first value 
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -54,7 +55,7 @@ if zoom == 0:
 else:
     list_upper_eV_limit = np.linspace(0.1,2,N) ## cutoff energy
 
-list_b_nm = [0,10,50,80]
+list_b_nm = [0,10,50]
 
  
 total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
@@ -301,21 +302,29 @@ ev_final = 50
 delta_hbw = 0.05
 if normalization == 1: 
     
-    list_EELS_re_norm = []
-    list_EELS_im_norm = []
-    j = 0
-    for b_nm in list_b_nm:
-        b = b_nm*1e-3
-
-        value, Nvalue = EELS_double_integral_as_sum(ev_initial,ev_final,delta_hbw,b,d,beta) + list_EELS_re_tot[j][-1] ## sum the last value to continue the integration
-        print(value, Nvalue)
-        # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
-        list_EELS_re_norm.append(np.real(value))
-        list_EELS_im_norm.append(np.imag(value))
+    if load_normalization == 0:
+        list_EELS_re_norm = []
+        list_EELS_im_norm = []
+        j = 0
+        for b_nm in list_b_nm:
+            b = b_nm*1e-3
+    
+            value, Nvalue = EELS_double_integral_as_sum(ev_initial,ev_final,delta_hbw,b,d,beta) + list_EELS_re_tot[j][-1] ## sum the last value to continue the integration
+            print(b_nm, value, Nvalue)
+            # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
+            list_EELS_re_norm.append(np.real(value))
+            list_EELS_im_norm.append(np.imag(value))
+            os.chdir(path_save)
+            np.savetxt('EELS_normalization'  + total_label + '_b%inm.txt' %(b_nm) ,[value], fmt='%.10f', delimiter='\t', header = header, encoding=None)
+            j = j + 1
+    else:
+        list_EELS_re_norm = []
         os.chdir(path_save)
-        np.savetxt('EELS_normalization'  + total_label + '_b%inm.txt' %(b_nm) ,[value], fmt='%.10f', delimiter='\t', header = header, encoding=None)
-        j = j + 1
-
+        for j in range(len(list_b_nm)):
+            b_nm = list_b_nm[j]    
+            listy = np.loadtxt('EELS_normalization'  + total_label + '_b%inm.txt' %(b_nm) , delimiter='\t', skiprows = 1)
+            list_EELS_re_norm.append(listy)
+      
     plt.figure(figsize=tamfig)
     plt.title(title,fontsize=tamtitle)
     plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
@@ -324,7 +333,7 @@ if normalization == 1:
         plt.plot(list_upper_eV_limit, np.array(list_EELS_re_tot[j])/list_EELS_re_norm[j] ,'.-',lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
      
     plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-    plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
+    #plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
     label_figure = 'EELS_int_energy_norm' + total_label
     # plt.xscale('log')
     os.chdir(path_save)

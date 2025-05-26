@@ -38,7 +38,7 @@ d_microns = 0.2 # microns
 d = d_microns
     
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 2
+ind = 1
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -61,6 +61,7 @@ else:
 
 list_b_nm = [50,100,200]
 list_b_nm = [0,10,50,80]
+list_b_nm = [0,10,50 ]
 
 total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
 
@@ -163,7 +164,7 @@ for j in range(len(list_b_nm)):
  
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
-label_figure = 'EELS_tot_' + material + label_Ee
+label_figure = 'EELS_tot_' + total_label
 # plt.xscale('log')
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  

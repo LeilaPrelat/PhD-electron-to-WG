@@ -33,7 +33,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 0 # zoom to the dispersion relation
+zoom = 1 # zoom in energy (if = 1 better definition of the modes in the dispersion relation) 
 
 if if_real_material == 1:
     
@@ -53,7 +53,7 @@ else:
     label_png = ''
     Im_epsi2 = 1e-1  ## value of EELS depends on this Im_epsi2
 
-delta = 1e-1 ## extra loss for the imaginary part of the permittivity
+delta = 1e-1  ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
@@ -70,7 +70,7 @@ L = 1 # lenght of propagation in microns
 # propagation<infty if im(epsi2)!=0
 
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 2
+ind = 1
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -96,7 +96,7 @@ omegac_0 = energy_0/aux
 ze_0 = 10*1e-3 ## microns 
 ze_0 = 25*1e-3 ## microns 
 ze_0 = 50*1e-3 ## microns 
-ze_nm = ze_0*1e3
+ze0_nm = ze_0*1e3
 
 if if_real_material == 1:
     epsi2 = epsilon2(energy_0,delta,material) 
@@ -124,7 +124,7 @@ list_u =  np.linspace(omegac_0*1e-5,omegac_0*50,N) ## integration of EELS is fro
 if if_real_material == 1:
     if d_microns == 0.2:
         if zoom == 0:
-            if ze_nm == 10:
+            if ze0_nm == 10:
                 list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
                 list_k_parallel = np.linspace(1e-1,80,N)    ## 
                 
@@ -141,7 +141,7 @@ if if_real_material == 1:
             list_k_parallel = np.linspace(1e-2,20,N)    ## 
     else:
         if zoom == 0:
-            if ze_nm == 10:
+            if ze0_nm == 10:
                 list_energy_eV_2 = np.linspace(1e-1,10,N)   ##  absorption part
                 list_k_parallel = np.linspace(1e-1,80,N)    ## 
         
@@ -360,11 +360,11 @@ def EELS_integrated_over_k_par_color_map(energy,ze_nm):
 
 list_EELS_int_re = []
 for energy in list_energy_eV_2: 
-    value = EELS_integrated_over_k_par_color_map(energy,ze_nm)
+    value = EELS_integrated_over_k_par_color_map(energy,ze0_nm)
     list_EELS_int_re.append(np.real(value))
  
 #%% 
-
+tamfig = [4, 3]
 labelx = r'Electron energy loss $\hbar\omega$ (eV)'
 labely = r'$\text{d}\Gamma_{\parallel}c/\text{d}y$'
 
@@ -388,10 +388,11 @@ plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.plot(list_energy_eV_2, np.array(list_EELS_int_re) ,'.-',lw = 1.5 )
 # plt.plot(list_u, np.array(list_EELS_im) ,'.-',lw = 1.5 )
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+plt.yticks(np.arange(0,0.015,0.0025))
 #plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 os.chdir(path_save)
 data_figure = title2
-total_label = label_png + label_Ee + '_zoom%i_ze%inm'  %(zoom,ze_nm) 
+total_label = label_png + label_Ee + '_zoom%i_ze%inm'  %(zoom,ze0_nm) 
 label_figure = 'EELS_2D' + material + total_label
 np.savetxt("info_of_" + label_figure + ".txt", [data_figure], fmt='%s')
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
@@ -441,20 +442,21 @@ if if_real_material == 0:
     Z_EELS_2 = np.array(Z_EELS_2)/np.max(Z_EELS_2)
     labelz = r'$\Gamma_{\parallel}$ (a.u.)'
 
+
 limits2 = [np.min(listx2) , np.max(listx2),np.min(listy2) , np.max(listy2)]
-delta = 1e-2 ## vmin can be zero
-delta = 0 ## vmin can be zero
+delta2 = 1e-2 ## vmin can be zero
+delta2 = 0 ## vmin can be zero
 cmap = plt.cm.hot  # define the colormap
 n_color = 45
 vmin12, vmax12 = np.nanmin(Z_EELS_2), np.nanmax(Z_EELS_2)
-vmin2 = vmin12 + delta
-vmax2 = vmax12 + delta
+vmin2 = vmin12 + delta2
+vmax2 = vmax12 + delta2
 if if_real_material == 0:   
     bounds2 =   np.logspace(np.log10(vmin12+1e-4), np.log10(vmax12), n_color) 
 else:
     bounds2 =   np.logspace(np.log10(vmin12 + 1e-3), np.log10(vmax12)  , n_color) 
     bounds2 =   np.logspace(np.log10(vmin2), np.log10(vmax2) , n_color) 
-    bounds2 =   np.linspace(vmin12, vmax12 - delta , n_color) 
+    bounds2 =   np.linspace(vmin12, vmax12 - delta2 , n_color) 
     # bounds =   np.logspace(np.log10(vmin1 +1e-2), np.log10(vmax1)  , n_color) 
 norm2 = mpl.colors.BoundaryNorm(bounds2, cmap.N)
 
@@ -463,14 +465,14 @@ plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 im_EELS_2 = plt.imshow(Z_EELS_2, extent = limits2, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm = norm2  ) 
-cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04, orientation = 'horizontal'  ,format = '%.3f')
+cbar = plt.colorbar(im_EELS_2, fraction=0.046, pad=0.04   ,format = '%.3f')
 cbar.ax.set_title(labelz,fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum , width=0.1, length = 0,pad = 2)
 # plt.xticks(np.arange(0,3.5,0.5))
 # plt.yticks(np.arange(0,175,25))
 # plt.xlim(np.min(listx2) , np.max(listx2))
 # plt.ylim(np.min(listy2) , np.max(listy2))
-plt.plot(listx2,np.ones(len(listx2))*ze_nm)
+plt.plot(listx2,np.ones(len(listx2))*ze0_nm)
 plt.yscale('log')
 data_figure = title1 + r', $\beta$ = %.2f' %(beta)
 #plt.title(data_figure,fontsize=tamtitle)
