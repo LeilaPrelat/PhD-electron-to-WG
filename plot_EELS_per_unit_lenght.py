@@ -70,7 +70,7 @@ L = 1 # lenght of propagation in microns
 # propagation<infty if im(epsi2)!=0
 
 ## list of electron energies from jga notes 2025-04-30 ##
-ind = 2
+ind = 1
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
@@ -78,9 +78,14 @@ label_Ee = '_Ee%i' %(ind+1)
 
 beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 gamma_e = 1/np.sqrt(1-epsi1*beta**2)
+ 
 
 N = 150
-N = 100
+if zoom == 0:
+    N = 500
+else:
+    N = 100
+N=200
 list_ze_nm =  np.linspace(0.1,200,N)
 if ind == 1:
     list_ze_nm =  np.logspace(-1,np.log10(200),N)
@@ -310,31 +315,31 @@ cbar = plt.colorbar(im_EELS, fraction=0.2, pad=0.04 , format = formatt  )
 
 plt.plot(np.array(listy)/(aux*beta),np.array(listy),'--',color = 'green')   ## electron velocity 
 plt.plot(np.array(listx),np.array(listx)*aux,'-',color = 'green')            ## light cone 1. omega = k_par/c
-if zoom == 1:
-    if if_real_material==0:     
+# if zoom == 1:
+#     if if_real_material==0:     
         
-        plt.plot(np.array(listx),np.array(listx)*aux/np.sqrt(Re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
-    else:
-        list_re_epsi2 = []
-        for y in listy: 
-            list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,delta,material))))
+#         plt.plot(np.array(listx),np.array(listx)*aux/np.sqrt(Re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}c
+#     else:
+#         list_re_epsi2 = []
+#         for y in listy: 
+#             list_re_epsi2.append(np.real(np.sqrt(epsilon2(y,delta,material))))
     
-        plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}
+#         plt.plot(np.array(listx),np.array(listx)*aux/np.array(list_re_epsi2),'-',color = 'green') ## light cone 2. omega = k_par/\sqrt{\epsilon_2}
 
 cbar.set_ticks(ticks_z)
 plt.xlim(np.nanmin(listx) , np.nanmax(listx))
 plt.ylim(np.nanmin(listy) , np.nanmax(listy))
 if zoom == 0:
     plt.xticks(np.arange(10,90,10))
-# if zoom == 0:
-#      plt.text(11, 4,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
-#      plt.text(11, 8,r"$k_\parallel = \omega/c$",color = 'green', rotation=52,fontsize = tamletra)
-# #     plt.xticks(np.arange(10,90,10),['','20','','40','','60','','80'])
-# #     plt.yticks(np.arange(1,11,1),['','2','','4','','6','','8','','10'])
+if zoom == 0:
+      plt.text(17, 2.7,r"$k_\parallel = \omega/v$",color = 'green', rotation=42,fontsize = tamletra)
+      plt.text(11, 3.8,r"$k_\parallel = \omega/c$",color = 'green', rotation=52,fontsize = tamletra)
+#     plt.xticks(np.arange(10,90,10),['','20','','40','','60','','80'])
+#     plt.yticks(np.arange(1,11,1),['','2','','4','','6','','8','','10'])
 
-# else:
-#       plt.text(0.5, 0.5,r"$k_\parallel = \omega/v$",color = 'green', rotation=52,fontsize = tamletra)
-#       plt.text(0.5, 1,r"$k_\parallel = \omega/c$",color = 'green', rotation=52,fontsize = tamletra)
+else:
+      plt.text(5, 0.8,r"$k_\parallel = \omega/v$",color = 'green', rotation=42,fontsize = tamletra)
+      plt.text(0.5, 0.6,r"$k_\parallel = \omega/c$",color = 'green', rotation=60,fontsize = tamletra)
 #     plt.xticks(np.arange(5,35,5),['5','10','15','20','25','30' ])
 #     plt.yticks(np.arange(0.5,3.5,0.5),['0.5','1.0','1.5','2.0','2.5','3.0' ])
 # plt.xticks(np.arange(10,60,10))
@@ -351,22 +356,20 @@ plt.show()
 #%%
 
 print('3-Verification: Plot the EELS integrated over kx as function of energy for a fixed ze')
-
+ 
 def EELS_integrated_over_k_par_color_map(energy,ze_nm):
     ze = ze_nm*1e-3
     if if_real_material == 1:
         epsi2 = epsilon2(energy,delta,material) 
     return np.real(EELS_integrated_over_kx_no_QE(energy,ze,d,beta,epsi2))
-
-list_EELS_int_re = []
-for energy in list_energy_eV_2: 
-    value = EELS_integrated_over_k_par_color_map(energy,ze0_nm)
-    list_EELS_int_re.append(np.real(value))
  
 #%% 
-tamfig = [4, 3]
+tamfig = [3.45, 3]
 labelx = r'Electron energy loss $\hbar\omega$ (eV)'
 labely = r'$\text{d}\Gamma_{\parallel}c/\text{d}y$'
+
+from mycolorpy import colorlist as mcp
+color1 = mcp.gen_color(cmap="hot",n=5)
 
 if if_real_material == 0:
     title1 = r'EELS for $h = %.1f$ $\mu$m, Re($\epsilon_2$) = %i, Im($\epsilon_2$) = %.1e' %(d,Re_epsi2,Im_epsi2)
@@ -380,16 +383,27 @@ if if_real_material == 0:
     ## to the maximum because the value is arbitrary 
     labely = r'$\Gamma_{\parallel}(k_\parallel)/\Gamma_{\text{max}}$'
 
+list_ze0nm = [1,10,50]
  
 plt.figure(figsize=tamfig)
-plt.title(title1 + '\n' + title2,fontsize=tamtitle)
+#plt.title(title1 + '\n' + title2,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
-plt.plot(list_energy_eV_2, np.array(list_EELS_int_re) ,'.-',lw = 1.5 )
+k = 0 
+for ze0_nm in list_ze0nm: 
+    list_EELS_int_re = []
+    for energy in list_energy_eV_2: 
+        value = EELS_integrated_over_k_par_color_map(energy,ze0_nm)
+        list_EELS_int_re.append(np.real(value))
+    
+    plt.plot(list_energy_eV_2, np.array(list_EELS_int_re) ,'-',lw = 1.5,color = color1[k], label = r'$z_{\text{e}} = %i$ nm' %(ze0_nm) )
+    k = k + 1
 # plt.plot(list_u, np.array(list_EELS_im) ,'.-',lw = 1.5 )
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.yticks(np.arange(0,0.015,0.0025))
-#plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
+# plt.yticks(np.arange(0,0.015,0.0025))
+plt.xticks(np.arange(0,12,2))
+plt.yticks(np.arange(0,0.03,0.005))
+plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 os.chdir(path_save)
 data_figure = title2
 total_label = label_png + label_Ee + '_zoom%i_ze%inm'  %(zoom,ze0_nm) 

@@ -366,7 +366,7 @@ def EELS_integrated_over_electron_trayectory(energy,b,d,beta,epsi2):
     Integral = quad(final_function_re, limit1, limit2)[0]
     
     return  Integral*factor_Gamma_norm_L0 
- 
+
 
 
 
@@ -426,13 +426,82 @@ def EELS_integrand_over_electron_trayectory(kx_norm_k,energy,b,d,beta,epsi2):
     factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*omega_sqrt) ## Gamma/L0 in unis of seconds/microns
     ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k
     
-    limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
+    # limit1 = 0.001*omegac ## variable is qx integral from0 omega/v
     
     # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
     # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
  
-    limit2 = 50*omegac
+    # limit2 = 50*omegac
  
     
     return  final_function_re*factor_Gamma_norm_L0 
+
+
+
+
+
+
+
+#EELS integrated over y-coordinate and over frequency
+# def EELS_integrated_over_electron_trayectory_and_energy(upper_eV_limit,b,d,beta):
+#     """    
+#     Parameters
+#     ----------
+#     upper_eV_limit : upper limit of the integral over energy in eV
+#     b: minimum position of electron along z coordinate in microns
+#     (most close to the plane)
+#     d: thickness of the plane in microns
+#     beta: v/c
+#     Returns
+#     -------
+#     Re(EELS) from paper 149 Eq. 25
+#     divided by L0 and in Gaussian units
+#     (1/microns) integrated over
+#     electron trajectory, over k_parallel
+#     and over energy
+#     (see notes)
+#     """
+#     # epsi2 = epsilon(hbw,material)
+
+
+    
+#     u = lambda kx_norm_k : np.sqrt(kx_norm_k**2 + (1/beta)**2) ## u = k_parallel/k with kx variable and ky = \omega/v
+
+#     ## for python add +1j*0 inside kz as \sqrt{ .. + 1j*0}  
+    
+#     argument = lambda kx_norm_k : np.sqrt(epsi1 - u(kx_norm_k)**2  + 1j*0) ## kz = sqrt(k^2 - k_parallel^2)
+#     kz1 = lambda kx_norm_k : argument(kx_norm_k) if np.imag(argument(kx_norm_k))>0  else  - argument(kx_norm_k)  
+    
+#     # if np.imag(kz1) <= 0:
+#     #     kz1 = - kz1
+#     epsi2 = lambda eV: epsilon2(eV,delta,material)
+#     omegac = lambda eV: eV/(aux)
+#     ## integration variable u = k_par_over_omegac (dimensionless)
+#     r123_s = lambda qx,eV:  Fresnel_coefficient(omegac(eV),u(qx),d,'s',epsi2(eV))
+#     r123_p = lambda qx,eV: Fresnel_coefficient(omegac(eV),u(qx),d,'p',epsi2(eV))
+
+#     final_function = lambda qx,eV : kz1(qx)*np.exp(2*1j*kz1(qx)*omegac(eV)*b)*(r123_s(qx,eV)*(qx*beta/kz1(qx))**2 - r123_p(qx,eV)/epsi1)/(u(qx)**(5/2)*np.sqrt(omegac(eV)))
+#     final_function_re = lambda qx,eV : np.real(final_function(qx,eV))
+
+#     gamma_e = 1/(np.sqrt(epsi1-beta**2))
+#     me_over_hb = 8.648539271254356*1e-9 ## seconds/microns^2
+    
+#     aux2 = np.sqrt(c)*hb ## add hb because the integral is over energy and not over frequency ------------------------------------- IMPORTANT 
+#     factor_Gamma_norm_L0  = alpha*2*np.sqrt(gamma_e)*np.sqrt(me_over_hb)/(np.pi*beta*aux2) ## Gamma/L0 in unis of seconds/microns
+#     ## the sqrt(omega) comes from the fact that in the integral I am using dimensionless variables instead of k_par, I use k_par/k --> part with omega is inside function
+#     ## because I am integrating over energy
+    
+#     ############ integration over k_parallel ##################
+#     k_par1 = lambda eV: 1e-4*omegac(eV) ## integration from 0
+    
+#     # limit2 = 1.3*(1/beta)   ## already zero for this upper limit
+#     # limit2 = np.real(np.sqrt(epsi2)) ## inside light cone
  
+#     k_par2 = lambda eV: 30*omegac(eV)
+#     ###########################################################
+#     ############ integration over energy ######################
+#     eV1, eV2 = 0.001, upper_eV_limit
+    
+#     Integral = dblquad(final_function_re, eV1, eV2, k_par1, k_par2)[0]
+    
+#     return  Integral*factor_Gamma_norm_L0 

@@ -1,0 +1,4 @@
+# EELS for $h = 0.2$ $\mu$m, $\epsilon_2 = \epsilon_{Si}(\omega)$, $v = 0.55c$, $mode$ = -2. Re(EELS) from paper 149 Eq. 25 divided by L0, in Gaussian units, integrated over kx and trajectory Leff
+0.0000000000
+10.0000000000
+50.0000000000

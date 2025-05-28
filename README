@@ -14,24 +14,33 @@ project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
 this is defined per unit lenght. Later we define an effective lenght propagation Leff
 and we integrate over the electron's trajectory.
 
-.- plot_EELS.py: EELS per unit lenght: see the guide modes for different Ee 
+------------------------ FIG 1 --------------------------------------------------------
+.- plot_EELS_per_unit_lenght.py: see the guide modes for different Ee (electron energy)
    plot the dEELS/dy (EELS per unit lenght, not integrated over e- trajectory)
 	- plot the EELS(k_parallel,w) to find the waveguide modes of
 		- real materials. import function \epsilon_2(\omega)
 		- fake materials adding Im(epsi_2) = 0.1 to make the EELS wider and see it better
 	- plot the EELS(ze,w) integrated over k_parallel. 
 		- ze is an important parameter and it determinates which modes are being excited
-
+---------------------------------------------------------------------------------------
+------------------------ FIG 2 : use Leff(k_par) --------------------------------------
 .- plot_EELS_integrated_over_kx.py : EELS's spectrum using Leff.
    plot EELS integrated over the y-coordinate by using Leff(k_par)=L0*f(k_par) and integrating over kx from 0 to infty
-		 - EELS/L0 vs omega
-		 
+		 - plot EELS(omega)/L0 vs omega
+	
 .- plot_EELS_integrated_over_kx_and_omega.py : total EELS.
-   plot EELS integrated over the y-coordinate using Leff(k_par), over k_parallel, and over omega
+   plot EELS integrated over the y-coordinate using Leff(k_par), over k_parallel, and over omega from 0 to omega_f
+  
    this double integral takes too much time. the integral limits of k_par depend on \omega because I integrate over k_x/k
    with k = omega/c. In addition, epsilon2(omega) depends on energy so is a double integral. 
- 
+   		 - plot EELS(omega_f)/L0 vs omega_f
+   		 - plot EELS(omega_f)/L0 vs omega_f normalized to the integral of omega from 0 to infty
+   		 
    -- will approximate the integrals to a sum to see premilinar results 
+
+.- plot_EELS_integrated_over_kx_and_1mode.py : same as before but the integral over omega is for the TM mode (highest)
+		 -  plot EELS/L0 vs b for the highest mode: -1 is the highest (TM1), -2 is the second highest (TM2), etc...
+---------------------------------------------------------------------------------------
 
 .- plot_compare_EELS_QE_approx.py : read issue#01
 
