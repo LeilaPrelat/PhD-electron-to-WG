@@ -20,8 +20,8 @@ from EELS import Fresnel_coefficient
 from permittivity_epsilon import epsilon as epsilon2
 
 create_data = 0      ## run data for the color maps 
-normalization = 1    ## normalize to the integral over omega from 0 to infty 
-load_normalization = 1
+normalization = 0    ## normalize to the integral over omega from 0 to infty 
+load_normalization = 0
     
 label_png = '_real'
 material = 'Si'   ## default
@@ -222,7 +222,7 @@ for j in range(len(list_b_nm)):
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.xticks(np.arange(0,12,2))
 plt.yticks(np.arange(0,120,20))
-plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
+#plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 label_figure = 'EELS_int_energy_' + total_label
 # plt.xscale('log')
 os.chdir(path_save)

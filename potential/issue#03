@@ -1,0 +1,3 @@
+2025/05/28 : 
+ scaling issue in the potential. when plot without Vreference, the potential is discontinuos near the surface of the conductor. 
+ see the V_reference inside d.h

@@ -63,10 +63,15 @@ else:
         list_energy_eV = np.linspace(0.1,4,N) ## cutoff energy
 
 list_b_nm  = np.linspace(0,50,51)
+list_b_nm  = np.linspace(0,30,31)
 total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
 # list_b_nm = [0,10,50]
-Nint = 100 ## N interpolation factor
+# list_b_nm = [0,10,30]
+Nint = 50 ## N interpolation factor
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta) 
+plot_figure = 0
+list_modes = [-1,-2,-3]
+# list_modes = [-1 ]
 
 #%%
  
@@ -113,7 +118,7 @@ def find_FWHW(mode):
     labelx = r'Electron energy loss $\hbar\omega$ (eV)'
     labely = r'$\Gamma_{\parallel}/L_0$ (fs/$\mu$m)'
     
-    plot_figure = 0
+
     
     print('1b- Find the FWHM of the highest mode for each b to integrate over it later')
     
@@ -272,10 +277,8 @@ plt.figure(figsize=tamfig)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 
-for mode in [-1,-2]: ## two highest modes
+for mode in list_modes: ## two highest modes
 
-    
-    os.chdir(path_save)
     if create_data == 1:
         
         list_b_nm, x_FHM1_tot, x_FHM2_tot = find_FWHW(mode)
@@ -301,15 +304,16 @@ for mode in [-1,-2]: ## two highest modes
             
             list_EELS_re_tot.append(np.real(value))
             list_EELS_im_tot.append(np.imag(value))
-            
+        
+        os.chdir(path_save)
         header = title + r', $mode$ = %i. Re(EELS) from paper 149 Eq. 25 divided by L0, in Gaussian units, integrated over kx and trajectory Leff' %(mode)
         np.savetxt('Pj_list_b_nm' + total_label + '_mode%i.txt' %(mode), list_b_nm, fmt='%.10f', delimiter='\t', header = header, encoding=None)
         np.savetxt('Pj_eV_FHM1' + total_label + '_mode%i.txt' %(mode), x_FHM1_tot, fmt='%.10f', delimiter='\t', header = header, encoding=None)
         np.savetxt('Pj_eV_FHM2' + total_label+ '_mode%i.txt'%(mode), x_FHM2_tot, fmt='%.10f', delimiter='\t', header = header, encoding=None)
         np.savetxt('Pj_value' + total_label+ '_mode%i.txt'%(mode), list_EELS_re_tot, fmt='%.10f', delimiter='\t', header = header, encoding=None)
         
-        
     else:
+        os.chdir(path_save)
         list_b_nm = np.loadtxt('Pj_list_b_nm' + total_label + '_mode%i.txt' %(mode),  delimiter='\t', skiprows = 1, encoding=None)
         list_EELS_re_tot = np.loadtxt('Pj_value' + total_label+ '_mode%i.txt'%(mode),delimiter='\t', skiprows = 1, encoding=None)
     

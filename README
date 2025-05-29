@@ -40,11 +40,17 @@ and we integrate over the electron's trajectory.
 
 .- plot_EELS_integrated_over_kx_and_1mode.py : same as before but the integral over omega is for the TM mode (highest)
 		 -  plot EELS/L0 vs b for the highest mode: -1 is the highest (TM1), -2 is the second highest (TM2), etc...
+
+------------------------ FIG 3 --------------------------------------------------------
+.- /potential : FIG 3 
+
 ---------------------------------------------------------------------------------------
 
 .- plot_compare_EELS_QE_approx.py : read issue#01
 
-.- /plots_EELS_permittivity_extra_loss_%.2f : we add an extra term for the Im(epsilon2), which is 0.01 or 0.10. The plots are here. 
+.- /plots_EELS_permittivity_extra_loss_%.2f : All figures and data. We add an extra term for the Im(epsilon2), which is 0.01 or 0.10.
+
+---------------------------------------------------------------------------------------
 
 GM 05/15/2025 comments: 
 	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
