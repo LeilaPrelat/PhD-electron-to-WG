@@ -64,17 +64,21 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
          - plot_potential_V_V0_fix_theta.py : same as before for a fixed value of theta = 5 mrad, to have cuts
          of the color map from the above code
                 
-         - plot_EELS_integrated_over_z_vs_omega.py : use the bem2d files for EELS per unit lenght per unit eV to integrated the
-         trajectory of the electron (from zmin(theta,V0) to infty) in combination with dz/V(z)... from c++ code
-         (see definition written in "Eq_P_integral_over_z.png")
+         - plot_EELS_integrated_over_z_vs_omega.py : use the bem2d files for EELS per unit lenght per unit eV to integrated
+         the trajectory of the electron (from zmin(theta,V0) to infty) in combination with dz/V(z)... from c++ code (see
+         definition written in "Eq_P_integral_over_z.png")
          ----------> Fig. 3b: EELS (1/eV) vs photon energy
                 
-         - plot_EELS_integrated_1mode_vs_theta.py : 
-         integration of Fig. 3b around the mode j as a function of theta for a fixed value of zmin (contour_level)
-         we are assuming the position of the peak does not vary with V0, theta
+         - plot_EELS_integrated_1mode_vs_theta.py : integration of Fig. 3b around the mode j as a function of theta for a
+         fixed value of zmin (contour_level)
+         IMPORTANT: we are assuming the position of the peak does not vary with V0, theta, so we fit the width of the highest
+         peak with an example of V0, theta and we defined a range of energy where we integrate the same peak in frequency for
+         many (V0,theta) such that they give a fixed b_min
          ----------> Fig. 3c: EELS vs theta for differents values of bmin
    	
-             
+         - plot_EELS_integrated_1mode_vs_theta_parallelization.py : same as before but finding the widht for each EELS 
+         and parallelizing (works in Windows: for the Rocket). not need at the end. 
+          
 .- /bem2D : B) EELS of ribbon (rectangular waveguide) made of Si with extra loss for different values of impact
    parameter (distance between the electron and the 0,0 placed at the center of the waveguide) 
 	

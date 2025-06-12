@@ -158,7 +158,7 @@ else:
 
 #%%
 
-labelx='Photon energy $\hbar\omega$ (eV)'
+labelx='Electron energy loss $\hbar\omega$ (eV)'
 labely='EELS per electron (1/eV)'
 
 plt.figure(figsize=tamfig)

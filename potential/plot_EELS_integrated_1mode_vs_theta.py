@@ -223,10 +223,10 @@ idx_x_right = (np.abs(list_energy0 - x_right)).argmin()
 closest_x_right = list_energy0[idx_x_right]
 
 
-# Integration by summation (small steps)
-x_integrate = np.arange(closest_x_left, closest_x_right + step, step)
-y_integrate = lorentzian(x_integrate, *popt)
-#integral_sum = np.sum(y_integrate * dx)
+# we are assuming the position of the peak does not vary with V0,theta
+# list_energy_over_mode = np.arange(x_left_peak_value[0], x_right_peak_value[0] + 0.005,0.005)
+list_energy_over_mode = np.arange(closest_x_left, closest_x_right + step, step)
+np.savetxt('list_energy_of_P' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), list_energy_over_mode, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
 def Pintegrated_over_energy(V0,theta_mrad,list_energy):
     theta = theta_mrad*1e-3
@@ -242,10 +242,12 @@ def Pintegrated_over_energy(V0,theta_mrad,list_energy):
     return P_integrated_over_energy*delta_energy
 
 
-# we are assuming the position of the peak does not vary with V0,theta
-# list_energy_over_mode = np.arange(x_left_peak_value[0], x_right_peak_value[0] + 0.005,0.005)
-np.savetxt('list_energy_of_P' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), x_integrate, fmt='%.10f', delimiter='\t', header = header, encoding=None)
-list_energy_over_mode = x_integrate
+# Integration by summation (small steps)
+x_integrate = np.arange(closest_x_left, closest_x_right + step, step)
+y_integrate = lorentzian(x_integrate, *popt)
+integral_sum = np.sum(y_integrate * step)
+P_example = Pintegrated_over_energy(V0,theta_mrad,list_energy_over_mode)
+print("Difference between using the Lorenztian to integrate over energy and using the data:",np.abs(integral_sum,P_example))
 
 #%%
 
