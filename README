@@ -61,7 +61,8 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
          - plot_potential_V_V0_theta_only_above_wg.py : sames as plot_potential_V_V0_theta.py but it finds the
          zmin above the wave-guide only (we want the electron above the wg) ----------> Fig. 3a: b_min(theta,V0)
                 
-         - plot_potential_V_V0_fix_theta.py : same as before for a fixed value of theta = 5 mrad
+         - plot_potential_V_V0_fix_theta.py : same as before for a fixed value of theta = 5 mrad, to have cuts
+         of the color map from the above code
                 
          - plot_integral_over_z_potential_using_bem2d.py : use the bem2d files for EELS per unit lenght per unit
          eV to integrated the trajectory of the electron (from zmin(theta,V0) to infty) 

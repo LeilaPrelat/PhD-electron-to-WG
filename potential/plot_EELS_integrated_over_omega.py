@@ -9,7 +9,7 @@ integrated over a peak
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from EELS_integrated import P_integrated_over_z, find_width_of_peak
+from EELS_integrated import P_integrated_over_z, find_width_of_peak, dy_cached
 import concurrent.futures
 
 create_data = 1
@@ -60,7 +60,7 @@ label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
 
 plot_figure = 0
 list_energy = np.arange(0.2,1.505,0.005)
-
+list_z_norm_a, listV_normV0 = dy_cached(bb,ss,dd,N) ## z/W and V(z)/V0 from c++ code
 
 #%%
 
@@ -131,7 +131,7 @@ def Pintegrated_over_z_vs_theta(V0,theta_mrad):
     z_min_val = bmin_vals0 + bb/2  
     list_P_integrated_over_z = []
     for energy in list_energy:
-        P_int_value = P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy, a, N)
+        P_int_value = P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy, a, N, list_z_norm_a, listV_normV0)
         print(energy,P_int_value,V0,theta)
         list_P_integrated_over_z.append(P_int_value)
     

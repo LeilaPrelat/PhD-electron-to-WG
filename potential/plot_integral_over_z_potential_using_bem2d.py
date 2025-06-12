@@ -13,7 +13,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from EELS_integrated import P_integrated_over_z, P_integrand_over_z, EELS_from_BEM_interpolated
+from EELS_integrated import P_integrated_over_z, P_integrand_over_z, EELS_from_BEM_interpolated, dy_cached
 
 create_data = 1
 
@@ -59,6 +59,7 @@ beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 energy_eV0 = 0.75
 list_energy = np.arange(0.2,1.505,0.005)
 list_energy = np.arange(0.2,3.005,0.005)
+list_z_norm_a, listV_normV0 = dy_cached(bb,ss,dd,N) ## z/W and V(z)/V0 from c++ code
 
 label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
 
@@ -120,7 +121,7 @@ listz_norm_a_BEM_interp = np.linspace(z_min_val, np.max(listz_norm_a_BEM),int(N*
 labelx='z/W'
 labely=r'$P(\hbar\omega,z)$'
 plt.figure(figsize=tamfig)    
-listP = P_integrand_over_z(listz_norm_a_BEM, theta, V0, Ee_electron, bb, ss, dd, energy_eV0, a, N)
+listP = P_integrand_over_z(listz_norm_a_BEM, theta, V0, Ee_electron, bb, ss, dd, energy_eV0, a, N , list_z_norm_a, listV_normV0)
 aux_eje_y = np.linspace(np.min(listP), np.max(listP),10)
 plt.plot(listz_norm_a_BEM,listP,'.-',label = r'$\hbar\omega = %.2f$ eV' %(energy_eV0))
 plt.plot(np.ones(10)*z_min_val,aux_eje_y,'-',color = 'black')
@@ -140,7 +141,7 @@ if create_data == 1:
     
     list_P_integrated_over_z = []
     for energy in list_energy:
-        P_int_value = P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy, a, N)
+        P_int_value = P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy, a, N, list_z_norm_a, listV_normV0)
         print(energy,P_int_value)
         list_P_integrated_over_z.append(P_int_value)
         

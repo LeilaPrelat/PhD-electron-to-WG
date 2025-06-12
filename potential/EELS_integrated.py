@@ -25,7 +25,9 @@ path_data = os.path.join(path_basic, 'bem_files_EELS')
 def run_dy_out(bb,ss,dd, N):
     os.chdir(path_basic)
     # Run the C++ program name dy.out and save a list of y and V
-    cmd = ["./dy.out", str(bb), str(ss), str(dd), str(N)]
+    absolute_path_windows = r"E:\Desktop\Leila\EELs_omega_vs_theta\PhD-electron-to-WG-main\PhD-electron-to-WG-main\potential\./dy.out" ## for rocket --> parallelization
+    cmd = [  absolute_path_windows , str(bb), str(ss), str(dd), str(N)] 
+#    cmd = ["./dy.out", str(bb), str(ss), str(dd), str(N)]
  
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
     lines = result.stdout.strip().split('\n')
@@ -79,7 +81,7 @@ def EELS_from_BEM_interpolated(energy_eV,a,h,N):
  
     return listz_norm_a_BEM, EELS_interp
     
-def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N):
+def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N, list_z_norm_a, listV_normV0 ):
     """
     Parameters
     ----------
@@ -93,6 +95,8 @@ def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energ
     energy_eV: photon energy hb*omega in eV
     a : width along x (nm)
     N : number of points in bem2d
+    list_z_norm_a : list of z/width from c++ code 
+    listV_normV0 : list of V(z)/V0 from c++ code
     Returns
     -------
     P(omega) integrand over z/a 
@@ -105,7 +109,7 @@ def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energ
     aux_function = beta*np.sin(theta)
     # aux_function = beta*theta
     
-    list_z_norm_a, listV_normV0 = dy_cached(bb,ss,dd,N)
+    # list_z_norm_a, listV_normV0 = dy_cached(bb,ss,dd,N)
     # list_z_norm_a_interp = np.linspace(1.1,2,int(N*Nint)) 
     V_interp =  interp1d(list_z_norm_a, listV_normV0)
     
@@ -125,7 +129,7 @@ def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energ
 
 
 ## integration over z as a sum 
-def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N):
+def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N , list_z_norm_a, listV_normV0):
     """
     Parameters
     ----------
@@ -139,6 +143,8 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
     energy_eV: photon energy hb*omega in eV
     a : width along x (nm)
     N : number of points in bem2d
+    list_z_norm_a : list of z/width from c++ code 
+    listV_normV0 : list of V(z)/V0 from c++ code
     Returns
     -------
     P(omega) integrated over z/a 
@@ -151,7 +157,7 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
     
     list_P = 0
     for value_z_norm_a in listz_norm_a_BEM_interp: ## the integration should be from z_min 
-        P_value = P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N)
+        P_value = P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N, list_z_norm_a, listV_normV0)
         list_P = list_P + P_value
     delta_z_norm_a = listz_norm_a_BEM_interp[1] - listz_norm_a_BEM_interp[0]
     
