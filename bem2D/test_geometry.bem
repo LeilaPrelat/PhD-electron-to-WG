@@ -1,0 +1,19 @@
+mu2=2  mu3=1  x0=0  y0=0 Eek=200e3
+
+
+a=200  h=400  s=10  N=300 ze=10
+
+epsilon mu2 Si_extra_loss.eps
+
+photon-energy 0.1 10 100
+grid 0 0 1 h/2+ze 0 1
+incident-electron-z Eek 0 h/2+ze  // 200 keV electron passing ze nm from surface
+include ribbon.bem 
+
+write-geometry geometry/geometry.dat
+
+//begin-calculation  
+//calc EELS datfiles_EELS/EELS.dat
+//end-calculation
+
+end

@@ -396,7 +396,7 @@ for ze0_nm in list_ze0nm:
         value = EELS_integrated_over_k_par_color_map(energy,ze0_nm)
         list_EELS_int_re.append(np.real(value))
     
-    plt.plot(list_energy_eV_2, np.array(list_EELS_int_re) ,'-',lw = 1.5,color = color1[k], label = r'$z_{\text{e}} = %i$ nm' %(ze0_nm) )
+    plt.plot(list_energy_eV_2, np.array(list_EELS_int_re) ,'-',lw = 1.5,color = color1[k], label = r'$b = %i$ nm' %(ze0_nm) )
     k = k + 1
 # plt.plot(list_u, np.array(list_EELS_im) ,'.-',lw = 1.5 )
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)

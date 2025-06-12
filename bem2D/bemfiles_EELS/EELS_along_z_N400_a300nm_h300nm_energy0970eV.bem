@@ -1,0 +1,30 @@
+
+N=400
+a=300
+h=300
+s=20
+E1eV=0.970
+
+delta=400
+NE=1
+mu2=2
+mu3=1
+x0=0 // rectangular waveguide center at 0,0
+y0=0
+EeV=200e3 // electron energy in eV
+zmax=h/2+delta
+zmin=(h/2)*1.0001
+Nz=400
+
+epsilon mu2 Si_extra_loss.eps       // Silicon rectangular rod 
+
+photon-energy E1eV E1eV NE
+grid 0 0 1 zmin zmax Nz     // position of the electron , dont put a grid with EELS, changes the position of the electron
+incident-electron-z EeV 0 h/2  // the electron is everywhere if I put a grid 
+include ribbon.bem  
+
+begin-calculation
+calc EELS datfiles_EELS/EELS_along_z_N400_a300nm_h300nm_energy0970eV.dat
+end-calculation                                                  
+
+end

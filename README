@@ -4,7 +4,7 @@ project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
 
 .- /figures: schemes and figures
 
-.- /permittivities: data of real materials, permittivities from Refractive Index (Si and Ge)
+.- /permittivities: data of real materials, permittivities from "Refractive Index" (Si and Ge)
 
 .- global_constants.py: define universal constants to import in all codes 
 
@@ -13,8 +13,9 @@ project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
 .- EELS.py: define functions for the EELS from Eq. 3 #paper 228, Eq. 25 paper 149.
 this is defined per unit lenght. Later we define an effective lenght propagation Leff
 and we integrate over the electron's trajectory.
-
------------------------- FIG 1 --------------------------------------------------------
+========================================================================================================================
+FIG 1: Guided Modes and EELS per Unit Length
+========================================================================================================================
 .- plot_EELS_per_unit_lenght.py: see the guide modes for different Ee (electron energy)
    plot the dEELS/dy (EELS per unit lenght, not integrated over e- trajectory)
 	- plot the EELS(k_parallel,w) to find the waveguide modes of
@@ -22,36 +23,99 @@ and we integrate over the electron's trajectory.
 		- fake materials adding Im(epsi_2) = 0.1 to make the EELS wider and see it better
 	- plot the EELS(ze,w) integrated over k_parallel. 
 		- ze is an important parameter and it determinates which modes are being excited
----------------------------------------------------------------------------------------
------------------------- FIG 2 : use Leff(k_par) --------------------------------------
+========================================================================================================================
+ FIG 2 : EELS Integrated Using Leff(k_parallel)
+========================================================================================================================
 .- plot_EELS_integrated_over_kx.py : EELS's spectrum using Leff.
    plot EELS integrated over the y-coordinate by using Leff(k_par)=L0*f(k_par) and integrating over kx from 0 to infty
-		 - plot EELS(omega)/L0 vs omega
+         - plot EELS(omega)/L0 vs omega
 	
 .- plot_EELS_integrated_over_kx_and_omega.py : total EELS.
    plot EELS integrated over the y-coordinate using Leff(k_par), over k_parallel, and over omega from 0 to omega_f
   
    this double integral takes too much time. the integral limits of k_par depend on \omega because I integrate over k_x/k
    with k = omega/c. In addition, epsilon2(omega) depends on energy so is a double integral. 
-   		 - plot EELS(omega_f)/L0 vs omega_f
-   		 - plot EELS(omega_f)/L0 vs omega_f normalized to the integral of omega from 0 to infty
+         - plot EELS(omega_f)/L0 vs omega_f
+         - plot EELS(omega_f)/L0 vs omega_f normalized to the integral of omega from 0 to infty
    		 
    -- will approximate the integrals to a sum to see premilinar results 
 
 .- plot_EELS_integrated_over_kx_and_1mode.py : same as before but the integral over omega is for the TM mode (highest)
-		 -  plot EELS/L0 vs b for the highest mode: -1 is the highest (TM1), -2 is the second highest (TM2), etc...
-
------------------------- FIG 3 --------------------------------------------------------
-.- /potential : FIG 3 
-
----------------------------------------------------------------------------------------
-
+         - plot EELS/L0 vs b for the highest mode: -1 is the highest (TM1), -2 is the second highest (TM2), etc..
+   this code is no need at the end
+========================================================================================================================
+FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
+========================================================================================================================
+.- /potential : A) potential of a rectangular waveguide with boundary conditions elements using "d.h" and "dy.cpp" to
+   execute it 
+   #issue03 problem with the c++ code "d.h" is solved
+    
+    	 - EELS_integrated : define functions: 
+    	 	- EELS_from_BEM_interpolated: interpolation of EELS from BEM as a function of z/width
+    	 	- P_integrand_over_z: combine EELS and potential results to construct P(omega,z) defined in 
+    	 	"Eq_P_integral_over_z.png"
+    	 	- P_integrated_over_z: same as before integrated over z/width
+    	 	- find_width_of_peak: find the width of a function with a peak, defined as a xmin,xmax the points
+    	 	where the functions decreases continuosly 
+    	 
+         - plot_potential_V_V0_theta_only_above_wg.py : sames as plot_potential_V_V0_theta.py but it finds the
+         zmin above the wave-guide only (we want the electron above the wg) ----------> Fig. 3a: b_min(theta,V0)
+                
+         - plot_potential_V_V0_fix_theta.py : same as before for a fixed value of theta = 5 mrad
+                
+         - plot_integral_over_z_potential_using_bem2d.py : use the bem2d files for EELS per unit lenght per unit
+         eV to integrated the trajectory of the electron (from zmin(theta,V0) to infty) 
+         ----------> Fig. 3b: EELS (1/eV) vs photon energy
+                
+         - plot_integral_over_mode_vs_theta.py : 
+         integration of Fig. 3b around the mode j as a function of theta for a fixed value of zmin (contour_level) 
+         ----------> Fig. 3c: EELS vs theta
+   
+             
+.- /bem2D : B) EELS of ribbon (rectangular waveguide) made of Si with extra loss for different values of impact
+   parameter (distance between the electron and the 0,0 placed at the center of the waveguide) 
+	
+	    -. /geometry : check the geometry of the rectangular waveguide
+	    -. /datfiles_EELS : check the convergency of the EELS for different N 
+	    
+	    - plot_EELS.py : check the convergency of the EELS as a function of N 
+	    
+	    - plot_field_electron_position.py : maps of the EELS 
+========================================================================================================================
+EXTRA :
+========================================================================================================================
 .- plot_compare_EELS_QE_approx.py : read issue#01
 
-.- /plots_EELS_permittivity_extra_loss_%.2f : All figures and data. We add an extra term for the Im(epsilon2), which is 0.01 or 0.10.
+.- /plots_EELS_permittivity_extra_loss_%.2f : All figures and data.
+   We add an extra term for the Im(epsilon2) (which is 0.01 or 0.10)
 
----------------------------------------------------------------------------------------
+.- /potential/extra: 
 
+         - "e.h" and "e.cpp": adding a dielectric of large thickness "d". not use at the end
+    	
+         - plot_potential_V_V0_theta.py: find zmin(theta,V0) for fixed d (gate-waveguide distance). this executes
+         dy.cpp, change the values of zmin and zmax
+    	         
+         - plot_potential_V_V0_d.py: find zmin(d,V0) for fixed theta_mrad
+         not necessary at the end 
+                 
+         - plot_potential_num_vs_analytical.py : compare the numerical bem solution of V(z) from the c++ code
+         with the analytical solution of a point charge. when d/a >> 1 (gate far from the waveguide compared to
+         its size), both solutions should match. Model the potential as V(z) = V0*f(z/a)*g(d/a) with
+         g(d/a) = C*log(a/2d)
+         not needed at the end 
+                 
+         - plot_analytical_correction.py : find the correction to the analytical expression that includes
+         the geometry of the waveguide --> find the \Delta function, which works better for smaller height/width
+         not needed at the end 
+                 
+         - plot_potential_with_without_substrate.py : compared the numerical with and without a substrate for
+         V(z)/V0 for z>z_min = bb/2 (outside the conductor)
+         not needed at the end 
+
+========================================================================================================================
+Log of Comments & Meetings :
+========================================================================================================================
 GM 05/15/2025 comments: 
 	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
 	-plot of dispersion relation was wrong. label x was kx instead of kpar 
@@ -70,3 +134,20 @@ GM 22/05/2025 comments:
 	- fig. 2: cut for a fixed ze. 
 	- fig. 3: wf up to 10 eV. 
 
+Meeting 03/06/2025 comments: 
+        - use bigger values of d (gate-waveguide distance) up to where the numerics match the analytical 
+        --> see plot_potential_num_vs_analytical.py 
+        h = 100 y a = 400, h/a = 0.25 
+	h = 200 y a = 400, h/a = 0.5
+	
+Important comment on figures/2025/06/03/2025-05-27 Fig3-1 draft.pdf:
+	V(z) decays slower for bigger d/a, then zmin is bigger
+	Increasing V0 to reduce V/V0 does not always work
+	because the term sin(theta)/V0 also reduces
+	Bigger V0 requires a bigger angle
+	
+	
+GM 2025/06/06 comments : 
+        - fig. 3 : we will not use the substrate at the end and d/W smaller is better
+        considering above comment
+        

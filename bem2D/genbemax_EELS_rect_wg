@@ -1,0 +1,61 @@
+#!/bin/bash
+# /////////////////// defining parameters for a rectangular wg . geometry in ribbon.bem /////////////////////////////
+# //     N   = the total number of parametrization points is N+50
+# //     a   = total width of wg     || x
+# //     h   = total thickness of wg  || y
+# //     s   = rounding radius of wg (s<t/2)
+# //     ze  = impact parameter is h/2+ze. ze distance between electron and wg surface 
+
+N=${1:-400}
+a=${2:-300}
+h=${3:-300}
+s=${4:-20}
+ze=${5:-50}
+ 
+NOFraw='EELS_zoom_N'${N}'_a'${a}'nm_h'${h}'nm_ze'${ze}'nm'
+NOF=$(echo $NOFraw | sed -e 's/\.//g')
+
+NOFfiles='_EELS'
+
+#bem file
+mkdir -p bemfiles${NOFfiles}
+mkdir -p datfiles${NOFfiles}
+mkdir -p shfiles${NOFfiles}
+
+cat > bemfiles${NOFfiles}/${NOF}.bem << EOF
+
+N=$N
+a=$a
+h=$h
+s=$s
+ze=$ze
+
+//E1eV=0.1
+//EfeV=2
+E1eV=0.7
+EfeV=0.8
+
+
+NE=500
+
+mu2=2
+mu3=1
+x0=0 // rectangular waveguide center at 0,0
+y0=0
+EeV=200e3 // electron energy in eV
+
+epsilon mu2 Si_extra_loss.eps       // Silicon rectangular rod 
+
+photon-energy E1eV EfeV NE
+grid 0 0 1 h/2+ze 0 1    // position of the electron , dont put a grid with EELS, changes the position of the electron
+incident-electron-z EeV 0 h/2+ze  // 200 keV electron passing ze nm from surface
+include ribbon.bem  
+
+begin-calculation
+calc EELS datfiles${NOFfiles}/${NOF}.dat
+end-calculation                                                  
+
+end
+EOF
+
+time ./bem2D bemfiles${NOFfiles}/${NOF}.bem

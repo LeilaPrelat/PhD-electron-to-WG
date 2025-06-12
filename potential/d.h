@@ -119,6 +119,7 @@ numero potential(numero x, numero y)
   }
 
   return val / V_reference;
+//  return val ;
 }
 
 

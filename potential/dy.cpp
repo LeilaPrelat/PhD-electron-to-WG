@@ -8,10 +8,13 @@ int main(int argc, char **argv)
   ss=atof(argv[2]);
   dd=atof(argv[3]);
   N =atoi(argv[4]);
-  numero ymax=bb/2+dd+70*dd;
+//  numero ymax=bb/2+dd+70*dd;
+//  numero ymax=bb/2+50*dd;
 //  numero ymin=-bb/2-dd;
-  numero ymin=bb/2;
-  numero dy=bb/200;
+  numero ymin=bb/2+1e-5; // a bit outside the surface so the correction \Delta does not diverge 
+  numero ymax=bb/2+dd*25;
+//  numero ymin=-6;
+  numero dy=(ymax-ymin)/100;
   if(argc>5) ymax=atof(argv[5]);
   if(argc>6) dy  =atof(argv[6]);
   if(argc>7) err =atof(argv[7]);
