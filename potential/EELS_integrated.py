@@ -14,9 +14,8 @@ import subprocess
 import numpy as np
 import os
 from scipy.interpolate import interp1d
-from scipy.signal import find_peaks, peak_widths
-import matplotlib.pyplot as plt
-
+from scipy.signal import find_peaks
+ 
 path_basic = os.getcwd()
 path_data = os.path.join(path_basic, 'bem_files_EELS')
 
@@ -25,9 +24,9 @@ path_data = os.path.join(path_basic, 'bem_files_EELS')
 def run_dy_out(bb,ss,dd, N):
     os.chdir(path_basic)
     # Run the C++ program name dy.out and save a list of y and V
-    absolute_path_windows = r"E:\Desktop\Leila\EELs_omega_vs_theta\PhD-electron-to-WG-main\PhD-electron-to-WG-main\potential\./dy.out" ## for rocket --> parallelization
-    cmd = [  absolute_path_windows , str(bb), str(ss), str(dd), str(N)] 
-#    cmd = ["./dy.out", str(bb), str(ss), str(dd), str(N)]
+#    absolute_path_windows = r"E:\Desktop\Leila\EELs_omega_vs_theta\PhD-electron-to-WG-main\PhD-electron-to-WG-main\potential\./dy.out" ## for rocket --> parallelization
+#    cmd = [  absolute_path_windows , str(bb), str(ss), str(dd), str(N)] 
+    cmd = ["./dy.out", str(bb), str(ss), str(dd), str(N)]
  
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
     lines = result.stdout.strip().split('\n')
@@ -164,19 +163,21 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
     return list_P*delta_z_norm_a
 
  
-def find_width_of_peak(listx,listy):
+def find_width_of_peak(listx,listy,height):
     """
     Parameters
     ----------
     listx : x array
     listy : y array
+    height : controls how many peaks we select, if height = np.max(listy) it only
+    finds the maximum
     Returns
     -------
     width of the peak as a array 
     x_left, x_right
     """
     
-    print('5-Load the EELS integrated over z/W as a function of energy and find the width of the highest peak')
+#    print('5-Load the EELS integrated over z/W as a function of energy and find the width of the highest peak')
     
     Nint = 10
     ######## interpolation of the data ######################################
@@ -191,7 +192,7 @@ def find_width_of_peak(listx,listy):
         else:
             y_int2.append(yy)
         
-    height = np.max(y_int2)/3 ## real modes --> interpolation creates fake peaks with small intensity, a way
+#    height = np.max(y_int)/20 ## real modes --> interpolation creates fake peaks with small intensity, a way
     # to get rid of them is to specify a big height, then only the real peaks (without interpolation) will remain 
     ######## find peaks ####################################################
     peaks, _ = find_peaks(listy, height=height )
@@ -229,10 +230,19 @@ def find_width_of_peak(listx,listy):
 
     # results_full_xmin_index = np.array(results_full_xmin_index)
     # results_full_xmax_index = np.array(results_full_xmax_index)
+    
+    listy_peaks = []
+    listx_peaks = []
+    for peak in peaks: 
+        listy_peaks.append(listy[peak])
+        listx_peaks.append(listx[peak])
+    
     ## IMPORTANT: sort the y-values from minimum to maximum --> mode = -1 is the highest (last one), mode = -2 is the previous one, and so on, .. 
-    sorted_listy = np.sort(listy[peaks])  
-    sorted_index = np.argsort(listy[peaks]) 
-    sorted_listx = listx[peaks[sorted_index]]
+    sorted_index = np.argsort(listy_peaks)
+    listy_peaks_sorted = np.sort(listy_peaks) 
+    listx_peaks_sorted = listx[peaks[sorted_index]]
+ 
+
     # sorted_xmin = x_int[results_full_xmin_index[sorted_index]]
     # sorted_xmax = x_int[results_full_xmax_index[sorted_index]]
     
@@ -241,30 +251,4 @@ def find_width_of_peak(listx,listy):
     #     delta_x = sorted_xmax[j] - sorted_xmin[j]
     #     witdh.append(delta_x)
     
-    labelx='Photon energy $\hbar\omega$ (eV)'
-    labely='EELS per electron (1/eV)'
- 
-    tamfig = [4.5,3.5]
-    tamletra = 13
-    tamtitle  = tamletra - 3
-    tamnum = tamletra
-    labelpady = 3
-    labelpadx = 2
-    pad = 2.5
-    dpi = 500
-    
-    print('5b-Find the wmin and wmax of the mode = mode')
-    plot_figure = 1
-    if plot_figure == 1:
-        plt.figure(figsize=tamfig)
-        plt.title('',fontsize=tamtitle)
-        plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
-        plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
-        plt.plot(x_int, y_int2 ,'--',lw = 1.5 )
-        plt.plot(listx, listy ,'-' )
-        plt.plot(sorted_listx, sorted_listy, "x")
-        plt.plot(x_left_peak_value, np.ones(len(x_left_peak_value))*0, "x",color = 'blue')
-        plt.plot(x_right_peak_value, np.ones(len(x_right_peak_value))*0, "x",color = 'red')
-        plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-    
-    return x_left_peak_value, x_right_peak_value
+    return x_left_peak_value, x_right_peak_value, listx_peaks_sorted, listy_peaks_sorted
