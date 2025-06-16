@@ -12,7 +12,7 @@ h=${3:-300}
 s=${4:-20}
 EeV=${5:-0.75}
  
-NOFraw='EELS_along_z_N'${N}'_a'${a}'nm_h'${h}'nm_energy'${EeV}'eV'
+NOFraw='EELS_along_z_N'${N}'_a'${a}'nm_h'${h}'nm_s'${s}'nm_energy'${EeV}'eV'
 NOF=$(echo $NOFraw | sed -e 's/\.//g')
 
 NOFfiles='_EELS'

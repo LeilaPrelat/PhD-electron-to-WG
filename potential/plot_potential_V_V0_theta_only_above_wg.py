@@ -55,15 +55,15 @@ def run_dy_out(bb,ss,dd, N):
 
     return list_z, list_V
 
-Nvals = 400
+Nvals = 300
 me_c2_eV = 510998.95069  ## me*c**2 in eV
 Ee_electron_keV = 200
 Ee_electron = Ee_electron_keV*1e3
 label_Ee = '_Ee%ikeV' %(Ee_electron_keV)    
 
-bb = 1
+bb = 0.75
 if bb== 1:
-    ss = 20/300 ## W = 300
+    ss = 20/300 ## W = 300. ## I DIDNT CHANGE SS IN THE BEMAX FILES 
 else:
     ss = 20/400 ## W = 400
 dd = 5
@@ -205,9 +205,9 @@ print('3-Color map of zmin as a function of V0 and theta, for zmin (electron pos
 # Define ranges for V0 and theta
 V0_vals = np.linspace(0.005, 5, Nvals)
 V0_vals = np.linspace(0.1, 3, Nvals)
-V0_vals = np.linspace(0.01, 0.25, Nvals)
+V0_vals = np.linspace(0.01, 1, Nvals)
 theta_mrad_vals = np.linspace(0.01, 5, Nvals)
-theta_mrad_vals = np.linspace(0.001, 1, Nvals)
+theta_mrad_vals = np.linspace(0.1, 2.5, Nvals)
 # theta_mrad_vals = np.linspace(0.1, 1, Nvals)
 limits1 = [np.min(V0_vals) , np.max(V0_vals),np.min(theta_mrad_vals) , np.max(theta_mrad_vals)]
 
@@ -233,7 +233,7 @@ for i, V0 in enumerate(V0_vals):
 
 #%%
 
-tamfig2 = [5, 3]
+ 
 n_color = 10
 vmin1 , vmax1 = np.nanmin(X_vals), np.nanmax(X_vals)
 cmap = plt.cm.RdBu  # define the colormap
@@ -246,26 +246,26 @@ else:
     bounds1 =  [vmin1,0.1,0.25,0.5,1]
     bounds1 =   np.logspace(np.log10(0.1), np.log10(100) , 10) 
 
-width=300
+# width=300
 norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
-norm2 = mpl.colors.BoundaryNorm(bounds1*width, cmap.N)
+# norm2 = mpl.colors.BoundaryNorm(bounds1*width, cmap.N)
 # Mark specific values (e.g., contours at Z = 0.2, 0.4, 0.6)
 contour_levels = [0.15,   0.5]
 
-plt.figure(figsize=tamfig2)
+plt.figure(figsize=tamfig)
 #plt.title(title1 + r', $E_{\text{e}}$ = %i keV' %(Ee_electron_keV),fontsize=tamtitle)
 im_show = plt.imshow(np.transpose(X_vals), extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm1  ) 
 # contours = plt.contour(V0_vals, theta_mrad_vals, np.transpose(X_vals), levels=contour_levels, colors='green', linestyles='dashed')
 # plt.clabel(contours, fmt='%.2f', colors='green',fontsize=tamletra)  # Label contours
 
-cbar = plt.colorbar(im_show, fraction=0.046, pad=0.15   ,format = '%.2f') 
-im_show2 = plt.imshow(np.transpose(X_vals)*width, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm2  ) 
-cbar2 = plt.colorbar(im_show2, fraction=0.046, pad=0.04, orientation = 'vertical')
+cbar = plt.colorbar(im_show, fraction=0.046, pad=0.04   ,format = '%.2f') 
+# im_show2 = plt.imshow(np.transpose(X_vals)*width, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm2  ) 
+# cbar2 = plt.colorbar(im_show2, fraction=0.046, pad=0.04, orientation = 'vertical')
 
 cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra-1)
 cbar.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
-cbar2.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
-cbar2.ax.set_title(r'$b_{\text{min}}$ (nm)',fontsize=tamletra-1)
+# cbar2.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+# cbar2.ax.set_title(r'$b_{\text{min}}$ (nm)',fontsize=tamletra-1)
 # plt.xticks(np.arange(0,np.max(V0_vals)+0.5,0.5))
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)

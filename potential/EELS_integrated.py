@@ -56,13 +56,14 @@ def dy_cached(bb,ss,dd, N):
         dy_cache[dd] = run_dy_out(bb,ss,dd, N)
     return dy_cache[dd]
 
-def EELS_from_BEM_interpolated(energy_eV,a,h,N):
+def EELS_from_BEM_interpolated(energy_eV,a,h,s,N):
     """
     Parameters
     ----------
     energy_eV: photon energy hb*omega in eV
     a : width along x (nm)
     h : thickness along z in nm
+    s : rounding radius of wg in nm
     N : number of points in bem2d
     Returns
     -------
@@ -72,6 +73,7 @@ def EELS_from_BEM_interpolated(energy_eV,a,h,N):
     energy_label = 'energy%.3feV' %(energy_eV)
     pp = energy_label.replace('.','')
     name1 = 'EELS_along_z_N%i_a%inm_h%inm'%(N,a,h) + '_' + pp + '.dat'
+    name2 = 'EELS_along_z_N%i_a%inm_h%inm_s%inm'%(N,a,h,s) + '_' + pp + '.dat'
     tabla1 = np.loadtxt(name1, delimiter=' ',dtype=None)
     tabla1_2 = np.transpose(tabla1)
     
@@ -126,7 +128,8 @@ def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energ
     # print(arg_denominator)
 
     h = bb*a
-    listz_norm_a_BEM, EELS_interp = EELS_from_BEM_interpolated(energy_eV,a,h,N)
+    s = ss*a
+    listz_norm_a_BEM, EELS_interp = EELS_from_BEM_interpolated(energy_eV,a,h,s,N)
 
     EELS_value = EELS_interp(value_z_norm_a) 
     
@@ -161,7 +164,8 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
     """
     Nint = 10
     h = bb*a
-    listz_norm_a_BEM, EELS_interp = EELS_from_BEM_interpolated(energy_eV,a,h,N)
+    s = ss*a
+    listz_norm_a_BEM, EELS_interp = EELS_from_BEM_interpolated(energy_eV,a,h,s,N)
     listz_norm_a_BEM_interp = np.linspace(z_min_val, np.max(listz_norm_a_BEM),int(N*Nint)) 
     
     list_P = 0

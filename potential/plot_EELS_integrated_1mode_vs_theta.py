@@ -50,7 +50,7 @@ values = tamfig,tamtitle,tamletra,tamnum,labelpadx,labelpady,pad,deltax,deltay
 print('1-Define the parameters')
 
 ############ parameters for bem2d ############
-a = 300 ## nm
+a = 400 ## nm
 h = 300 ## nm
 s = 20  ## nm
 ############ parameters for c++ ############
@@ -77,8 +77,10 @@ V0_vals = np.loadtxt('V0' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\
 theta_mrad_vals = np.loadtxt('theta_mrad' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\t', skiprows = 1)
 
 # find the index closest to the values we want for bmin 
-bmin_vals0 = 0.15
-bmin_vals0 = 0.2
+if a == 300: 
+    bmin_vals0 = 0.2
+elif a == 400: 
+    bmin_vals0 = 0.15    ## same bmin = 60 nm
 bmin_vals1 = 0.25
 bmin_vals3 = 0.5
 z_min_val = bmin_vals0 + bb/2 
@@ -121,7 +123,7 @@ for index in index_sorted:
     listy_sorted.append(list_theta_fix_bmin[index])
 
 plt.clabel(contours, fmt='%.2f', colors='green',fontsize=tamletra)  # Label contours
-cbar = plt.colorbar(im_show, fraction=0.046, pad=0.04   ,format = '%.2f') 
+cbar = plt.colorbar(im_show, fraction=0.046, pad=0.15   ,format = '%.2f') 
 im_show2 = plt.imshow(np.array(bmin_vals)*a, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm2  )  ## second colorbar with real units 
 cbar2 = plt.colorbar(im_show2, fraction=0.046, pad=0.04, orientation = 'vertical')
 cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra-1)
@@ -161,13 +163,18 @@ if create_data == 1:
         list_P_integrated_over_z.append(P_int_value)
     
     os.chdir(path_data)
-    np.savetxt('P_integrated_over_z' + label_Ee + all_info_label, list_P_integrated_over_z, fmt='%.10f', delimiter='\t', header = header, encoding=None)
-    np.savetxt('list_energy_of_P' + label_Ee + all_info_label, list_energy0, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    table_P_integrated_over_z = np.transpose([list_energy0, list_P_integrated_over_z])
+    header0 = 'energy (eV)    P(omega), '
+    np.savetxt('P_integrated_over_z' + label_Ee + all_info_label, table_P_integrated_over_z, fmt='%.10f', delimiter='\t', header = header0 + header, encoding=None)
+    # np.savetxt('P_integrated_over_z' + label_Ee + all_info_label, list_P_integrated_over_z, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    # np.savetxt('list_energy_of_P' + label_Ee + all_info_label, list_energy0, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
 else:
     os.chdir(path_data)
-    list_P_integrated_over_z = np.loadtxt('P_integrated_over_z' + label_Ee + all_info_label, delimiter='\t', skiprows=1)
-    list_energy0 = np.loadtxt('list_energy_of_P' + label_Ee + all_info_label,   delimiter='\t', skiprows=1)
+    table_P_integrated_over_z = np.loadtxt('P_integrated_over_z' + label_Ee + all_info_label, delimiter='\t', skiprows=1)
+    table_P_integrated_over_z2 = np.transpose(table_P_integrated_over_z)
+    list_energy0 = table_P_integrated_over_z2[0]
+    list_P_integrated_over_z = table_P_integrated_over_z2[1]
     
 #%%
 
@@ -243,7 +250,7 @@ closest_x_right = list_energy0[idx_x_right]
 # we are assuming the position of the peak does not vary with V0,theta
 # list_energy_over_mode = np.arange(x_left_peak_value[0], x_right_peak_value[0] + 0.005,0.005)
 list_energy_over_mode = np.arange(closest_x_left, closest_x_right + step, step)
-np.savetxt('list_energy_of_P' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), list_energy_over_mode, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+np.savetxt('list_energy_of_mode1_for_P_integration' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), list_energy_over_mode, fmt='%.10f', delimiter='\t', header = header, encoding=None)
 
 def Pintegrated_over_energy(V0,theta_mrad,list_energy):
     theta = theta_mrad*1e-3
@@ -272,7 +279,9 @@ print('7-Integrate over omega from x_left_peak, x_right_peak as a function of (t
 
 if create_important_data == 1: 
     list_Pvalue = []
-    for j in range(len(listx_sorted)): 
+    Ntot = len(listx_sorted)
+    
+    for j in range(Ntot): 
         V0 = listx_sorted[j]
         theta_mrad = listy_sorted[j]
         Pvalue = Pintegrated_over_energy(V0,theta_mrad,list_energy_over_mode)
@@ -280,10 +289,15 @@ if create_important_data == 1:
         print(j,V0,theta_mrad,Pvalue)
     
     header = title1 + ', ' + title2  
-    np.savetxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), list_Pvalue, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    ind_max = len(list_Pvalue)
+    table_P_integrated_over_energy = np.transpose([listx_sorted[0:ind_max],listy_sorted[0:ind_max], list_Pvalue])
+    header1 = 'V0 (eV)    theta (mrad)    P_mode1, '
+    np.savetxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
     
 else:
-    list_Pvalue = np.loadtxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), delimiter='\t', skiprows = 1, encoding=None)
+    table_P_integrated_over_energy = np.loadtxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), delimiter='\t', skiprows = 1, encoding=None)
+    table_P_integrated_over_energy_2 = np.transpose(table_P_integrated_over_energy)
+    list_Pvalue = table_P_integrated_over_energy_2[0]
     # list_P_integrated_over_z_tot = []
     # with concurrent.futures.ProcessPoolExecutor(max_workers=6) as executor:
     #     futures = [executor.submit(Pintegrated_over_z_vs_theta, V0,theta_mrad) for V0,theta_mrad in zip(listx_sorted,listy_sorted)]
@@ -305,7 +319,7 @@ fig, ax1 = plt.subplots(figsize=tamfig)
 #ax1.title(title1,fontsize=tamtitle)
 ax1.set_xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 ax1.set_ylabel(labely,fontsize=tamletra,labelpad =labelpady)
-ax1.plot(listy_sorted, list_Pvalue ,'.-' ,label = r'$b_{\text{min}}/W = %.2f$' %(bmin_vals0))
+ax1.plot(listy_sorted[0:ind_max], list_Pvalue ,'.-' ,label = r'$b_{\text{min}}/W = %.2f$' %(bmin_vals0))
 
 # Create second x-axis sharing the same y-axis
 ax2 = ax1.twiny()

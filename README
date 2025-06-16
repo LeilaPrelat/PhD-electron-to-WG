@@ -75,11 +75,14 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
          peak with an example of V0, theta and we defined a range of energy where we integrate the same peak in frequency for
          many (V0,theta) such that they give a fixed b_min
          ----------> Fig. 3c: EELS vs theta for differents values of bmin
+   	 -------> write this code for Rocket. 
+   	 * Important for windows/Rockets* : compile the "dy.cpp" in terminal as "dy.exe" + add the absolute path in "run_dy_out"  
    	
-   	**********LATER: not sure if its better to interpolate the EELS_integrated_over_z vs list_energy to **********
+   	**********LATER: not sure if its better to interpolate the EELS_integrated_over_z vs list_energy too **********
    	
          - plot_EELS_integrated_1mode_vs_theta_parallelization.py : same as before but finding the width for each EELS 
-         and parallelizing (works in Windows: for the Rocket). not need at the end. 
+         and parallelizing (works in Windows: for the Rocket). not need at the end because in windows the 
+         parallelization is really slow. 
           
 .- /bem2D : B) EELS of ribbon (rectangular waveguide) made of Si with extra loss for different values of impact
    parameter (distance between the electron and the 0,0 placed at the center of the waveguide) 
