@@ -154,7 +154,7 @@ if create_data == 1:
 else:
     os.chdir(path_data)
     list_P_integrated_over_z = np.loadtxt('P_integrated_over_z' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\t', skiprows = 1)
-    list_energy = np.loadtxt('list_energy_of_P' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\t', skiprows = 1) 
+#    list_energy = np.loadtxt('list_energy_of_P' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\t', skiprows = 1) 
 
 #%%
 
@@ -166,6 +166,7 @@ plt.title(title1 + '\n' + title2,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.plot(list_energy,list_P_integrated_over_z,'.-')
+plt.xticks(np.arange(0.5,3.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.tight_layout()
 os.chdir(path_basic)

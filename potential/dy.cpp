@@ -13,6 +13,7 @@ int main(int argc, char **argv)
 //  numero ymin=-bb/2-dd;
   numero ymin=bb/2+1e-5; // a bit outside the surface so the correction \Delta does not diverge 
   numero ymax=bb/2+dd*25;
+//  numero ymax=60;
 //  numero ymin=-6;
   numero dy=(ymax-ymin)/100;
   if(argc>5) ymax=atof(argv[5]);

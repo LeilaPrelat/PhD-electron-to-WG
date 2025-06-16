@@ -12,8 +12,11 @@ import matplotlib.pyplot as plt
 from EELS_integrated import P_integrated_over_z, dy_cached
 # import concurrent.futures
 from scipy.optimize import curve_fit
+import matplotlib as mpl
 
-create_data = 0
+
+create_data = 1
+create_important_data = 1
 path_basic = os.getcwd()
 path_data = os.path.join(path_basic, 'bem_files_EELS')
 
@@ -52,7 +55,7 @@ h = 300 ## nm
 s = 20  ## nm
 ############ parameters for c++ ############
 bb = h/a ## h/a ## zmin is bb/2 (upper surface of the wg)
-ss = 0.1
+ss = s/a
 dd = 5   ## distance to the plane
 N = 400
 Ee_electron_keV = 200
@@ -60,19 +63,22 @@ Ee_electron = Ee_electron_keV*1e3
 label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
 
 step = 0.005
-list_energy0 = np.arange(0.2,1.505,step) ## we will reduce this energy list to the energies around the first peak to integrate over \omega
+list_energy0 = np.arange(0.2,1.5 + step,step) ## we will reduce this energy list to the energies around the first peak to integrate over \omega
+list_energy0 = np.arange(0.2,3 + step,step)
 list_z_norm_a, listV_normV0 = dy_cached(bb,ss,dd,N) ## import z/W and V(z)/V0 from c++ code
 
 #%%
 
 print('2-Load data of z_min from the code plot_potential_V_V0_theta_only_above_wg.py')
 
+tamfig2 = [5, 3]
 bmin_vals = np.loadtxt('bmin' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb),  delimiter='\t', skiprows = 1)
 V0_vals = np.loadtxt('V0' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\t', skiprows = 1)
 theta_mrad_vals = np.loadtxt('theta_mrad' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), delimiter='\t', skiprows = 1)
 
 # find the index closest to the values we want for bmin 
 bmin_vals0 = 0.15
+bmin_vals0 = 0.2
 bmin_vals1 = 0.25
 bmin_vals3 = 0.5
 z_min_val = bmin_vals0 + bb/2 
@@ -82,16 +88,21 @@ print('4-Plot b_min as a function of (V0,theta) and see if they match with the c
 title1 = r'$W$ = %i nm, $h$ = %i nm, $s$ = %i nm, $d/W = %i$, $E_{\rm e}$ = %i keV' %(a,h,s,dd,Ee_electron_keV)
 
 limits1 = [np.min(V0_vals) , np.max(V0_vals),np.min(theta_mrad_vals) , np.max(theta_mrad_vals)]
-cmap = plt.cm.hot  # define the colormap
+cmap = plt.cm.RdBu   # define the colormap
 
 # Create contour plot
 contour_levels = [bmin_vals0]
 
+vmin1 , vmax1 = np.nanmin(bmin_vals), np.nanmax(bmin_vals)
+bounds1 =  [vmin1,0.1,bmin_vals0,0.5,1]
+bounds1 =   np.logspace(np.log10(0.1), np.log10(100) , 10) 
+norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
+norm2 = mpl.colors.BoundaryNorm(bounds1*a, cmap.N) ## second colorbar with real units 
 
-plt.figure(figsize=tamfig)
+plt.figure(figsize=tamfig2)
 #plt.title(title1 + r', $E_{\text{e}}$ = %i keV' %(Ee_electron_keV),fontsize=tamtitle)
-im_show = plt.imshow(bmin_vals, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'   ) 
-contours = plt.contour(V0_vals, theta_mrad_vals,bmin_vals, levels=contour_levels, colors='green', linestyles='dashed')
+im_show = plt.imshow(bmin_vals, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' , norm = norm1  ) 
+contours = plt.contour(V0_vals, theta_mrad_vals, bmin_vals, levels=contour_levels, colors='green', linestyles='dashed' )
 
 # Access the contour data
 allsegs = contours.collections[0].get_paths()  # Assuming only one contour collection
@@ -110,11 +121,15 @@ for index in index_sorted:
     listy_sorted.append(list_theta_fix_bmin[index])
 
 plt.clabel(contours, fmt='%.2f', colors='green',fontsize=tamletra)  # Label contours
-cbar = plt.colorbar(im_show, fraction=0.046, pad=0.04   ,format = '%i') 
-cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra)
-cbar.ax.tick_params(labelsize = tamnum, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar = plt.colorbar(im_show, fraction=0.046, pad=0.04   ,format = '%.2f') 
+im_show2 = plt.imshow(np.array(bmin_vals)*a, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm2  )  ## second colorbar with real units 
+cbar2 = plt.colorbar(im_show2, fraction=0.046, pad=0.04, orientation = 'vertical')
+cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra-1)
+cbar.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar2.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar2.ax.set_title(r'$b_{\text{min}}$ (nm)',fontsize=tamletra-1)
 # plt.xticks(np.arange(0,np.max(V0_vals)+0.5,0.5))
-plt.plot(listx_sorted,listy_sorted,'-',color = 'blue')
+#plt.plot(listx_sorted,listy_sorted,'--',color = 'blue')
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
@@ -140,8 +155,9 @@ all_info_label = '_dd%i_hh%.2f_V0%.2feV_theta%.2fmrad_bmin%.2f.txt' %(dd,bb,V0,t
 if create_data == 1:
     list_P_integrated_over_z = []
     for energy in list_energy0:
-        print(energy)
+ 
         P_int_value = P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy, a, N, list_z_norm_a, listV_normV0)
+        print(energy,P_int_value)
         list_P_integrated_over_z.append(P_int_value)
     
     os.chdir(path_data)
@@ -183,12 +199,12 @@ x_left = x0_fit - delta
 x_right = x0_fit + delta
 bottom_width = x_right - x_left
 
-title2 = r'$V_0$ = %.2f eV, $\theta$ = %.2f mrad' %(V0,theta_mrad)
+title2 = r'$V_0$ = %.3f eV, $\theta$ = %.2f mrad' %(V0,theta_mrad)
  
 plot_figure = 1
 if plot_figure == 1:
     
-    labelx='Photon energy $\hbar\omega$ (eV)'
+    labelx='Electron energy loss $\hbar\omega$ (eV)'
     labely='EELS per electron (1/eV)'
      
     tamfig = [4.5,3.5]
@@ -200,21 +216,22 @@ if plot_figure == 1:
     pad = 2.5
     dpi = 500
     
-    plt.title(title1 + ', ' + title2,fontsize=tamtitle)
+    
     plt.figure(figsize=tamfig)
-    plt.title('',fontsize=tamtitle)
+    plt.title(title1 + '\n' + title2,fontsize=tamtitle)
     plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
     plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
     plt.plot(list_energy0, list_P_integrated_over_z ,'.-' )
     plt.plot(x_data, lorentzian(x_data, *popt), 'r-', label='Lorentzian fit')
-    # plt.plot(peak_x, peak_y, "x")
+    plt.plot([x_left],[0], "x",color = 'black')
+    plt.plot([x_right],[0], "x",color = 'black')
+    plt.xticks(np.arange(0.5,3.5,0.5))
     # plt.plot(x_left_peak_value, np.ones(len(x_left_peak_value))*0, "x",color = 'blue')
     # plt.plot(x_right_peak_value, np.ones(len(x_right_peak_value))*0, "x",color = 'red')
     plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+    plt.savefig( 'EELS_integrated_over_z_fit_width' + '_dd%i_hh%.2f_bmin%.2f.png' %(dd,bb,bmin_vals0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
 
 #%%
-
-print('7-Integrate over omega from x_left_peak, x_right_peak as a function of (theta,V0) for a fixed b_min = %.2f' %(bmin_vals0))
 
 # Find the index of the closest value
 idx_x_left = (np.abs(list_energy0 - x_left)).argmin()
@@ -247,23 +264,26 @@ x_integrate = np.arange(closest_x_left, closest_x_right + step, step)
 y_integrate = lorentzian(x_integrate, *popt)
 integral_sum = np.sum(y_integrate * step)
 P_example = Pintegrated_over_energy(V0,theta_mrad,list_energy_over_mode)
-print("Difference between using the Lorenztian to integrate over energy and using the data:",np.abs(integral_sum,P_example))
+print("Difference between using the Lorenztian to integrate over energy and using the data:",np.abs(integral_sum-P_example))
 
 #%%
 
+print('7-Integrate over omega from x_left_peak, x_right_peak as a function of (theta,V0) for a fixed b_min = %.2f' %(bmin_vals0))
 
-list_Pvalue = []
-for j in range(len(listx_sorted)): 
-    V0 = listx_sorted[j]
-    theta_mrad = listy_sorted[j]
-    Pvalue = Pintegrated_over_energy(V0,theta_mrad,list_energy_over_mode)
-    list_Pvalue.append(Pvalue)
-    print(j,V0,theta_mrad,Pvalue)
-
-header = title1 + ', ' + title2  
-np.savetxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), list_Pvalue, fmt='%.10f', delimiter='\t', header = header, encoding=None)
-
+if create_important_data == 1: 
+    list_Pvalue = []
+    for j in range(len(listx_sorted)): 
+        V0 = listx_sorted[j]
+        theta_mrad = listy_sorted[j]
+        Pvalue = Pintegrated_over_energy(V0,theta_mrad,list_energy_over_mode)
+        list_Pvalue.append(Pvalue)
+        print(j,V0,theta_mrad,Pvalue)
     
+    header = title1 + ', ' + title2  
+    np.savetxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), list_Pvalue, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+    
+else:
+    list_Pvalue = np.loadtxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), delimiter='\t', skiprows = 1, encoding=None)
     # list_P_integrated_over_z_tot = []
     # with concurrent.futures.ProcessPoolExecutor(max_workers=6) as executor:
     #     futures = [executor.submit(Pintegrated_over_z_vs_theta, V0,theta_mrad) for V0,theta_mrad in zip(listx_sorted,listy_sorted)]
@@ -275,6 +295,32 @@ np.savetxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.
         
 
 #%%
+    
+print('8-Plot the result of the integration')
 
+labelx=r'$\theta$ (mrad)'
+labely='EELS of the mode 1'
+ 
+fig, ax1 = plt.subplots(figsize=tamfig)
+#ax1.title(title1,fontsize=tamtitle)
+ax1.set_xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
+ax1.set_ylabel(labely,fontsize=tamletra,labelpad =labelpady)
+ax1.plot(listy_sorted, list_Pvalue ,'.-' ,label = r'$b_{\text{min}}/W = %.2f$' %(bmin_vals0))
 
+# Create second x-axis sharing the same y-axis
+ax2 = ax1.twiny()
+# Set ticks for the top axis
+top_ticks =  np.arange(1,12,2)
+ax2.set_xticks(top_ticks)
+ax2.set_xlabel(r"$V_0$ (eV)",fontsize=tamletra,labelpad =labelpadx)
+ax2.set_xlim(listx_sorted[0], listx_sorted[-1])
+
+ax1.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+ax2.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+# plt.plot(peak_x, peak_y, "x")
+# plt.plot(x_left_peak_value, np.ones(len(x_left_peak_value))*0, "x",color = 'blue')
+# plt.plot(x_right_peak_value, np.ones(len(x_right_peak_value))*0, "x",color = 'red')
+ax1.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1)
+
+plt.savefig( 'EELS_integrated_over_z_and_1mode' + '_dd%i_hh%.2f_bmin%.2f.png' %(dd,bb,bmin_vals0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
 

@@ -76,7 +76,9 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
          many (V0,theta) such that they give a fixed b_min
          ----------> Fig. 3c: EELS vs theta for differents values of bmin
    	
-         - plot_EELS_integrated_1mode_vs_theta_parallelization.py : same as before but finding the widht for each EELS 
+   	**********LATER: not sure if its better to interpolate the EELS_integrated_over_z vs list_energy to **********
+   	
+         - plot_EELS_integrated_1mode_vs_theta_parallelization.py : same as before but finding the width for each EELS 
          and parallelizing (works in Windows: for the Rocket). not need at the end. 
           
 .- /bem2D : B) EELS of ribbon (rectangular waveguide) made of Si with extra loss for different values of impact
@@ -150,11 +152,15 @@ Meeting 03/06/2025 comments:
 Important comment on figures/2025/06/03/2025-05-27 Fig3-1 draft.pdf:
 	V(z) decays slower for bigger d/a, then zmin is bigger
 	Increasing V0 to reduce V/V0 does not always work
-	because the term sin(theta)/V0 also reduces
-	Bigger V0 requires a bigger angle
+	because the term sin(theta)/V0 also reduces bigger V0
+	requires a bigger angle
 	
 	
 GM 2025/06/06 comments : 
         - fig. 3 : we will not use the substrate at the end and d/W smaller is better
         considering above comment
+        
+meeting 2025/06/13 comments: 
+	- #issue04 : the V(z) was missing a minus inside the code that integrates the EELS inside the \potential
+	folder
         

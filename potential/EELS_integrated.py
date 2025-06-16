@@ -24,8 +24,14 @@ path_data = os.path.join(path_basic, 'bem_files_EELS')
 def run_dy_out(bb,ss,dd, N):
     os.chdir(path_basic)
     # Run the C++ program name dy.out and save a list of y and V
-#    absolute_path_windows = r"E:\Desktop\Leila\EELs_omega_vs_theta\PhD-electron-to-WG-main\PhD-electron-to-WG-main\potential\./dy.out" ## for rocket --> parallelization
-#    cmd = [  absolute_path_windows , str(bb), str(ss), str(dd), str(N)] 
+    #absolute_path_windows = r"E:\Desktop\Leila\EELs_omega_vs_theta_new\PhD-electron-to-WG-main\potential\dy.exe"
+    
+    ## WINDOWS ####
+    ## for rocket --> parallelization (rochet). we need the absolute path for windows and we need to compile it in windows
+    ## terminal as well: g++ .\dy.cpp -o dy.exe
+    
+    #cmd = [  absolute_path_windows , str(bb), str(ss), str(dd), str(N)]
+ #   cmd = ["./dy.exe", str(bb), str(ss), str(dd), str(N)]
     cmd = ["./dy.out", str(bb), str(ss), str(dd), str(N)]
  
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
@@ -112,8 +118,12 @@ def P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energ
     # list_z_norm_a_interp = np.linspace(1.1,2,int(N*Nint)) 
     V_interp =  interp1d(list_z_norm_a, listV_normV0)
     
-    V_norm_V0 = V_interp(value_z_norm_a)  ## V(z/a)/V0
-    denominator = np.sqrt(aux_function**2 + 2*V_norm_V0*V0/(me_c2_eV*gamma_e))
+    V_norm_V0 = -V_interp(value_z_norm_a)  ## V(z/a)/V0 
+    ## we force the potential to be negative to have the electron attraction 
+    ## WARNING: some values of z will make the square root in the denominator complex!! #issue04 --> add a modulus inside the sqrt
+    arg_denominator = np.abs(aux_function**2 + 2*V_norm_V0*V0/(me_c2_eV*gamma_e))
+    denominator = np.sqrt(arg_denominator)
+    # print(arg_denominator)
 
     h = bb*a
     listz_norm_a_BEM, EELS_interp = EELS_from_BEM_interpolated(energy_eV,a,h,N)
@@ -157,9 +167,13 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
     list_P = 0
     for value_z_norm_a in listz_norm_a_BEM_interp: ## the integration should be from z_min 
         P_value = P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N, list_z_norm_a, listV_normV0)
+       #if np.isnan(P_value)==True: ## the square root defined in the function integrand is imaginary
+       #     list_P = list_P + 0
+       # else:
         list_P = list_P + P_value
+        # print(P_value)
     delta_z_norm_a = listz_norm_a_BEM_interp[1] - listz_norm_a_BEM_interp[0]
-    
+
     return list_P*delta_z_norm_a
 
  

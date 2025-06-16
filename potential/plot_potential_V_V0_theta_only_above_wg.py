@@ -54,36 +54,42 @@ def run_dy_out(bb,ss,dd, N):
             continue
 
     return list_z, list_V
-    
 
-bb = 0.75
-ss = 0.1
-dd = 5
-N = 200
+Nvals = 400
 me_c2_eV = 510998.95069  ## me*c**2 in eV
 Ee_electron_keV = 200
 Ee_electron = Ee_electron_keV*1e3
-label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
+label_Ee = '_Ee%ikeV' %(Ee_electron_keV)    
+
+bb = 1
+if bb== 1:
+    ss = 20/300 ## W = 300
+else:
+    ss = 20/400 ## W = 400
+dd = 5
+N = 200
+xmin = -bb/2
+xmax = bb/2
+
+
+labelx = r'$z/W$'
+labely = r'$V/V_0$'
+
+# aux_ejey = np.linspace(np.min(listV_normV0),np.max(listV_normV0),10)
 
 list_z_norm_a, listV_normV0 = run_dy_out(bb,ss,dd,N)
 
-xmin = -bb/2
-xmax = bb/2
-aux_ejey = np.linspace(np.min(listV_normV0),np.max(listV_normV0),10)
-
-labelx = r'$z/a$'
-labely = r'$V/V_0$'
-
-title1 = r'$h/W$ = %.2f, $s/W$ =%.1f, $d/W$ = %i' % (bb,ss,dd)
+title0 = r'$h/W$ = %.2f, $s/W$ =%.1f' % (bb,ss)
 plt.figure(figsize=tamfig)
-plt.title(title1,fontsize=tamtitle)
-plt.plot(list_z_norm_a, listV_normV0 ,'.-' )
+plt.title(title0,fontsize=tamtitle)
+plt.plot(list_z_norm_a, listV_normV0 ,'.-',label = r'$d/W$ = %i' %(dd) )
 #plt.plot(listx[cut:-1], np.array(listy_analytical[cut:-1]),'--',color = 'red')
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 # plt.plot(np.ones(10)*xmin,aux_ejey,'--',color = 'black')
-plt.plot(np.ones(10)*xmax,aux_ejey,'--',color = 'black')
+#plt.plot(np.ones(10)*xmax,aux_ejey,'--',color = 'black')
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend-5,frameon=0,handletextpad=0.2, handlelength=1) 
 plt.savefig('Vy.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 plt.show()
 
@@ -93,13 +99,15 @@ Nint = 1
 list_z_norm_a_interp = np.linspace(np.min(list_z_norm_a), np.max(list_z_norm_a),int(N*Nint)) 
 V_interp =  CubicSpline(list_z_norm_a, listV_normV0)
 
+title1 = r'$h/W$ = %.2f, $s/W$ =%.1f, $d/W$ = %i' % (bb,ss,dd)
+
 #%%
 
 print('2-Define the function to be zero--> zmin (electron position) for a fixed V0 and different angles')
 
 beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 V0 = Ee_electron/1e4 
-V0 = 1
+V0 = 0.1
 ## minimum z
 def function_to_be_zero(value_z_norm_a, theta, V0):
     """
@@ -150,9 +158,14 @@ def analytical_function_bmin( theta, V0):
     bmin = dd*np.exp(function)/eta-bb/2
     return bmin
 
+
+#%%
+
 aux_ejey = np.linspace(-np.max(listV_normV0),np.min(listV_normV0),10)
 
-list_theta_mrad = [0.1,0.25,0.5,1,2]
+list_theta_mrad = [0.1,0.25,0.5,0.75,1,2]
+theta_mrad0 = list_theta_mrad[2]
+
 from mycolorpy import colorlist as mcp
 color1 = mcp.gen_color(cmap="hot",n=len(list_theta_mrad)+2)
 
@@ -186,15 +199,16 @@ plt.savefig('minimum_z_vs_angle_dd%i_hh%.2f' %(dd,bb) + label_Ee + '_V0_%ieV.png
 plt.show()
 
 #%%
+
 print('3-Color map of zmin as a function of V0 and theta, for zmin (electron position) above the WG')
 
-Nvals = 200
 # Define ranges for V0 and theta
 V0_vals = np.linspace(0.005, 5, Nvals)
 V0_vals = np.linspace(0.1, 3, Nvals)
-V0_vals = np.linspace(0.1, 10, Nvals)
-theta_mrad_vals = np.linspace(0.1, 5, Nvals)
-theta_mrad_vals = np.linspace(2, 8, Nvals)
+V0_vals = np.linspace(0.01, 0.25, Nvals)
+theta_mrad_vals = np.linspace(0.01, 5, Nvals)
+theta_mrad_vals = np.linspace(0.001, 1, Nvals)
+# theta_mrad_vals = np.linspace(0.1, 1, Nvals)
 limits1 = [np.min(V0_vals) , np.max(V0_vals),np.min(theta_mrad_vals) , np.max(theta_mrad_vals)]
 
 zmin = bb/2 ## above the WG
@@ -218,9 +232,11 @@ for i, V0 in enumerate(V0_vals):
             f_vals[i, j] = np.nan
 
 #%%
+
+tamfig2 = [5, 3]
 n_color = 10
 vmin1 , vmax1 = np.nanmin(X_vals), np.nanmax(X_vals)
-cmap = plt.cm.hot  # define the colormap
+cmap = plt.cm.RdBu  # define the colormap
 bounds1 =   np.linspace(vmin1, vmax1 , n_color) 
 if dd == 20:
     bounds1 =  [vmin1,0.25,0.5,5,100,200,int(vmax1)]
@@ -228,21 +244,28 @@ if dd == 20:
 else:
     bounds1 =  [vmin1,0.25,0.5,5,50,int(vmax1)]
     bounds1 =  [vmin1,0.1,0.25,0.5,1]
-    
-norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
+    bounds1 =   np.logspace(np.log10(0.1), np.log10(100) , 10) 
 
+width=300
+norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
+norm2 = mpl.colors.BoundaryNorm(bounds1*width, cmap.N)
 # Mark specific values (e.g., contours at Z = 0.2, 0.4, 0.6)
 contour_levels = [0.15,   0.5]
 
-plt.figure(figsize=tamfig)
+plt.figure(figsize=tamfig2)
 #plt.title(title1 + r', $E_{\text{e}}$ = %i keV' %(Ee_electron_keV),fontsize=tamtitle)
-im_show = plt.imshow(np.transpose(X_vals), extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'   ) 
-contours = plt.contour(V0_vals, theta_mrad_vals, np.transpose(X_vals), levels=contour_levels, colors='green', linestyles='dashed')
-plt.clabel(contours, fmt='%.2f', colors='green',fontsize=tamletra)  # Label contours
+im_show = plt.imshow(np.transpose(X_vals), extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm1  ) 
+# contours = plt.contour(V0_vals, theta_mrad_vals, np.transpose(X_vals), levels=contour_levels, colors='green', linestyles='dashed')
+# plt.clabel(contours, fmt='%.2f', colors='green',fontsize=tamletra)  # Label contours
 
-cbar = plt.colorbar(im_show, fraction=0.046, pad=0.04   ,format = '%i') 
-cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra)
-cbar.ax.tick_params(labelsize = tamnum, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar = plt.colorbar(im_show, fraction=0.046, pad=0.15   ,format = '%.2f') 
+im_show2 = plt.imshow(np.transpose(X_vals)*width, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm2  ) 
+cbar2 = plt.colorbar(im_show2, fraction=0.046, pad=0.04, orientation = 'vertical')
+
+cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra-1)
+cbar.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar2.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar2.ax.set_title(r'$b_{\text{min}}$ (nm)',fontsize=tamletra-1)
 # plt.xticks(np.arange(0,np.max(V0_vals)+0.5,0.5))
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
@@ -267,7 +290,9 @@ for i, V0 in enumerate(V0_vals):
         value_analytical = analytical_function_bmin(theta, V0)
         X_vals_analytical[i, j] = value_analytical
         
- #%%       
+ #%%      
+
+""" 
 plt.figure(figsize=tamfig)
 plt.title(title1 + r', $E_{\text{e}}$ = %i keV' %(Ee_electron_keV),fontsize=tamtitle)
 im_show = plt.imshow(np.transpose(X_vals_analytical), extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'    ) 
@@ -277,10 +302,10 @@ plt.xticks(np.arange(0,6,1))
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.savefig('zmin_analytical' + label_Ee + '_dd%i_hh%.2f.png' %(dd,bb), format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+#plt.savefig('zmin_analytical' + label_Ee + '_dd%i_hh%.2f.png' %(dd,bb), format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 #plt.title('Root x as function of V0 and theta')
 plt.show()
-
+"""
  #%%  
 print('3-zmin as a function of V0 for theta=5mrad, for zmin (electron position) above the WG')
 
@@ -291,7 +316,7 @@ X_vals_2 = np.zeros(len(V0_vals))
 f_vals_2 = np.zeros(len(V0_vals))
 # Loop over parameter values
 for i, V0 in enumerate(V0_vals):
-    theta_mrad = 5
+    theta_mrad = theta_mrad0
     theta = theta_mrad*1e-3
     try:
         # Solve f(z,theta, V0) = 0 in some interval z in [zmin, zmax]
@@ -306,13 +331,13 @@ for i, V0 in enumerate(V0_vals):
            
         #%%  
 plt.figure(figsize=tamfig)
-plt.title(title1 + r', $\theta$ = %i mrad, $E_{\text{e}}$ = %i keV' %(theta_mrad,Ee_electron_keV),fontsize=tamtitle)    
+plt.title(title1 + r', $\theta$ = %.2f mrad, $E_{\text{e}}$ = %i keV' %(theta_mrad,Ee_electron_keV),fontsize=tamtitle)    
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$b_{\text{min}}/W$',fontsize=tamletra,labelpad =labelpady)
 plt.plot( V0_vals, X_vals_2)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend-5,frameon=0,handletextpad=0.2, handlelength=1) 
-plt.savefig('minimum_z_vs_V0_dd%i_hh%.2f' %(dd,bb) + label_Ee + '_V0_%ieV.png' %(V0), format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+#plt.savefig('minimum_z_vs_V0_dd%i_hh%.2f' %(dd,bb) + label_Ee + '_V0_%ieV.png' %(V0), format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 plt.show()
    
         
