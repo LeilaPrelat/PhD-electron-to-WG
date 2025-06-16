@@ -168,14 +168,18 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
     listz_norm_a_BEM, EELS_interp = EELS_from_BEM_interpolated(energy_eV,a,h,s,N)
     listz_norm_a_BEM_interp = np.linspace(z_min_val, np.max(listz_norm_a_BEM),int(N*Nint)) 
     
-    list_P = 0
-    for value_z_norm_a in listz_norm_a_BEM_interp: ## the integration should be from z_min 
-        P_value = P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N, list_z_norm_a, listV_normV0)
-       #if np.isnan(P_value)==True: ## the square root defined in the function integrand is imaginary
-       #     list_P = list_P + 0
-       # else:
-        list_P = list_P + P_value
+    EELS_array = P_integrand_over_z(listz_norm_a_BEM_interp, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N, list_z_norm_a, listV_normV0 )
+    list_P = np.sum(EELS_array)
+    # list_P = 0
+    # for value_z_norm_a in listz_norm_a_BEM_interp: ## the integration should be from z_min 
+    #     P_value = P_integrand_over_z(value_z_norm_a, theta, V0, Ee_electron, bb, ss, dd, energy_eV, a, N, list_z_norm_a, listV_normV0)
+    #    #if np.isnan(P_value)==True: ## the square root defined in the function integrand is imaginary
+    #    #     list_P = list_P + 0
+    #    # else:
+    #     list_P = list_P + P_value
         # print(P_value)
+        
+        
     delta_z_norm_a = listz_norm_a_BEM_interp[1] - listz_norm_a_BEM_interp[0]
 
     return list_P*delta_z_norm_a

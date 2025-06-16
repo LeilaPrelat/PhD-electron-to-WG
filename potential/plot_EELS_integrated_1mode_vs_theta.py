@@ -13,7 +13,8 @@ from EELS_integrated import P_integrated_over_z, dy_cached
 # import concurrent.futures
 from scipy.optimize import curve_fit
 import matplotlib as mpl
-
+from scipy.signal import find_peaks
+from scipy.interpolate import interp1d
 
 create_data = 1
 create_important_data = 1
@@ -50,7 +51,7 @@ values = tamfig,tamtitle,tamletra,tamnum,labelpadx,labelpady,pad,deltax,deltay
 print('1-Define the parameters')
 
 ############ parameters for bem2d ############
-a = 400 ## nm
+a = 300 ## nm
 h = 300 ## nm
 s = 20  ## nm
 ############ parameters for c++ ############
@@ -67,6 +68,10 @@ list_energy0 = np.arange(0.2,1.5 + step,step) ## we will reduce this energy list
 list_energy0 = np.arange(0.2,3 + step,step)
 list_z_norm_a, listV_normV0 = dy_cached(bb,ss,dd,N) ## import z/W and V(z)/V0 from c++ code
 
+mode = 1
+index_mode = -mode ## if mode = 1, is the highest one 
+ 
+    
 #%%
 
 print('2-Load data of z_min from the code plot_potential_V_V0_theta_only_above_wg.py')
@@ -79,6 +84,7 @@ theta_mrad_vals = np.loadtxt('theta_mrad' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,b
 # find the index closest to the values we want for bmin 
 if a == 300: 
     bmin_vals0 = 0.2
+    bmin_vals0 = 0.1
 elif a == 400: 
     bmin_vals0 = 0.15    ## same bmin = 60 nm
 bmin_vals1 = 0.25
@@ -152,7 +158,7 @@ print('IMPORTANT: we are assuming the position of the peak does not vary with V0
 V0 = listx_sorted[0]
 theta_mrad = listy_sorted[0]
 theta = theta_mrad*1e-3
-all_info_label = '_dd%i_hh%.2f_V0%.2feV_theta%.2fmrad_bmin%.2f.txt' %(dd,bb,V0,theta_mrad,bmin_vals0)
+all_info_label = '_mode%i_dd%i_hh%.2f_V0%.2feV_theta%.2fmrad_bmin%.2f.txt' %(mode,dd,bb,V0,theta_mrad,bmin_vals0)
 
 if create_data == 1:
     list_P_integrated_over_z = []
@@ -178,13 +184,32 @@ else:
     
 #%%
 
-print('6-Find the wmin and wmax of the highest mode by fitting it with a Lorenztian')
+print('6-Find the wmin and wmax of the mode = %i by fitting it with a Lorenztian' %(mode))
 
 # Lorentzian function
 def lorentzian(x, A, x0, gamma, offset):
     return A * gamma**2 / ((x - x0)**2 + gamma**2) + offset
 
-ind_max = int(np.argmax(list_P_integrated_over_z))
+ 
+######### find peaks and sort them by the highest to minimum (then we identify each mode according to its amplitude)
+peaks, _ = find_peaks(list_P_integrated_over_z, height=0 )
+listy_peaks = []
+listx_peaks = []
+ 
+for peak in peaks: 
+    listy_peaks.append(list_P_integrated_over_z[peak])
+    listx_peaks.append(list_energy0[peak])
+
+## IMPORTANT: sort the y-values from minimum to maximum --> mode = -1 is the highest (last one), mode = -2 is the previous one, and so on, .. 
+sorted_index = np.argsort(listy_peaks)
+listy_peaks_sorted = np.sort(listy_peaks) 
+listx_peaks_sorted = list_energy0[peaks[sorted_index]]
+list_index_peaks = peaks[sorted_index]
+
+ind_max = list_index_peaks[index_mode]
+
+#%%
+
 ind0 = int(ind_max*0.8)
 ind1 = int(ind_max*1.1)
 x_data = list_energy0[ind0:ind1] ## we fit around the maximum
@@ -236,7 +261,7 @@ if plot_figure == 1:
     # plt.plot(x_left_peak_value, np.ones(len(x_left_peak_value))*0, "x",color = 'blue')
     # plt.plot(x_right_peak_value, np.ones(len(x_right_peak_value))*0, "x",color = 'red')
     plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-    plt.savefig( 'EELS_integrated_over_z_fit_width' + '_dd%i_hh%.2f_bmin%.2f.png' %(dd,bb,bmin_vals0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
+    plt.savefig( 'EELS_integrated_over_z_fit_width' + 'mode%i_dd%i_hh%.2f_bmin%.2f.png' %(mode,dd,bb,bmin_vals0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
 
 #%%
 
@@ -250,7 +275,11 @@ closest_x_right = list_energy0[idx_x_right]
 # we are assuming the position of the peak does not vary with V0,theta
 # list_energy_over_mode = np.arange(x_left_peak_value[0], x_right_peak_value[0] + 0.005,0.005)
 list_energy_over_mode = np.arange(closest_x_left, closest_x_right + step, step)
-np.savetxt('list_energy_of_mode1_for_P_integration' + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), list_energy_over_mode, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+np.savetxt('list_energy_of_mode%i_for_P_integration' %(mode) + label_Ee + '_dd%i_hh%.2f.txt' %(dd,bb), list_energy_over_mode, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+
+#### interpolation of P(omega) after integration over z #####
+EELS_vs_energy = interp1d(list_energy0, list_P_integrated_over_z)
+
 
 def Pintegrated_over_energy(V0,theta_mrad,list_energy):
     theta = theta_mrad*1e-3
@@ -269,8 +298,13 @@ def Pintegrated_over_energy(V0,theta_mrad,list_energy):
 # Integration by summation (small steps)
 x_integrate = np.arange(closest_x_left, closest_x_right + step, step)
 y_integrate = lorentzian(x_integrate, *popt)
+
+x_integrate2 = np.arange(closest_x_left, closest_x_right + step/10, step/10)
+y_integrate2 = np.sum(EELS_vs_energy(x_integrate2))*(step/10)
 integral_sum = np.sum(y_integrate * step)
 P_example = Pintegrated_over_energy(V0,theta_mrad,list_energy_over_mode)
+
+
 print("Difference between using the Lorenztian to integrate over energy and using the data:",np.abs(integral_sum-P_example))
 
 #%%
@@ -292,7 +326,7 @@ if create_important_data == 1:
     ind_max = len(list_Pvalue)
     table_P_integrated_over_energy = np.transpose([listx_sorted[0:ind_max],listy_sorted[0:ind_max], list_Pvalue])
     header1 = 'V0 (eV)    theta (mrad)    P_mode1, '
-    np.savetxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
+    np.savetxt('P_integrated_over_z_over_mode%i' %(mode) + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
     
 else:
     table_P_integrated_over_energy = np.loadtxt('P_integrated_over_z_over_1mode' + label_Ee + '_dd%i_hh%.2f_bmin%.2f.txt' %(dd,bb,bmin_vals0), delimiter='\t', skiprows = 1, encoding=None)
@@ -324,7 +358,7 @@ ax1.plot(listy_sorted[0:ind_max], list_Pvalue ,'.-' ,label = r'$b_{\text{min}}/W
 # Create second x-axis sharing the same y-axis
 ax2 = ax1.twiny()
 # Set ticks for the top axis
-top_ticks =  np.arange(1,12,2)
+top_ticks =  np.arange(0.1,1.1,0.1)
 ax2.set_xticks(top_ticks)
 ax2.set_xlabel(r"$V_0$ (eV)",fontsize=tamletra,labelpad =labelpadx)
 ax2.set_xlim(listx_sorted[0], listx_sorted[-1])
@@ -336,5 +370,5 @@ ax2.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which =
 # plt.plot(x_right_peak_value, np.ones(len(x_right_peak_value))*0, "x",color = 'red')
 ax1.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1)
 
-plt.savefig( 'EELS_integrated_over_z_and_1mode' + '_dd%i_hh%.2f_bmin%.2f.png' %(dd,bb,bmin_vals0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
+plt.savefig( 'EELS_integrated_over_z_and_mode%i' %(mode) + '_dd%i_hh%.2f_bmin%.2f.png' %(dd,bb,bmin_vals0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
 
