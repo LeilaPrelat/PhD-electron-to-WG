@@ -71,15 +71,12 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
                 
          - plot_EELS_integrated_1mode_vs_theta.py : integration of Fig. 3b around the mode j as a function of theta for a
          fixed value of zmin (contour_level)
-         IMPORTANT: we are assuming the position of the peak does not vary with V0, theta, so we fit the width of the highest
-         peak with an example of V0, theta and we defined a range of energy where we integrate the same peak in frequency for
-         many (V0,theta) such that they give a fixed b_min
-         ----------> Fig. 3c: EELS vs theta for differents values of bmin
-   	 -------> write this code for Rocket. 
-   	 * Important for windows/Rockets* : compile the "dy.cpp" in terminal as "dy.exe" + add the absolute path in "run_dy_out"  
+         We fit the width of the mode N for every V0,theta and using the width we integrate the EELS over energy as a function
+         of (V0,theta) for a fixed b_min
+         ----------> Fig. 3c: EELS vs theta/V0 for differents values of bmin or for different modes (peaks)
    	
-   	**********LATER: not sure if its better to interpolate the EELS_integrated_over_z vs list_energy too **********
-   	
+   	 * Important for windows/Rockets* : compile the "dy.cpp" in terminal as "dy.out" + add the absolute path in "run_dy_out"     	
+
          - plot_EELS_integrated_1mode_vs_theta_parallelization.py : same as before but finding the width for each EELS 
          and parallelizing (works in Windows: for the Rocket). not need at the end because in windows the 
          parallelization is really slow. 

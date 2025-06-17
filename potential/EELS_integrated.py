@@ -15,6 +15,8 @@ import numpy as np
 import os
 from scipy.interpolate import interp1d
 from scipy.signal import find_peaks
+from scipy.optimize import curve_fit
+import matplotlib.pyplot as plt
  
 path_basic = os.getcwd()
 path_data = os.path.join(path_basic, 'bem_files_EELS')
@@ -28,7 +30,7 @@ def run_dy_out(bb,ss,dd, N):
     
     ## WINDOWS ####
     ## for rocket --> parallelization (rochet). we need the absolute path for windows and we need to compile it in windows
-    ## terminal as well: g++ .\dy.cpp -o dy.exe
+    ## terminal as well: g++ .\dy.cpp -o dy.out
     
     #cmd = [  absolute_path_windows , str(bb), str(ss), str(dd), str(N)]
  #   cmd = ["./dy.exe", str(bb), str(ss), str(dd), str(N)]
@@ -184,93 +186,217 @@ def P_integrated_over_z(z_min_val, theta, V0, Ee_electron, bb, ss, dd, energy_eV
 
     return list_P*delta_z_norm_a
 
- 
-def find_width_of_peak(listx,listy,height):
+
+def find_width_of_peak(listx,listy,V0,theta_mrad,index_mode,title1,plot_figure):
     """
     Parameters
     ----------
     listx : x array
     listy : y array
-    height : controls how many peaks we select, if height = np.max(listy) it only
-    finds the maximum
+    V0 : V0 in eV
+    theta_mrad : theta in mrad
+    index_mode : index of the mode
+    title1 : info of the parameters for the plot
+    plot_figure : if ==1 plots the fit of the curve by the Lorentzian
     Returns
     -------
     width of the peak as a array 
-    x_left, x_right
+    x_left, x_right from the fitting
+    of listy with a lorentzian
     """
-    
-#    print('5-Load the EELS integrated over z/W as a function of energy and find the width of the highest peak')
-    
-    Nint = 10
-    ######## interpolation of the data ######################################
-    x_int = np.linspace(np.min(listx),np.max(listx),int(len(listx)*Nint))
-    cs = interp1d(listx, listy)
-    y_int = cs(x_int)
-    
-    y_int2 = [] ## filter small negative numbers created with the interpolation
-    for yy in y_int: 
-        if yy<0: 
-            y_int2.append(0)
-        else:
-            y_int2.append(yy)
-        
-#    height = np.max(y_int)/20 ## real modes --> interpolation creates fake peaks with small intensity, a way
-    # to get rid of them is to specify a big height, then only the real peaks (without interpolation) will remain 
-    ######## find peaks ####################################################
-    peaks, _ = find_peaks(listy, height=height )
-    
-    ######## find width : we move left and right from the peak until the function starts increasing again###########################
-    x_left_peak_index = []
-    x_left_peak_value = []
-    for peak in peaks:
-        i = peak
-        # Move left as long as signal is decreasing
-        while i > 0 and listy[i-1] <= listy[i] and listy[i]>0:
-            i -= 1
-        x_left_peak_index.append(i)
-        x_left_peak_value.append(listx[i])
-    
-    
-    x_right_peak_index = []
-    x_right_peak_value = []
+    list_energy0 = listx
+    list_P_integrated_over_z = listy
+    # Lorentzian function
+    def lorentzian(x, A, x0, gamma, offset):
+        return A * gamma**2 / ((x - x0)**2 + gamma**2) + offset
 
-    for peak in peaks:
-        i = peak
-        while i < len(listy) - 1 and listy[i+1] <= listy[i] and listy[i]>0:
-            i += 1
-        x_right_peak_index.append(i)
-        x_right_peak_value.append(listx[i])
-        
-    
-    # results_full = peak_widths(y_int2, peaks, rel_height=3)
-    # results_full_xmin_index = []
-    # for xmin in results_full[2]:
-    #     results_full_xmin_index.append(int(xmin))
-    # results_full_xmax_index = []
-    # for xmax in results_full[3]:
-    #     results_full_xmax_index.append(int(xmax))
-
-    # results_full_xmin_index = np.array(results_full_xmin_index)
-    # results_full_xmax_index = np.array(results_full_xmax_index)
-    
+     
+    ######### find peaks and sort them by the highest to minimum (then we identify each mode according to its amplitude)
+    peaks, _ = find_peaks(list_P_integrated_over_z, height=0 )
     listy_peaks = []
     listx_peaks = []
+     
     for peak in peaks: 
-        listy_peaks.append(listy[peak])
-        listx_peaks.append(listx[peak])
-    
+        listy_peaks.append(list_P_integrated_over_z[peak])
+        listx_peaks.append(list_energy0[peak])
+
     ## IMPORTANT: sort the y-values from minimum to maximum --> mode = -1 is the highest (last one), mode = -2 is the previous one, and so on, .. 
     sorted_index = np.argsort(listy_peaks)
     listy_peaks_sorted = np.sort(listy_peaks) 
-    listx_peaks_sorted = listx[peaks[sorted_index]]
+    listx_peaks_sorted = list_energy0[peaks[sorted_index]]
+    list_index_peaks = peaks[sorted_index]
+
+    ind_max = list_index_peaks[index_mode]
+
+    ind0 = int(ind_max*0.8)
+    ind1 = int(ind_max*1.1)
+    x_data = list_energy0[ind0:ind1] ## we fit around the maximum
+    y_data = list_P_integrated_over_z[ind0:ind1]
+    
+    ############ good estimation for gamma #########################################
+    # Get the half-maximum value
+    half_max = (max(y_data) + min(y_data)) / 2
+    
+    # Find indices where the curve crosses the half-maximum
+    above_half_max = y_data > half_max
+    crossings = np.where(np.diff(above_half_max.astype(int)) != 0)[0]
+    
+    if len(crossings) >= 2:
+        # Estimate FWHM from the distance between crossings
+        x1 = x_data[crossings[0]]
+        x2 = x_data[crossings[-1]]
+        fwhm_estimate = abs(x2 - x1)
+        gamma_estimate = fwhm_estimate / 2  # Lorentzian has FWHM = 2 * gamma
+    else:
+        # Fallback if we don't have clear half-max crossings
+        gamma_estimate = 0.1 * (x_data[-1] - x_data[0])  # 10% of window as fallback
+    
+    ###############################################################################
+    
+    # Initial parameter guesses: [A, x0, gamma, offset]
+    initial_guess = [max(y_data), list_energy0[ind_max], gamma_estimate, min(y_data)]
+    
+    # Perform the fit
+    popt, pcov = curve_fit(lorentzian, x_data, y_data, p0=initial_guess)
+    A_fit, x0_fit, gamma_fit, offset_fit = popt
+    
+    # Threshold at 1% of amplitude
+    threshold = offset_fit + 0.01 * A_fit
+    
+    # Solve for x where Lorentzian equals threshold
+    delta = np.sqrt((A_fit * gamma_fit**2) / (threshold - offset_fit) - gamma_fit**2)
+    x_left = x0_fit - delta
+    x_right = x0_fit + delta
+    # bottom_width = x_right - x_left
+    
+    title2 = r'$V_0$ = %.3f eV, $\theta$ = %.2f mrad' %(V0,theta_mrad)
+     
+
+    if plot_figure == 1:
+        
+        labelx='Electron energy loss $\hbar\omega$ (eV)'
+        labely='EELS per electron (1/eV)'
+         
+        tamfig = [4.5,3.5]
+        tamletra = 13
+        tamtitle  = tamletra - 3
+        tamnum = tamletra
+        labelpady = 3
+        labelpadx = 2
+        pad = 2.5
+        dpi = 500
+        
+        
+        plt.figure(figsize=tamfig)
+        plt.title(title1 + '\n' + title2,fontsize=tamtitle)
+        plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
+        plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
+        plt.plot(list_energy0, list_P_integrated_over_z ,'.-' )
+        plt.plot(x_data, lorentzian(x_data, *popt), 'r-', label='Lorentzian fit')
+        plt.plot([x_left],[0], "x",color = 'black')
+        plt.plot([x_right],[0], "x",color = 'black')
+        plt.xticks(np.arange(0.5,3.5,0.5))
+        # plt.plot(x_left_peak_value, np.ones(len(x_left_peak_value))*0, "x",color = 'blue')
+        # plt.plot(x_right_peak_value, np.ones(len(x_right_peak_value))*0, "x",color = 'red')
+        plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
+        plt.savefig( 'EELS_integrated_over_z_fit_width'+ '.png' ,bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
+
+    return x_left, x_right
+
+
+
+
+
+
+
+
+
+# def find_width_of_peak(listx,listy,height):
+#     """
+#     Parameters
+#     ----------
+#     listx : x array
+#     listy : y array
+#     height : controls how many peaks we select, if height = np.max(listy) it only
+#     finds the maximum
+#     Returns
+#     -------
+#     width of the peak as a array 
+#     x_left, x_right
+#     """
+    
+# #    print('5-Load the EELS integrated over z/W as a function of energy and find the width of the highest peak')
+    
+#     Nint = 10
+#     ######## interpolation of the data ######################################
+#     x_int = np.linspace(np.min(listx),np.max(listx),int(len(listx)*Nint))
+#     cs = interp1d(listx, listy)
+#     y_int = cs(x_int)
+    
+#     y_int2 = [] ## filter small negative numbers created with the interpolation
+#     for yy in y_int: 
+#         if yy<0: 
+#             y_int2.append(0)
+#         else:
+#             y_int2.append(yy)
+        
+# #    height = np.max(y_int)/20 ## real modes --> interpolation creates fake peaks with small intensity, a way
+#     # to get rid of them is to specify a big height, then only the real peaks (without interpolation) will remain 
+#     ######## find peaks ####################################################
+#     peaks, _ = find_peaks(listy, height=height )
+    
+#     ######## find width : we move left and right from the peak until the function starts increasing again###########################
+#     x_left_peak_index = []
+#     x_left_peak_value = []
+#     for peak in peaks:
+#         i = peak
+#         # Move left as long as signal is decreasing
+#         while i > 0 and listy[i-1] <= listy[i] and listy[i]>0:
+#             i -= 1
+#         x_left_peak_index.append(i)
+#         x_left_peak_value.append(listx[i])
+    
+    
+#     x_right_peak_index = []
+#     x_right_peak_value = []
+
+#     for peak in peaks:
+#         i = peak
+#         while i < len(listy) - 1 and listy[i+1] <= listy[i] and listy[i]>0:
+#             i += 1
+#         x_right_peak_index.append(i)
+#         x_right_peak_value.append(listx[i])
+        
+    
+#     # results_full = peak_widths(y_int2, peaks, rel_height=3)
+#     # results_full_xmin_index = []
+#     # for xmin in results_full[2]:
+#     #     results_full_xmin_index.append(int(xmin))
+#     # results_full_xmax_index = []
+#     # for xmax in results_full[3]:
+#     #     results_full_xmax_index.append(int(xmax))
+
+#     # results_full_xmin_index = np.array(results_full_xmin_index)
+#     # results_full_xmax_index = np.array(results_full_xmax_index)
+    
+#     listy_peaks = []
+#     listx_peaks = []
+#     for peak in peaks: 
+#         listy_peaks.append(listy[peak])
+#         listx_peaks.append(listx[peak])
+    
+#     ## IMPORTANT: sort the y-values from minimum to maximum --> mode = -1 is the highest (last one), mode = -2 is the previous one, and so on, .. 
+#     sorted_index = np.argsort(listy_peaks)
+#     listy_peaks_sorted = np.sort(listy_peaks) 
+#     listx_peaks_sorted = listx[peaks[sorted_index]]
  
 
-    # sorted_xmin = x_int[results_full_xmin_index[sorted_index]]
-    # sorted_xmax = x_int[results_full_xmax_index[sorted_index]]
+#     # sorted_xmin = x_int[results_full_xmin_index[sorted_index]]
+#     # sorted_xmax = x_int[results_full_xmax_index[sorted_index]]
     
-    # witdh = [] 
-    # for j in range(len(sorted_xmin)):
-    #     delta_x = sorted_xmax[j] - sorted_xmin[j]
-    #     witdh.append(delta_x)
+#     # witdh = [] 
+#     # for j in range(len(sorted_xmin)):
+#     #     delta_x = sorted_xmax[j] - sorted_xmin[j]
+#     #     witdh.append(delta_x)
     
-    return x_left_peak_value, x_right_peak_value, listx_peaks_sorted, listy_peaks_sorted
+#     return x_left_peak_value, x_right_peak_value, listx_peaks_sorted, listy_peaks_sorted
