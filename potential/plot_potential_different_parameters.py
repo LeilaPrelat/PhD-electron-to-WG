@@ -152,7 +152,7 @@ list_h = list_wp  ## norm to w
 list_N = [200,600,800]
 
 labelx = r'$z/W$'
-labely = r'$V/U$'
+labely = r'$\phi(x,z)/U$'
 
 #%%
     
@@ -182,6 +182,7 @@ plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which =
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('Vz_vs_x.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vz_vs_x.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del x0
@@ -214,6 +215,7 @@ plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which =
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('Vz_vs_wp.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vz_vs_wp.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del wp
@@ -246,6 +248,7 @@ plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which =
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('Vz_vs_d.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vz_vs_d.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del d
@@ -279,6 +282,7 @@ plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which =
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('Vz_vs_h.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vz_vs_h.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del h
@@ -311,6 +315,7 @@ plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which =
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('Vz_vs_N.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vz_vs_N.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del N 
@@ -334,7 +339,7 @@ list_x_norm_w_tot5, list_z_norm_w_tot5, listV_normV0_tot5 = run_e_out2(wp_0,d_0,
 
 labelx = r'$x/W$'
 labely = r'$z/W$'
-labelz = r'$V/V_0$'
+labelz = r'$\phi(x,z)/V_0$'
 
 title5 = r'$W_{\text{p}}/W$ = %.2f, $d/W$ = %.2f, $h/W$ = %.2f' %(wp_0,d_0,h_0)
 
@@ -360,24 +365,24 @@ bounds1 = np.concatenate([
 norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
 
 plt.figure(figsize=tamfig)
-plt.title(title5,fontsize=tamtitle)
+plt.title(title5,fontsize=tamtitle-4)
 tpc = plt.tripcolor(triang, listV_normV0_tot5, shading='flat', cmap=cmap, norm=norm1)
 cbar = plt.colorbar(tpc, fraction=0.046, pad=0.04 , format = '%.2f') 
-# cbar.ax.set_title(labelz,fontsize=tamletra-1)
-cbar.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar.ax.set_title(labelz,fontsize=tamletra)
+cbar.ax.tick_params(labelsize = tamnum, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 3 , width=1, direction="in",which = 'both', pad = pad)
-plt.plot([xleft],[h_0],'o',color =  'purple')
-plt.plot([xright],[h_0],'o',color =  'purple')
-if d_0 == 0.2:
-    plt.xticks([-2,-1,0,1,2])
+# plt.plot([xleft],[h_0],'o',color =  'purple')
+# plt.plot([xright],[h_0],'o',color =  'purple')
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],["-2","","-1","","0","","1","","2"])
 plt.xlim(np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5))
 plt.ylim(np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5))
-plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
-plt.plot(np.ones(10)*(1/2),ejey_z,'--',color =  'black')
+# plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
+# plt.plot(np.ones(10)*(1/2),ejey_z,'--',color =  'black')
 os.chdir(path_data)
 plt.savefig('Vxz.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('Vxz.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 plt.show()
 
 #%%
@@ -404,10 +409,12 @@ for j in range(len(list_z0)):
 plt.xlabel(r'$x/W$',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel( r'$V/U$',fontsize=tamletra,labelpad =labelpady)
 # plt.xticks(np.arange(h_0,z1+0.5,0.5))
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],["-2","","-1","","0","","1","","2"])
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('Vx_vs_z.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vx_vs_z.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del z0
@@ -454,7 +461,7 @@ interp_dV_dx_2 = LinearNDInterpolator(list(zip(x_valid_2, z_valid_2)), dV_dx_val
  
  #%%
 
-labelz = r'$\partial_x V/U$'
+labelz = r'$\partial_x \phi/U$'
 
 limits1 = [np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5),np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5)]
 # Create triangulation from scattered (x, z) points
@@ -477,25 +484,25 @@ bounds1 = np.concatenate([
 norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
 
 plt.figure(figsize=tamfig)
-plt.title(title5,fontsize=tamtitle)
+plt.title(title5,fontsize=tamtitle-4)
 tpc2 = plt.tripcolor(triang2, dV_dx_valid, shading='flat', cmap=cmap, norm=norm1)
 
 cbar = plt.colorbar(tpc2, fraction=0.046, pad=0.04 , format = '%.2f') 
-# cbar.ax.set_title(labelz,fontsize=tamletra-1)
-cbar.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
+cbar.ax.set_title(labelz,fontsize=tamletra)
+cbar.ax.tick_params(labelsize = tamnum, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 3 , width=1, direction="in",which = 'both', pad = pad)
-plt.plot([xleft],[h_0],'o',color =  'purple')
-plt.plot([xright],[h_0],'o',color =  'purple')
-if d_0 == 0.2:
-    plt.xticks([-2,-1,0,1,2])
+# plt.plot([xleft],[h_0],'o',color =  'purple')
+# plt.plot([xright],[h_0],'o',color =  'purple')
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2])
 plt.xlim(np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5))
 plt.ylim(np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5))
-plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
-plt.plot(np.ones(10)*(1/2),ejey_z,'--',color =  'black')
+# plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
+# plt.plot(np.ones(10)*(1/2),ejey_z,'--',color =  'black')
 os.chdir(path_data)
 plt.savefig('dVxz_dx.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('dVxz_dx.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 plt.show()
 
  #%%
@@ -516,10 +523,12 @@ for zc in z_values:
     
 plt.xlabel(r'$x/W$',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\partial (V/U) / \partial x$',fontsize=tamletra,labelpad =labelpady)
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2])
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
 plt.savefig('dVxz_dx_cut_along_x.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('dVxz_dx_cut_along_x.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 # plt.grid(True)
 plt.show()
 
