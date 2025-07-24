@@ -1,0 +1,42 @@
+
+N=400
+W=500
+H=500
+h=300
+L=500
+Eelectron_keV=200
+E1eV=0.75
+
+delta=10
+NE=1
+ 
+
+x0=0 // rectangular waveguide center at 0,0
+z0=0
+EeV=Eelectron_keV*1e3 // electron energy in eV
+zmax=h+delta
+zmin=-h-delta
+
+xmin=-L-W/2-delta
+xmax=L+W/2+delta
+xmax=1000
+
+Nz=400
+
+photon-energy E1eV E1eV NE
+grid xmin xmax Nz zmin zmax Nz                    // position of the electron , dont put a grid with EELS, changes the position of the electron
+incident-electron-z EeV 0 h+50                     // the electron is everywhere if I put a grid 
+
+include rectangular_wg_substrate2.bem
+
+begin-virtual-structure                          // close open structures 
+  
+end 
+
+
+
+begin-calculation
+calc EELS datfiles_EELS/EELS_along_xz_N400_W500nm_h300nm_L500nm_H500nm_Ee200keV_energy075eV.dat
+end-calculation                                                  
+
+end

@@ -1,0 +1,1 @@
+# V0 (eV)    theta (mrad)    P_mode1, $W$ = 400 nm, $h$ = 300 nm, $s$ = 20 nm, $d/W = 50$, $E_{\rm e}$ = 200 keV

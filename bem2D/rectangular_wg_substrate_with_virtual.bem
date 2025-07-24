@@ -1,0 +1,55 @@
+// parametrization of a rectangular wg on top of a substrate that is a thin line (segment P1-P2 P2-P5 P5-P6). invariance along y
+// external parameters:
+//     W   = total width of wg     || x
+//     h   = total thickness of wg || z
+//     L   = lenght of the substrate is 2*L+W  || x
+//     H   = total thickness of substrate || z
+//     N   = the total number of parametrization points  
+//     mu2 = material inside wg --> Si
+//     mu1/mu3 = material outside wg --> vacuum/substrate below
+//     (0,0) is at the interface of wg/substrate and in the middle of wg
+R=W/2+L
+perimeter1=L
+perimeter2=h
+perimeter3=W
+perimeter4=pi*R
+dx=W/N // fix the amounts of points per length
+N1=perimeter1/dx+1
+N2=perimeter2/dx+1
+N3=perimeter3/dx+1
+N4=perimeter4/dx+1
+
+epsilon 11 constant 1 0   // vacio en el exterior
+epsilon 22 Si_extra_loss.eps          // Silicon rectangular wg
+epsilon 33 constant 2 0       // Substrate below wg is glass. epsi=2
+                                            
+// see geometry_rectangular_WG.pdf for the definition of the points 
+///////// waveguide and 1 line between waveguide and substrate: rectangular_wg_substrate.bem //////
+add-segment  11 33  -L-W/2 0  -W/2   0   N1 // P1-P2 
+add-segment  11 22  -W/2   0  -W/2   h   N2 // P2-P3
+add-segment  11 22  -W/2   h   W/2   h   N3 // P3-P4
+add-segment  11 22   W/2   h   W/2   0   N2 // P4-P5
+add-segment  11 33   W/2   0   W/2+L 0   N1 // P5-P6
+add-segment  22 33   -W/2   0   W/2  0   N3 // P2-P5
+
+// add this to test geometry: 
+//add-arc 33 11 0 0  R L+W/2  0 -180 0 N4
+
+
+///////// here the substrate is a rectangule: rectangular_wg_substrate2.bem //////
+//add-segment  11 33  -L-W/2 0  -W/2    0   N1 // P1-P2 
+//add-segment  11 22  -W/2   0  -W/2    h   N2 // P2-P3
+//add-segment  11 22  -W/2   h   W/2    h   N3 // P3-P4
+//add-segment  11 22   W/2   h   W/2    0   N2 // P4-P5
+//add-segment  11 33   W/2   0   W/2+L  0   N1 // P5-P6
+//add-segment  22 33   -W/2  0   W/2    0   N3 // P2-P5
+//add-segment  33 11   W/2+L -H  W/2+L  0   N4 // P7-P6
+//add-segment  11 33   W/2+L -H -W/2-L -H   N5 // P7-P8
+//add-segment  11 33  -W/2-L -H -W/2-L  0   N4 // P8-P1
+
+ 
+ 
+// write-geometry bo1.dat  write-regions 400 bo2.dat  end
+// density bo2.dat - 0 1 2 3 a a a a a a 0 500 250 0 0 bo1.dat ; open bo2.gif
+
+end

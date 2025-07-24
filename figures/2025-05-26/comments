@@ -1,0 +1,22 @@
+Electron coupling to a waveguide mode (Cruz + Leila)
+
+project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
+
+GM 05/15/2025 comments: 
+	-add small imaginary part to the epsilon_2(omega) + 0.01 for all frequencies
+	-plot of dispersion relation was wrong. label x was kx instead of kpar 
+	In addition, the formula from paper #149 ("EELS_no_QE") is defined for positive kx,
+	then if I plot as a function of kx I need to be careful with this
+	-thickness = 0.2 microns
+	-resolve before 1eV to see the waveguide modes 
+	-know until which electron distance (ze) we can excite modes
+	-see in each case where i am in the dispersion relation
+	-reduce the energy electron loss up to 1 eV or 10 eV at most
+	-if we are close enough in ze, we can still excite after the guide modes (in that plot we dont need a zoom)
+
+GM 22/05/2025 comments: 
+	- change loss to $Im(\epsilon_2) = 0.1$. change it in rocket too (in rocket was added 0.01)
+	- fig. 1 with no zoom. go up to energy = 10 eV and bigger k_parallel
+	- fig. 2: cut for a fixed ze. 
+	- fig. 3: wf up to 10 eV. 
+

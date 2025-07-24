@@ -1,0 +1,29 @@
+mu2=2  mu3=1  x0=0  y0=0 Eek=200e3
+
+
+a=300  h=300  s=20  N=300 ze=50
+E1eV=1.35
+EfeV=10
+NE=1
+
+delta=100
+epsilon mu2 Si_extra_loss.eps
+xmin=-a/2+delta
+xmax=a/2+delta
+Nx=100
+zmin=-h/2-ze-delta
+zmax=h/2+ze+delta
+Nz=100
+
+photon-energy E1eV E1eV NE
+grid xmin xmax Nx zmin zmax Nz // for integration over z: 0 0 1 h/2 zmax Nz -- Gamma(z) 
+incident-electron-z Eek 0 h/2+ze  // 200 keV electron passing ze nm from surface
+include ribbon.bem 
+
+begin-calculation
+//induced-field  
+//calc full-near-field datfiles_EELS/field_xz.dat
+calc EELS datfiles_EELS/EELS.dat
+end-calculation
+
+end

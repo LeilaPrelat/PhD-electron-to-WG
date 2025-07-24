@@ -1,0 +1,24 @@
+W2=600  h2=200  s2=W2*0.1  N=200  ze=50
+W1=300  h1=100  s1=W1*0.1  
+
+mu1=1 mu2=2  mu3=3  x01=0  y01=h2/2   Eek=200e3
+x02=0 y02=-h1/2
+
+epsilon mu1 constant 1 0 // Air outside
+epsilon mu2 Si_extra_loss.eps
+epsilon mu3 Si_extra_loss.eps
+
+photon-energy 0.1 10 100
+grid 0 0 1 h2+ze 0 1
+incident-electron-z Eek 0 h2+ze  // 200 keV electron passing ze nm from surface
+
+include ribbon1.bem  
+
+//write-geometry geometry/geometry.dat
+write-regions N geometry/geometry.dat
+
+//begin-calculation  
+//calc EELS datfiles_EELS/EELS.dat
+//end-calculation
+
+end

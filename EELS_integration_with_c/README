@@ -1,0 +1,27 @@
+read the slide "Electron-coupling-to-WG: explication of the code.pdf" : 
+---------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+
+all the codes needed for EELS integrated over z 
+P_integrated_over_z(z_min_val_norm_w, energy, w, h, xe, Ee_electron_keV, N, theta, V0, list_z_norm_w, listV_normU, V0_over_U)
+
+1) THIS I WILL RUN LOCALLY IN MY COMPUTER AND WILL UPLOAD TO SONIC: run_find_bmin_vs_V0_theta.sh
+
+A) run_potential_norm_V0.sh to run the potential (list_z_norm_w, listV_normV0) and save the data normalized to V0_over_U 
+   chmod +x run_potential_norm_V0.sh
+ 
+# g++ -o e.out e.cpp
+a) first part: finds the value V0_over_U
+b) second part: saves data (1 column z/w | 2 column V/V0) 
+ ------ test: compare data from c vs python : plot_potential_from_c_vs_python.py. done 
+     
+B) run_bmin_vs_theta_V0.sh to run python code, bmin(V0,theta), for different bmin, xe, d/W, h/W:
+---> save data of V0_solutions/theta_solutions
+
+upload the V0_solutions/theta_solutions to sonic
+
+2) split_positive_eels.sh to split the EELS vs (z,energy) in 1 .txt per energy and save them in /new_files + only save the EELS>0  
+
+3) integration over z: EELS_integrated_over_z.h (EELS + potential + V0_solutions/theta_solutions) + EELS_integrated_over_z.cpp
+
+4) integration over energy/mode: fit_peaks.py to fit the peaks as a lorentzian and find the width to integrate over energy

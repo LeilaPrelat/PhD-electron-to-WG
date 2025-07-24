@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# ./genbemax EELS rectangular waveguide varying ze (impact parameter)
+
+Nlist=(100 200 400)
+Wlist=(500)
+hlist=(300)
+#zelist=($(seq 10 5 100)) ## meV
+Llist=(500 1000) ## nm
+Rlist=(100 300 500 1000) ## nm
+Eelectronlist=(200)
+
+for N in ${Nlist[@]}; do
+for W in ${Wlist[@]}; do
+for h in ${hlist[@]}; do
+for L in ${Llist[@]}; do
+for R in ${Rlist[@]}; do
+for Eelectron in ${Eelectronlist[@]}; do
+#  echo genbemax_electron $a $b $m $E0meV $E0meV $N
+  ./genbemax_EELS_spectrum_rect_wg_with_virtual $N $W $h $L $R $Eelectron
+   echo genbemax_EELS_spectrum_rect_wg_with_virtual $N $W $h $L $R $Eelectron
+done
+done
+done
+done
+done
+done

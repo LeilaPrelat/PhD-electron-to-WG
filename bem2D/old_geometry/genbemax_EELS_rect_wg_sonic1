@@ -1,0 +1,80 @@
+#!/bin/bash
+# /////////////////// defining parameters for a rectangular wg . geometry in ribbon.bem /////////////////////////////
+# //     N   = the total number of parametrization points is N+50
+# //     a   = total width of wg     || x
+# //     h   = total thickness of wg  || y
+# //     s   = rounding radius of wg (s<t/2). fixed to 10% of a 
+# //     ze  = impact parameter is h/2+ze. ze distance between electron and wg surface 
+
+N=${1:-400}
+a=${2:-400}
+h=${3:-100}
+ze=${4:-50}
+Eelectron=${5:-200}
+
+
+NOFraw='EELS_epsi12_N'${N}'_a'${a}'nm_h'${h}'nm_ze'${ze}'nm_Ee'${Eelectron}'keV_xe40W'
+NOF=$(echo $NOFraw | sed -e 's/\.//g')
+
+NOFfiles='_EELS'
+
+#bem file
+mkdir -p bemfiles${NOFfiles}
+mkdir -p datfiles${NOFfiles}
+mkdir -p shfiles${NOFfiles}
+
+cat > bemfiles${NOFfiles}/${NOF}.bem << EOF
+
+N=$N
+a=$a
+h=$h
+s=a*0.1 // 10% of the width
+ze=$ze
+
+//E1eV=0.1
+//EfeV=2
+E1eV=0.5
+EfeV=5
+xe=a*0.4 // 40% of the width
+
+NE=6000
+
+mu2=2
+mu3=1
+x0=0 // rectangular waveguide center at 0,0
+y0=0
+EeV=$Eelectron*1e3 // electron energy in eV
+
+epsilon mu2 eps12_extra_loss.eps       // Silicon rectangular rod 
+
+photon-energy E1eV EfeV NE
+grid xe 0 1 h/2+ze 0 1    // position of the electron , dont put a grid with EELS, changes the position of the electron
+incident-electron-z EeV 0 h/2+ze  // 200 keV electron passing ze nm from surface
+include ribbon.bem  
+
+begin-calculation
+calc EELS datfiles${NOFfiles}/${NOF}.dat
+end-calculation                                                  
+
+end
+EOF
+
+cat > $NOF.sh <<EOF
+
+#!/bin/sh
+#$ -cwd
+#$ -j y
+#$ -l h=!compute-4-21
+
+time ./bem2D bemfiles${NOFfiles}/${NOF}.bem
+EOF
+
+qsub -q NPT_new $NOF.sh
+
+echo $(date '+%F %T') $'\t' $NOF >> qsub_EELS_rect_wg_sonic.log
+
+# rm bemfiles/$NOF.bem
+
+mv $NOF.sh shfiles${NOFfiles}/$NOF.sh
+
+

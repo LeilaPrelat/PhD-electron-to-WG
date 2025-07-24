@@ -1,0 +1,28 @@
+
+N=300
+a=200
+h=400
+s=10
+ze=35
+
+E1eV=0.1
+EfeV=10
+NE=100
+mu2=2
+mu3=1
+x0=0 // rectangular waveguide center at 0,0
+y0=0
+EeV=200e3 // electron energy in eV
+
+epsilon mu2 Si_extra_loss.eps       // Silicon rectangular rod 
+
+photon-energy E1eV EfeV NE
+grid 0 0 1 h/2+ze 0 1    // position of the electron 
+incident-electron-z EeV 0 h/2+ze  // 200 keV electron passing ze nm from surface
+include ribbon.bem  
+
+begin-calculation
+calc EELS datfiles_EELS/EELS_N300_a200nm_h400nm_ze35nm.dat
+end-calculation                                                  
+
+end

@@ -1,0 +1,9 @@
+Electron coupling to a waveguide mode (Cruz + Leila)
+		
+-. issue 12-05-2025 : equation paper 228 Eq. 3 for the EELS is assuming the QE approximation, which works for plasmon but maybe for waveguide no so much. We will use eq. 25 of paper 149 which is general (using kz). Both expressions are equivalent in the limit of c --> infty. 
+
+--> EELS_non_QE and EELS_QE are defined inside EELS.py 
+
+we should compare both equations for different Ee: plot_compare_EELS_QE_approx.py
+
+- zoom of gamma(ze,hb*omega) for small energies

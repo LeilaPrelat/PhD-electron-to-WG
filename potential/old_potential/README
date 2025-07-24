@@ -1,0 +1,35 @@
+Electron coupling to a waveguide mode (Cruz + Leila)
+
+project overleaf: https://www.overleaf.com/7456489821nzcssmvbqncb#9faea3
+
+We use the image method to obtain the electrostatic potential. 
+
+code d.h : 
+- Models a grounded plane + biased rectangular wire with rounded corners.
+- Uses the boundary element method to compute induced surface charge.
+- Computes electrostatic potential at any point in space (x,y)
+  	The code normalizes everything such that:
+		- The potential on the wire is always 1.
+		- The grounded plane remains at potential 0.
+		- All computed potentials in space are dimensionless, ranging between 0 and 1.
+		
+
+All lengths are given in units of the x side-length a
+
+g++ -o d.out d.cpp: --> ./d.out bb_value ss_value dd_value  N > output.dat
+
+where:
+
+bb = 2, aspect ratio (side length along y divided by side length along x).
+
+ss = 0.1, rounding radius.
+
+dd = 1, wire-plane distance in units of a.
+
+N = 200, discretization points.
+
+returns y/a, V(y/a)/V0 = output.dat
+
+dxy.cpp : modify d.cpp to return x/a, y/a, V(y/a)/V0 = output.dat
+
+dy.cpp : same as d.cpp but written in a different way. returns y/a, V(y/a)/V0 = output.dat

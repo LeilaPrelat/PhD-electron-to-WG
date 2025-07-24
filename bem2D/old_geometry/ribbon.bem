@@ -1,0 +1,19 @@
+// parametrization of a ribbon with rounded edges and trans. invariance along z
+// external parameters:
+//     a   = total width      || x
+//     h   = total thickness  || y
+//     s   = rounding radius  (s<h/2)
+//     N   = the total number of parametrization points is N+50
+//     mu2 = material inside ribbon --> Si
+//     mu3 = material outside ribbon --> Air
+//     (x0,y0) = central point in the ribbon --> (0,0)
+
+L=2*a+2*h-8*s+2*pi*s
+
+ox-flat-end mu2 mu3 x0 y0 h a/2 s (h/L)*N+5 (a/2/L)*N+5 (pi*s/L)*N+5
+xo-flat-end mu2 mu3 x0 y0 h a/2 s (h/L)*N+5 (a/2/L)*N+5 (pi*s/L)*N+5
+
+// write-geometry bo1.dat  write-regions 400 bo2.dat  end
+// density bo2.dat - 0 1 2 3 a a a a a a 0 500 250 0 0 bo1.dat ; open bo2.gif
+
+end

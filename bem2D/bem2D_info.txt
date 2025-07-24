@@ -1,0 +1,852 @@
+**************************************************************************  
+bem2D.cpp                                             8-v-98 -->  6-iv-06   
+**************************************************************************  
+                                                                            
+    BEM2D - Boundary Element Method in two-dimensional (2D) systems         
+                                                                            
+**************************************************************************  
+                                                                            
+SOLUTION OF MAXWELL'S EQUATIONS BY MEANS OF THE BOUNDARY ELEMENT METHOD     
+WITH APPLICATION TO                                                         
+                                                                            
+      - CALCULATION OF FAR FIELDS AND NEAR FIELDS FOR INCIDENT              
+        PLANE WAVES AND DIPOLE SOURCES OR ARBITRARY ORIENTATION,            
+                                                                            
+      - CALCULATION OF LOCAL DENSITIES OF PHOTONIC STATES (LDOS), AND       
+                                                                            
+      - CALCULATION OF ELECTRON ENERGY LOSS SPECTRA (EELS),                 
+                                                                            
+ALL OF THIS FOR NON-MAGNETIC OBJECTS THAT HAVE TRANSLATIONAL SYMMETRY       
+ALONG A GIVEN DIRECTION (TAKEN HERE AS THE z AXIS) AND USING ACTUAL         
+FREQUENCY-DEPENDENT COMPLEX DIELECTRIC FUNCTIONS. THE GEOMETRY OF THE       
+OBJECTS UNDER CONSIDERATION HAS TO HAVE 2D SYMMETRY, BUT THE COMBINED       
+SYSTEM OF OBJECTS AND EXTERNAL PERTURBATION CAN BE NON-SYMMETRIC.           
+                                                                            
+(c)  Prof. F. Javier Garcia de Abajo,                   1998-2010           
+     CSIC                                                                   
+     javier.garciadebajo@nanophotonics.es                                   
+                                                                            
+I - TERMS OF USE                                                            
+                                                                            
+Publications that make use of BEM2D are required to include an              
+acknowledgment such as \"Electromagnetic calculations were performed        
+using the BEM2D program\" and to quote the following papers (they provide   
+a description of the method):                                               
+                                                                            
+ (1) \"Relativistic electron energy loss and electron-induced photon        
+     emission in inhomogeneous dielectrics\",                               
+     F. J. Garcia de Abajo and A. Howie,                                    
+     Phys. Rev. Lett. 80, 5180-5183 (1998).                                 
+                                                                            
+ (2) \"Retarded field calculation of electron energy loss in inhomogeneous  
+     dielectrics\",                                                         
+     F. J. Garcia de Abajo and A. Howie, Phys. Rev. B 65, 115418 (2002).    
+                                                                            
+II - GENERAL DESCRIPTION                                                    
+                                                                            
+The electromagnetic field is expressed in terms of charges and              
+currents distributed on the surfaces and interfaces of the                  
+structure under consideration. The boundary conditions for the              
+electromagnetic field provide a set of linear integral equations,           
+with charges and currents as unknowns, which are solved                     
+self-consistently in the presence of the external incident field            
+by discretizing the integrals. The only assumption in this method           
+is that the different media involved in the structures under study          
+are described by frequency-dependent local dielectric functions.            
+The user is referred to the publications (1-2) above for further details.   
+                                                                            
+This program is prepared to accept commands from an input file that defines 
+the boundary geometry and instructs the program to calculate any of the     
+quantities noted above. The program is invoked using the command            
+                                                                            
+     bem2D input-file                                                       
+                                                                            
+and the structure and keywords of the input file are explained below.       
+                                                                            
+Input/output units are as follows:                                          
+                                                                            
+     nm               for geometrical lengths and wavelengths               
+     eV               for photon and electron energies                      
+     w/c              for the momentum along the z direction, q             
+     degree           for all angles                                        
+                                                                            
+     Incident single plane waves have electric and magnetic fields of unit  
+     amplitude and the corresponding calculated near fields are normalized  
+     with respect to the incident electric field in that case.              
+                                                                            
+     EELS spectra are given in loss probability per eV of energy-loss       
+     range per incoming electron per nm of electron path length for         
+     trajectories parallel to the z axis.                                   
+                                                                            
+Gaussian units have been used throughout the entire program.                
+(Atomic units are used inside the code.)                                    
+                                                                            
+The bulk of the computational effort is devoted to initialize the system    
+for each value of the photon energy or wavelength. This is done once for    
+each energy/wavelength within each calculation loop (see below), so that    
+several quantities can be calculated simultaneously without having to       
+initialize the system for each one of them. Energy/wavelength               
+initialization involves matrix inversion and multiplication, so that        
+it consumes a time proportional to                                          
+                                                                            
+                      T_initialization  ~  N^3,                             
+                                                                            
+where N is the number of parametrization points. Then, each specific        
+quantity to be calculated requires to multiply the self-consistent          
+matrices of the system by a vector, so that each of them requires a time    
+                                                                            
+                      T_physical_quantity  ~  N^2                           
+                                                                            
+which has to be added to T_initialization. The N^2 component can be         
+large when calculating near-field distributions or LDOS in a large grid.    
+Otherwise, the N^3 component dominates the calculation demand.              
+                                                                            
+III - INPUT FILE                                                            
+                                                                            
+The input file consists of a list of commands that are executed in          
+consecutive order. It has to have the following structure:                  
+                                                                            
+      1.- Define boundary geometry.                                         
+      2.- Define regions properties (i.e., dielectric functions)            
+          and other parameters.                                             
+      3.- Define photon energy or wavelength and momentum along z.          
+      4.- Calculation loop.                                                 
+            4.1.- Begin calculation loop.                                   
+            4.2.- Define source (light plane wave, electron beam, etc.).    
+            4.3.- Define scanning parameters (e.g., near-field grid, etc.). 
+            4.4.- Run calculations of scattering, near fields, EELS, etc.   
+            4.5.- End calculation loop.                                     
+      5.- Exit the program.                                                 
+                                                                            
+The geometry is assumed to have 2D symmetry, so that it is only             
+necessary to define it in the x-y plane, taking z as the direction of       
+translational invariance. The 2D x-y plane is divided into regions          
+separated by abrupt interfaces, as defined by the boundaries of part 1 of   
+the input file. Each region is homogeneous and characterized by a           
+frequency-dependent complex dielectric function identified through a label  
+and either read from an input file or parametrized through a simple         
+analytical expression.                                                      
+                                                                            
+Boundaries have to have smooth shapes (i.e., continuous normal vectors).    
+The presence of sharp edges can cause numerical instabilities               
+that have to be treated with special care by the user.                      
+Each boundary must separate different regions, and even if they have        
+identical permittivity, their numerical labels must be different.           
+                                                                            
+The calculations are done by solving the 1D problem posed by each           
+exp(i q z) component, with q being the momentum along the z                 
+axis (i.e., we will work in Fourier-transform space with respect to z).     
+                                                                            
+The bulk of the calculation time is spent in carrying out matrix inversions 
+to solve Maxwell's equations for each value of w and q. Therefore, the      
+program is designed to make an optimum use of this part, so that various    
+types of calculations can be performed in each calculation loop. Before     
+each calculation is done, the source (e.g., a dipole source) must be        
+defined as well as the range of scanning parameters (e.g., outgoing         
+angles), and this can change from calculation to calculation. However, all  
+calculations performed within a single begin-calculation to end-calculation 
+loop will require a single initialization per photon energy/wavelength and  
+momentum q.                                                                 
+                                                                            
+The input file can contain an arbitrary number of calculation loops. Also,  
+initializations of scanning parameters and sources can be placed before     
+a calculation loop if they are shared by all calculations within that loop. 
+                                                                            
+Finally, the calculation loop can include definitions and redefinitions     
+of scanning parameters and other parameters (e.g., grid parameters),        
+except specifications of q and energy/wavelength ranges, which have to be   
+placed before the calculation loop.                                         
+                                                                            
+III.1 DESCRIPTION OF COMMANDS USED TO DEFINE THE BOUNDARY GEOMETRY          
+                                                                            
+ -->  add-segment  mu1 mu2  x0 y0  x1 y1  n                                 
+                                                                            
+      This adds a straight line from point (x0,y0) to point (x1,y1)         
+      parametrized with n points and separating regions mu1 and mu2,        
+      with the relative position of these regions as shown in the           
+      following diagrams:                                                   
+                                                                            
+                   (x1,y1)        (x0,y0)                                   
+                    /              /                                        
+               mu1 /          mu2 /                                         
+                  / mu2          / mu1                                      
+                 /              /                                           
+             (x0,y0)         (x1,y1)                                        
+                                                                            
+ -->  add-arc  mu1 mu2  x0 y0  a b  alpha  th0 th1  n                       
+                                                                            
+      This adds an arc of an ellipse described by n discretization points.  
+      The ellipse is centered at (x0,y0) and has a principal axis of radius 
+      a forming an angle alpha degrees with respect to the x direction, and 
+      the other principal axis of radius b forms an angle alpha degrees     
+      with respect to the y direction. The region inside/outside the        
+      ellipse is mu1/mu2:                                                   
+                                                                            
+                     |                                                      
+                   b |   mu1     th1                                        
+                     |            |   mu2                                   
+                     *------------|                                         
+              (x0,y0)     a       |                                         
+                                 /                                          
+                            th0 /                                           
+                                                                            
+      The ellipse spans the angular region (th0,th1) in degrees, with the   
+      angle measured counter-clockwise with respect to principal axis a.    
+                                                                            
+ -->  add-spline  mu1 mu2  th0 th1  n  input-points                         
+                                                                            
+      Add boundary defined through a cubic spline of the points defined in  
+      file input-points. The total number of parametrization points         
+      will be n. This does not have to be necessarily equal to the number   
+      of points included in file input-points. The format of this file is   
+      'x y' in each line, with the number of points in the file given in    
+      the first line. The tangents at the first and at the last             
+      points of this fragment of boundary form angles th0 and th1 with      
+      respect to the x axis, respectively. If input-points is chosen        
+      as 'inline' then the program reads the number of points and the       
+      points to perform spline directly from the current input file.        
+                                                                            
+ -->  begin-virtual-structure                                               
+                                                                            
+      After this command is invoked, further boundary elements are only     
+      used to determine internally the region in which (x,y) points are     
+      located, but they are not employed in the final parametrization for   
+      solving Maxwell's equations. This command is useful when open         
+      structures are needed (e.g., an infinite wedge), since the internal   
+      determination of the regions require that the boundaries are          
+      closed (no open ends).                                                
+                                                                            
+ -->  period a n na                                                         
+                                                                            
+      This sets the system periodic along the x axis, with period a,        
+      calculating the Green functions for interaction between different     
+      parametrization elements with inclusion of 2*n+1 periods, and         
+      making these Green functions to artificially decay (1/e decay after   
+      na periods) in order to guarantee convergence of lattice sums.        
+      This can be used only with electrons moving parallel to x or with     
+      an incident plane wave of light, and only to calculate the near       
+      field in the central period or the contribution of the latter to      
+      the far field. Make a<0 to resume to non-periodic systems.            
+                                                                            
+ -->  scale-by fct                                                          
+                                                                            
+      This scales the geometry defined so far by a factor fct (all          
+      distances are scaled by that factor).                                 
+                                                                            
+ -->  translate x0 y0                                                       
+                                                                            
+      This translates the geometry so far defined by a vector (x0,y0)       
+      in the x-y plane.                                                     
+                                                                            
+ -->  rotate x0 y0 theta                                                    
+                                                                            
+      This rotates the geometry defined so far by an angle theta in the     
+      counter-clockwise direction with respect to the point (x0,y0) in      
+      the x-y plane.                                                        
+                                                                            
+ -->  reflect y0                                                            
+                                                                            
+      Reflect the geometry so far defined with respect to the y=y0 plane.   
+                                                                            
+ -->  duplicate dx dy                                                       
+                                                                            
+      Create a copy of the boundaries that have been defined in the         
+      input file up to this command, but displaced by a vector (dx,dy)      
+      with respect to the original one.                                     
+                                                                            
+ -->  repeat-periodically a1 a2 alpha beta Rmax                             
+                                                                            
+      Use the geometry so far defined as a basis to construct a periodic 2D 
+      lattice consisting of copies of that geometry. The 2D lattice has     
+      vectors of lengths a1 and a2. The first vector forms an angle alpha   
+      with respect to the x axis. The second vector forms an angle          
+      beta with respect to the first vector. All lattice sites up           
+      to a distance Rmax from (0,0) will be included.                       
+                                                                            
+ -->  repeat-periodically-1D a phi n m                                      
+                                                                            
+      Create n+m additional copies of the geometry defined so far along the 
+      direction given by the polar angle phi in degrees with respect to the 
+      x axis. The spacing between copies is a. m copies go in the positive  
+      direction of phi and n copies go in the negative direction.           
+                                                                            
+ -->  write-geometry output-file                                            
+                                                                            
+      Print out information on discretization points as defined so far      
+      using the above commands. The output of this command is written       
+      both in the screen and in an output file. The output file contains    
+      just four columns with (x,y) values for the parametrization points    
+      (first two columns) and (mu1,mu2) values (see below.)                 
+      In the screen, each output line contains the following                
+      information: i, ths, mu1, mu2, xs, ys, nxs, nys, coef, and ns, where  
+      (xs,ys) are the coordinates of point i, (nxs,nys) is the boundary     
+      normal, which must point towards medium mu2 (IMPORTANT WARNING: the   
+      geometry, and in particular the orientation of the normal, must be    
+      checked by the user with this command before calculating anything),   
+      medium mu1 is on the other side of the boundary, ths is the boundary  
+      parameter [x=xs(ths), y=ys(ths)], ns is the Jacobian of this          
+      parametrization, and coef is the parameter increment used to          
+      integrate along the boundaries. Most users will only need (xs,ys)     
+      to plot the geometry and (nxs,nys), mu1, and mu2 to check it.         
+      The columns mu1 and mu2 in the output file correspond to the medium   
+      that is on the left or on the right hand side as we walk along the    
+      boundary in the direction of increasing ths.                          
+                                                                            
+ -->  write-region mu n output-file                                         
+                                                                            
+      Print out file output-file with those points (x,y) of a grid of       
+      n by n points that are contained inside region mu. Each output line   
+      contains \"x y\".                                                     
+                                                                            
+ -->  write-regions n output-file                                           
+                                                                            
+      Print out file output-file with points covering the entire            
+      geometry using a grid of n by n points. Each output line has the      
+      format \"x y mu\", where mu is the region where (x,y) is located.     
+                                                                            
+ -->  clear-geometry                                                        
+                                                                            
+      Clear the geometry.                                                   
+                                                                            
+III.2 COMMANDS FOR DIELECTRIC FUNCTIONS AND OTHER PARAMETERS                
+                                                                            
+The program assumes that media 0 and 1 correspond to vacuum                 
+(permittivity=1).                                                           
+                                                                            
+ -->  epsilon mu Drude e1 e2 wp wg eta                                      
+                                                                            
+      Define the dielectric function of medium mu as given by a Drude-like  
+      expression of the form                                                
+                                                                            
+                                                  wp^2                      
+              epsilon_mu(w) = e1 + i e2 + --------------------              
+                                           wg^2 - w (w+i eta)               
+                                                                            
+      (w, wp, wg, and eta are in eV). Here, mu is one of the labels         
+      denoted mu1 or mu2 in the commands add-segment, add-arc, etc.         
+                                                                            
+ -->  epsilon mu constant e1 e2                                             
+                                                                            
+      Define the dielectric function of medium mu as independent of w       
+      and given by the complex value e1+i*e2.                               
+                                                                            
+ -->  epsilon mu filename                                                   
+                                                                            
+      Define the dielectric function of medium mu as given by the           
+      tabulated data contained in file filename. The format of this         
+      file is as follows:                                                   
+                                                                            
+          1st line:    n units e/n                                          
+          2nd line:    w1 a1 b1                                             
+          ...                                                               
+          (n+1)^th     wn an bn                                             
+                                                                            
+      where n is the number of tabulated points; units can be \"E(eV)\"     
+      if w1, ..., wn are photon energies in eV or it can be \"l(nm)\" if    
+      w1, ..., wn are photon wavelengths in nm; e or n has to be            
+      selected in the first line, so that epsilon=aj+i*bj if e is           
+      chosen and epsilon=(aj+i*bj)^2 if n is chosen (then aj+i*bj is        
+      the complex index of refraction). Dielectric function data files      
+      must be placed in the working directory.                              
+                                                                            
+III.3 RANGE OF PHOTON ENERGIES OR WAVELENGTHS AND MOMENTA q                 
+                                                                            
+ -->  photon-energy  w0 w1 nw                                               
+                                                                            
+      Range of photon energies to be calculated, from w0 to w1 in eV with   
+      a total of nw energies. For EELS, this is the energy loss.            
+                                                                            
+ -->  photon-wavelength  lambda0 lambda1 nlabmda                            
+                                                                            
+      Alternatively, one can define the range of photon wavelengths         
+      (then, the output will be in wavelengths). For EELS, this is the      
+      wavelength associated to the energy loss.                             
+                                                                            
+ -->  q q0 q1 nq                                                            
+                                                                            
+      Specify values of momenta in units of the momentum of light in        
+      free space, w/c, where w is the frequency and c the speed of light.   
+                                                                            
+ -->  qq q0 q1 nq                                                           
+                                                                            
+      Same as 'q ...', but with momentum input/output in 1/nm (not q*c/w).  
+                                                                            
+ -->  theta theta0 theta1 ntheta                                            
+                                                                            
+      This is an alternative to the command 'q ...'. In this case the       
+      value of q is taken as (w/c)*cos(theta), from theta=theta0 to         
+      theta=theta1 with a total of ntheta equally-spaced values of theta.   
+      Then, theta is the angle of the 'radiation' in free space with        
+      respect to z.                                                         
+                                                                            
+III.4 CALCULATION LOOPS                                                     
+                                                                            
+Calculation loops share a common range of photon energies and q's.          
+They constitute a way to save computation time when several calculations    
+must be performed for the same geometry with common energy/wavelength       
+and q ranges (e.g., both total and elastic cross sections).                 
+                                                                            
+III.4.1 BEGIN CALCULATION LOOP                                              
+                                                                            
+ -->  begin-calculation                                                     
+                                                                            
+      This begins a calculation loop.                                       
+                                                                            
+III.4.2 TYPE OF SOURCE OF ELECTROMAGNETIC FIELDS                            
+                                                                            
+Various types of sources can be defined. Each actual calculation (see Sec.  
+III.4.4 below) is performed for the last source that has been defined.      
+For instance, one can define an light plane wave, then perform calculations 
+for it, and then define a dipole source and perform calculations for this   
+dipole.                                                                     
+                                                                            
+ -->  incident-plane-wave  phii  alpha delta                                
+                                                                            
+      This defines the source as an incident light plane wave moving        
+      towards the direction of polar angles (thi,phii) and with             
+      arbitrary polarization given by the angles alpha and delta:           
+                  alpha=0   delta=0   for p linear polarization,            
+                  alpha=90  delta=0   for s linear polarization,            
+                  alpha=45  delta=90  for LCP light,                        
+                  alpha=45  delta=-90 for RCP light,                        
+      and in general the polarization vector takes the form                 
+        (cos(alpha) cos(thi) cos(phii)-sin(alpha) sin(phii) exp(i delta),   
+         cos(alpha) cos(thi) sin(phii)+sin(alpha) cos(phii) exp(i delta),   
+        -cos(alpha) sin(thi))                                               
+      in Cartesian coordinates, where the angle thi corresponds to the      
+      value entered via the command 'theta ...' (see above).                
+                                                                            
+ -->  dipole  x y  Re{px} Im{px} Re{py} Im{py} Re{pz} Im{pz}                
+                                                                            
+      Define the source as a dipole of strength equal to 1 a.u. centered    
+      at (x,y,z=0). The dipole has components (px,py,pz). (Notice that      
+      z=0 does not impose any restriction for our 2D systems.)              
+      (In a.u. the charge of an electron, hbar, and the Bohr radius are     
+      all equal to 1.)                                                      
+                                                                            
+ -->  incident-electron-x  E y                                              
+                                                                            
+      Incoming electron of energy E in eV moving parallel to the x axis     
+      at a distance y from this axis (and at z=0). The calculation will     
+      actually yield q components of the field (as specified by 'q ...').   
+                                                                            
+ -->  incident-electron-z  E x y                                            
+                                                                            
+      Incoming electron of energy E in eV moving along a straight-line      
+      trajectory parallel to the z axis and given by the 2D vector (x,y).   
+      This will remove any information on q previously defined via          
+      'q ...' or 'theta ...' commands, since q=w/v in this case.            
+      The (x,y) parameters determine the trajectory when calculations of    
+      far or near fields are performed, but these commands are disregarded  
+      when calculating EELS (the 'grid ...' command is used to determine    
+      (x,y) in that case).                                                  
+                                                                            
+ -->  incident-electron-velocity  beta                                      
+                                                                            
+      This commands overwrites the energy assigned by the previous command  
+      and sets the electron velocity equal to beta times the speed of       
+      light in vacuum. This command has an effect only if it is used after  
+      any one of the last two commands.                                     
+                                                                            
+III.4.3 DEFINITION OF SCANNING PARAMETERS                                   
+                                                                            
+ -->  outgoing-angles  phi0 phi1 nphi                                       
+                                                                            
+      Define range of output angles where the far field is evaluated.       
+      This defines a grid in azimuthal angle phi (from phi0 to phi1 with    
+      a total of nphi equally-spaced angles).                               
+                                                                            
+ -->  grid  x0 x1 nx  y0 y1 ny                                              
+                                                                            
+      Real space grid used to calculate near fields: from x0 to x1 nm in    
+      the x direction with a total of nx equally-spaced points, and         
+      similarly with the y direction.                                       
+                                                                            
+ -->  grid-2  R0 R1 nR  phi0 phi1 nphi                                      
+                                                                            
+      Cylindrical grid, in the space of (R,phi) coordinates. The angle phi  
+      is measured relative to the x axis in the counterclosewise direction. 
+                                                                            
+ -->  total-field                                                           
+                                                                            
+      This informs the program that near- and far-fields are calculated     
+      including the external source (this is the default). The far field    
+      incorporates the external field only in the case of dipole sources.   
+                                                                            
+ -->  induced-field                                                         
+                                                                            
+      This informs the program that near and far fields are calculated      
+      without the external field: only induced fields are calculated.       
+      This command affects only the near field.                             
+                                                                            
+III.4.4 ACTUAL CALCULATIONS                                                 
+                                                                            
+The following commands contain the output file as a parameter. An important 
+word of caution: for far-field calculations the material outside the        
+parametrized structure has to be transparent. The user has to make sure     
+that this is the case.                                                      
+                                                                            
+The output of each of the following commands is written into an output      
+file, unless the name of this file is chosen as 'screen', in which case     
+the output is presented in the screen (useful for short calculations).      
+                                                                            
+ -->  calc far-field  output-file                                           
+                                                                            
+      Calculate angle-resolved far field cross lengths. The far field       
+      will have the form  [exp(i Qj R) / R^0.5]  f(phi), where R is the     
+      distance to x=y=0, Qj is the momentum component of light in the       
+      medium that surrounds the parametrized geometry in the x-y plane,     
+      and f(phi) is the field strength. The output file has ten columns:    
+      photon energy/wavelength, momentum q divided by k=w/c or angle theta  
+      (depending on how q was defined above), azimuthal angle phi, Re{fx},  
+      Im{fx}, Re{fy}, Im{fy}, Re{fz}, Im{fz}, and the intensity I.          
+      Re{fx}, ... are given in a.u. in all cases (the electron charge and   
+      mass and hbar are all 1 in a.u.).                                     
+      The intensity I is intended to yield the photon rate leaving the      
+      structure, so it is calculated from the Poynting vector component     
+      on the x-y plane in the far field, which proportional to Qj*|f|^2.    
+                                                                            
+      For incident light, I=Qj*|f|^2/kj is the scattering length in nm      
+      per radian of outgoing angle phi, where kj is the light momentum in   
+      the surrounding medium j.                                             
+                                                                            
+      For a dipole, I=Qj*|f|^2/(4*pi*w/c) in a.u.                           
+                                                                            
+      For electrons moving along z, I=Qj*|f|^2/(4*pi^2*(w/c)^2) is the      
+      number of photons emitted per electron per eV of photon energy range  
+      per nm of electron path length per rad of azimuthal emission angle.   
+                                                                            
+      For electrons moving along x, I=Qj*|f|^2/(8*pi^3*(w/c)^2) is the      
+      number of photons emitted per electron per eV of photon energy range  
+      and per sterad of directions of emission.                             
+                                                                            
+ -->  calc integrated-far-field  output-file                                
+                                                                            
+      Integral of I (see previous command) over range of azimuthal angles.  
+      The output file has three columns: energy/wavelength, q/k, and        
+      integral of I. The far field is given in a.u. for a dipole source     
+      (see previous command); in number of photons emitted per incoming     
+      electron per eV of energy range for electrons moving parallel to x;   
+      in number of photons emitted per incoming electron per eV of energy   
+      range per nm of electron path length for electrons moving parallel    
+      to z; and in nm for an incoming plane wave (scattering cross sect.).  
+                                                                            
+ -->  calc cross-section output-file                                        
+                                                                            
+      Compute extinction cross section (in nm) for an incident plane wave.  
+      Output file: w, q, cross section.                                     
+                                                                            
+ -->  calc E2-near-field output-file                                        
+                                                                            
+      Calculate |E|^2 in the grid defined with the grid command. This is    
+      done for all energies/wavelengths defined by the user. In some cases  
+      one will be interested in a spectrum of |E|^2 at a single point in    
+      the near field. In other cases one will be interested in a map of the 
+      near field at a single energy. The output file will contain           
+      five columns with energy/wavelength, q, x, y, and |E|^2,              
+      respectively. The E field is normalized to the incident light field   
+      in the case of a single plane-wave source.                            
+      For a source dipole, each q gives a component of a point dipole,      
+      such that the integral over q=0->infty of (E-output)/pi is the field, 
+      but notice that Ex(q)=Ex(-q), Ey(q)=Ey(-q), Ez(q)=-Ez(-q), and        
+      this program only calculates for q>0.                                 
+                                                                            
+ -->  calc H2-near-field output-file                                        
+                                                                            
+      Same as the previous command, but with |H|^2 rather than |E|^2.       
+                                                                            
+ -->  calc full-near-field output-file                                      
+                                                                            
+      Similar to the above commands, but the output file contains           
+          energy/wavelength, q, x, y,                                       
+          Re{Ex}, Im{Ex}, Re{Ey}, Im{Ey}, Re{Ez}, Im{Ez},                   
+          Re{Hx}, Im{Hx}, Re{Hy}, Im{Hy}, Re{Hz}, Im{Hz}                    
+      (a total of 16 columns) with the real and imaginary parts of the      
+      Cartesian components of the electric field (E) and the magnetic       
+      field (H).                                                            
+                                                                            
+ -->  calc boundary-near-field mu d output-file                             
+                                                                            
+      Calculate electric field components in medium mu right a distance     
+      d away from each parametrization point. Each output line contains:    
+          energy/wavelength, q, x, y, i, dli,                               
+          Re{Eperp}, Im{Eperp}, Re{Epara}, Im{Epara}, Re{Ez}, Im{Ez},       
+          Re{Hperp}, Im{Hperp}, Re{Hpara}, Im{Hpara}, Re{Hz}, Im{Hz},       
+      where Epara is the field parallel to the surface and perpendicular to 
+      z, Eperp is the field perpendicular to the surface, i is a point      
+      index (notice that only points that have a boundary with medium mu    
+      will be calculated), and dli is the length of that element (in nm).   
+      The normal is taken towards medium mu here.                           
+      The normal, parallel, and z components of H are also given.           
+      The directions of Epe, Epa, and Ez form a right-handed frame.         
+                                                                            
+ -->  calc EELS  output-file                                                
+                                                                            
+      Calculate EELS for electrons moving parallel to the z axis with       
+      impact parameters in the nodes of the grid defined by the command     
+      'grid ...'. The output file contains five columns: energy/wavelength, 
+      q, x, y, and EELS probability per electron per nm of path length and  
+      per eV of energy-loss range. The energy of the electron is            
+      determined by the command 'incident-electron-z ...', and the x and y  
+      parameters of that command are disregarded by this calc command.      
+                                                                            
+ -->  calc CL-x-q     output-file                                           
+ -->  calc CL-x-q-x   output-file                                           
+ -->  calc CL-x-q-y   output-file                                           
+ -->  calc CL-x-q-z   output-file                                           
+ -->  calc CL-x-q-s   output-file                                           
+ -->  calc CL-x-q-p   output-file                                           
+                                                                            
+      Cathodoluminescence emission separated in q's (or equivalently in     
+      polar angles, within the range defined by the above commands). A      
+      grid must be defined previously to identify the impact parameters y.  
+      The electron is moving parallel to x, and the x positions in the      
+      grid are disregarded. The output file contains the columns:           
+      energy/wavelength, q, y, d(CL_intensity)/d(cos(theta)) in photons     
+      per eV of energy range per electron per unit of q in a.u.             
+      The emission is integrated over the defined range of azimuthal        
+      angles with nphi steps as specified by 'outgoing-angles' (above).     
+      The difference between -q, q-x, etc. is the same as in CL-x,          
+      CL-x-x, etc. (see below).                                             
+                                                                            
+ -->  calc CL-x-qphi     output-file                                        
+ -->  calc CL-x-qphi-x   output-file                                        
+ -->  calc CL-x-qphi-y   output-file                                        
+ -->  calc CL-x-qphi-z   output-file                                        
+ -->  calc CL-x-qphi-s   output-file                                        
+ -->  calc CL-x-qphi-p   output-file                                        
+                                                                            
+      Same as calc CL-x-q... but without integrating in phi, so that the    
+      output file contains the columns: energy/wavelength, phi, q, y,       
+      d^2(CL_intensity)/d(cos(theta))dphi in photons per eV of emission     
+      energy range per electron per radian of phi.                          
+                                                                            
+ -->  calc EELS-x-q  output-file                                            
+                                                                            
+      Same as 'calc CL-x-q ...' for EELS. The intensity is per eV of        
+      energy range per electron per q in a.u. (the integral in q yields     
+      the same result as EELS-x).                                           
+                                                                            
+ -->  calc SP n output-file                                                 
+                                                                            
+      Calculate Smith-Purcell emission intensities as a function of         
+      wavelength/energy for SP order of emission given by n. The output     
+      This command can only work after activating the 'period' flag (see    
+      that command), and defining a unit cell with periodicity parallel to  
+      x and emission along y>0. It requires an electron source with v || x. 
+      The output file contains:  wavelength/energy q/k theta' phi' I,       
+      where q/k is spaced according to the 'q' command, (theta',phi') are   
+      polar angles of emission with respect to the (x',y',z') frame         
+      (in the code, z'=y is the surface normal, x'=x, and y'=z is along     
+      the grooves.                                                          
+      The intensity is such that its integral over q/k from 0 to 1          
+      gives the emission probability per electron per eV of photon energy   
+      per groove.                                                           
+                                                                            
+ -->  calc LDOS  output-file                                                
+                                                                            
+      Calculate local density of photonic states at the (x,y) positions     
+      selected by he command grid (see above). The density of states is     
+      calculated for E-field projected along the Cartesian axes (LDOSx,     
+      LDOSy, LDOSz). This is given together with their sum,                 
+      LDOS=LDOSx+LDOSy+LDOSz, that is, the standard definition of local     
+      density of states.                                                    
+                                                                            
+      This command gives the contribution to the density of                 
+      states coming from each value of q, which will be independent of z    
+      and which can be denoted LDOS(q). The full 3D LDOS is just the        
+      integral of LDOS(q)/pi over q's from q=0 to q=infinity.               
+                                                                            
+      The output file contains eight columns:                               
+      energy/wavelength, q, x, y, LDOSx(q)/fct, LDOSy(q)/fct, LDOSz(q)/fct, 
+      LDOS(q)/fct, where fct=w/(2 pi c^2) is a convenient normalization     
+      pfactor. The LDOS in a region of permittivity eps0 is ill defined if  
+      eps0 is not real. We have chosen to still offer pseudo-LDOS values    
+      in that case. In the absence of interfaces the LDOS reduces to        
+                                                                            
+                  LDOSx0(q) = LDOSy0(q) = fct (1+q^2/k'^2)/2,               
+                  LDOSz0(q) =             fct (1-q^2/k'^2),                 
+                                                                            
+      for |q|<k' and it is 0 otherwise. Here, k'=Re{(w/c)*(eps0)^0.5}.      
+      In all cases, LDOS(q) is obtained as                                  
+                                                                            
+                  LDOSx(q) = LDOSx0(q) + imag{Eind_x}/(2 pi^2 w),           
+                                                                            
+      where Eind_x is the q-component of the contribution to the            
+      electric field coming from boundary sources (see Refs. (1-2)          
+      above) and evaluated at the position of a unit dipole source          
+      oriented along x and located at the point under consideration,        
+      and similarly for LDOSy and LDOSz. The LDOS can be readily used to    
+      calculate spontaneous emission rates, and the projected quantities    
+      along x, y, and z can be used to obtain emission rates from oriented  
+      molecules along a direction determined by w and q.                    
+      The rate of spontaneous emission averaged over molecule               
+      orientations (P_SE) is related to the LDOS via the relation           
+                                                                            
+                          P_SE = 4 pi^2 w d^2 LDOS,                         
+                                                                            
+      where d is the transition dipole. The LDOS must be positive,          
+      so that negative values are an indication that convergence            
+      with respect to the number of parametrization points has not been yet 
+      reached or that the medium where (x,y) is located is too lossy to     
+      really make any sense of the calculated value of the LDOS.            
+                                                                            
+III.4.5 END CALCULATION LOOP                                                
+                                                                            
+ -->  end-calculation                                                       
+                                                                            
+      This ends a calculation loop.                                         
+                                                                            
+III.5 EXIT THE EXECUTION OF THE PROGRAM                                     
+                                                                            
+ -->  end                                                                   
+ -->  exit                                                                  
+ -->  quit                                                                  
+                                                                            
+      Any of these commands will finish the execution of the program.       
+                                                                            
+IV - MISCELLANEOUS                                                          
+                                                                            
+The input file can contain definitions of variables that are used later     
+in the file. The following commands can be used for that purpose:           
+                                                                            
+ -->  variable=expression                                                   
+                                                                            
+      Assign the value of 'expression' to 'variable', which can be used     
+      later on throughout the input. For example, the following part of     
+      an input file                                                         
+                       a=120                                                
+                       b=a/2                                                
+                       add-arc 2 1 2*a 0 b b 0 -180 180 100                 
+                                                                            
+      will add a circle of radius b=a/2=60 nm centered                      
+      at x=2*a=240 nm and y=0 (see add-arc command above).                  
+      Important note: do not leave blank spaces inserted in expressions     
+      (e.g., 'a= 120' is will not be understood by the program).            
+                                                                            
+ -->  report-definitions                                                    
+                                                                            
+      Use this to write in the screen the variables that are being          
+      defined and their values. This is not done by default.                
+                                                                            
+The information contained in a certain input file can be inserted into      
+another input file by using the following command:                          
+                                                                            
+ -->  include file-name                                                     
+                                                                            
+      This interprets the contents of input file file-name. Notice          
+      that file-name has to end with an end, exit, or quit command. This    
+      is useful to store pre-defined shapes as separate input files.        
+                                                                            
+Next, we describe certain specific calculations that invove integration     
+over q, so that they have to be performed outside a calculation loop.       
+                                                                            
+ -->  EELS-x nmax qmax output-file                                          
+                                                                            
+      Calculate EELS probability for a trajectory parallel to the x axis.   
+      The output file will have two columns: energy/wavelength loss and     
+      probability per electron per eV of energy-loss range.                 
+      The number of integration points in q is nmax (e.g., 500) and the     
+      cut-off in q is qmax*w/v (e.g., 50).                                  
+                                                                            
+ -->  EELS-x-fi nmax fi output-file                                         
+                                                                            
+      This is the same as EELS-x, but fi (the collector half-aperture)      
+      is given in rad instead of qmax.                                      
+                                                                            
+ -->  CL-x nmax qmax output-file                                            
+                                                                            
+      Same as 'EELS-x' for cathodoluminescence. Only q<w/c*n are used.      
+      The emission is integrated over the defined range of azimuthal        
+      angles with nphi steps as specified by 'outgoing-angles' (above).     
+                                                                            
+ -->  CL-x-x nmax qmax output-file                                          
+ -->  CL-x-y nmax qmax output-file                                          
+ -->  CL-x-z nmax qmax output-file                                          
+ -->  CL-x-s nmax qmax output-file                                          
+ -->  CL-x-p nmax qmax output-file                                          
+                                                                            
+      Same as 'CL-x', counting only the x/y/z component of the emitted      
+      light (for -x/y/z) or s or p polarized light in Yamamoto's            
+      microscope (for -s/p).                                                
+                                                                            
+The remaining of this help is just a description of some specific           
+geometries that have been implemented for specific problems.                
+                                                                            
+ -->  film-crossing mu0 mu1 x0 y0 W L s nL ns                               
+                                                                            
+      Define a crossing between two films made of material mu0 and          
+      surrounded by material mu1. The films have width W and they are       
+      parallel to the x-z and y-z planes, respectively. The corners of      
+      the crossing are smoothed with radius of curvature s. The center      
+      of the crossing is at (x0,y0). The crossing occupies a square of      
+      sides 2*L. The number of points in each rounded corner is ns and      
+      nL in each of the remaining straight-line boundaries.                 
+      Important constrain: L>W/2+s.                                         
+                                                                            
+ -->  x-film mu0 mu1 x0 x1 y0 W nL                                          
+                                                                            
+      Film of width W parallel to the x-z plane with material mu0 inside    
+      and mu1 outside described by nL points in each side. The film goes    
+      from (x0,y0) to (x1,y0) (central points at the ends of the film).     
+                                                                            
+ -->  y-film mu0 mu1 x0 y0 y1 W nL                                          
+                                                                            
+      Film of width W parallel to the y-z plane with material mu0 inside    
+      and mu1 outside described by nL points in each side. The film goes    
+      from (x0,y0) to (x0,y1) (central points at the ends of the film).     
+                                                                            
+ -->  ox-flat-end mu0 mu1 x0 y0 W L s nW nL ns                              
+                                                                            
+      Film of material mu0 and width W surrounded by material mu1 and       
+      parallel to the x-z plane with one end at (x0,y0) and the other end   
+      terminated in a flat cup at (x0+L,y0) with rounding radius s at       
+      the termination edges. The number of points is ns for each rounding   
+      element, nL for each flat surface of the film, and nW for the flat    
+      end of the film. Important constrain: L>s and 2*s<W.                  
+                                                                            
+ -->  oy-flat-end mu0 mu1 x0 y0 W L s nW nL ns                              
+                                                                            
+      Same as ox-flat-end by going from (x0,y0) to (x0,y0+L) (end point).   
+                                                                            
+ -->  xo-flat-end mu0 mu1 x0 y0 W L s nW nL ns                              
+                                                                            
+      Same as ox-flat-end by going from (x0,y0) to (x0-L,y0) (end point).   
+                                                                            
+ -->  yo-flat-end mu0 mu1 x0 y0 W L s nW nL ns                              
+                                                                            
+      Same as ox-flat-end by going from (x0,y0) to (x0,y0-L) (end point).   
+                                                                            
+ -->  V-channel mu0 mu1 D W Rmax s nD nR ns                                 
+                                                                            
+      Channel of depth D and width W centered in the y-z plane and with     
+      edges rounded with radius of curvature s. The channel is cut in a     
+      flat surface of material mu1 surrounded by material mu0. The flat     
+      surface extends up to |x|=Rmax. The number of points is ns for each   
+      one of the three rounded edges, nD for each one of the two flat       
+      inner surfaces of the channel, and nR for each flat boundary along    
+      the x direction.                                                      
+                                                                            
+ -->  buried-channel mu0 mu1 a s na ns                                      
+                                                                            
+      Three-lobed channel of material mu0 buried in material mu1 and        
+      formed by joining three wires of material mu1 and radius a together,  
+      with the channel running along the z axis and with edges rounded by   
+      radius of curvature s. The number of points is ns in each rounded     
+      edge and na in each piece of circular wire.                           
+                                                                            
+ --> dimer mu0 mu1 a d s na ns                                              
+                                                                            
+     Dimer formed by an 2D-hourglass (see below) and closed by              
+     hemi-cylinders in the left and right sides. Each cylinder              
+     in the dimer has na points (including the closing parts).              
+     The 2D-hourglass is made of two hemi-cylinders centered around         
+     the y axis with the rounded sides facing each other. The material      
+     inside (outside) is mu1 (mu0). The antii-wedge-like junction is        
+     rounded with a rounded radius s and ns points. The interpenetration    
+     distance is |d|, with d<0. If d>0, the two hemi-cylinders are not      
+     interpenetrated and their surfaces are separated by a distance d.      
+     The distance between cylinder centers is thus 2*a+d in both cases.     
+     The center of the neck is at x=0.                                      
+                                                                            
+************************************************************************** 
