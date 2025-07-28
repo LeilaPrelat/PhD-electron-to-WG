@@ -339,7 +339,7 @@ list_x_norm_w_tot5, list_z_norm_w_tot5, listV_normV0_tot5 = run_e_out2(wp_0,d_0,
 
 labelx = r'$x/W$'
 labely = r'$z/W$'
-labelz = r'$\phi(x,z)/V_0$'
+labelz = r'$\phi(x,z)/U$'
 
 title5 = r'$W_{\text{p}}/W$ = %.2f, $d/W$ = %.2f, $h/W$ = %.2f' %(wp_0,d_0,h_0)
 
@@ -365,7 +365,7 @@ bounds1 = np.concatenate([
 norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
 
 plt.figure(figsize=tamfig)
-plt.title(title5,fontsize=tamtitle-4)
+# plt.title(title5,fontsize=tamtitle-4)
 tpc = plt.tripcolor(triang, listV_normV0_tot5, shading='flat', cmap=cmap, norm=norm1)
 cbar = plt.colorbar(tpc, fraction=0.046, pad=0.04 , format = '%.2f') 
 cbar.ax.set_title(labelz,fontsize=tamletra)
@@ -375,14 +375,14 @@ plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 3 , width=1, direction="in",which = 'both', pad = pad)
 # plt.plot([xleft],[h_0],'o',color =  'purple')
 # plt.plot([xright],[h_0],'o',color =  'purple')
-plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],["-2","","-1","","0","","1","","2"])
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
 plt.xlim(np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5))
 plt.ylim(np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5))
 # plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
 # plt.plot(np.ones(10)*(1/2),ejey_z,'--',color =  'black')
 os.chdir(path_data)
 plt.savefig('Vxz.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
-plt.savefig('Vxz.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('Vxz.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=200)  
 plt.show()
 
 #%%
@@ -407,9 +407,9 @@ for j in range(len(list_z0)):
     plt.plot(np.array(list_x_norm_w_tot6[j]), np.array(listV_normV0_tot_6[j]) ,'.-',color = color1[j] ,label = r'$z/W$ = %.1f' %(z0))
  
 plt.xlabel(r'$x/W$',fontsize=tamletra,labelpad =labelpadx)
-plt.ylabel( r'$V/U$',fontsize=tamletra,labelpad =labelpady)
+plt.ylabel( r'$\phi(x,z)/U$',fontsize=tamletra,labelpad =labelpady)
 # plt.xticks(np.arange(h_0,z1+0.5,0.5))
-plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],["-2","","-1","","0","","1","","2"])
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
@@ -484,7 +484,7 @@ bounds1 = np.concatenate([
 norm1 = mpl.colors.BoundaryNorm(bounds1, cmap.N)
 
 plt.figure(figsize=tamfig)
-plt.title(title5,fontsize=tamtitle-4)
+# plt.title(title5,fontsize=tamtitle-4)
 tpc2 = plt.tripcolor(triang2, dV_dx_valid, shading='flat', cmap=cmap, norm=norm1)
 
 cbar = plt.colorbar(tpc2, fraction=0.046, pad=0.04 , format = '%.2f') 
@@ -495,14 +495,14 @@ plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 3 , width=1, direction="in",which = 'both', pad = pad)
 # plt.plot([xleft],[h_0],'o',color =  'purple')
 # plt.plot([xright],[h_0],'o',color =  'purple')
-plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2])
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
 plt.xlim(np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5))
 plt.ylim(np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5))
 # plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
 # plt.plot(np.ones(10)*(1/2),ejey_z,'--',color =  'black')
 os.chdir(path_data)
 plt.savefig('dVxz_dx.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
-plt.savefig('dVxz_dx.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('dVxz_dx.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=200)  
 plt.show()
 
  #%%
@@ -522,8 +522,8 @@ for zc in z_values:
     j = j + 1
     
 plt.xlabel(r'$x/W$',fontsize=tamletra,labelpad =labelpadx)
-plt.ylabel(r'$\partial (V/U) / \partial x$',fontsize=tamletra,labelpad =labelpady)
-plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2])
+plt.ylabel(r'$\partial_x \phi/U$',fontsize=tamletra,labelpad =labelpady)
+plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)

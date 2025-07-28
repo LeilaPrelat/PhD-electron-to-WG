@@ -56,7 +56,7 @@ values = tamfig,tamtitle,tamletra,tamnum,labelpadx,labelpady,pad,deltax,deltay
 
  
 
-W=400 # nm
+W=500 # nm
 h=200 ## nm
 
 

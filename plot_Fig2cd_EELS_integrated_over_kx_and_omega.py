@@ -19,9 +19,9 @@ import os
 from EELS import Fresnel_coefficient
 from permittivity_epsilon import epsilon as epsilon2
 
-create_data = 1      ## run data for the color maps 
+create_data = 0     ## run data for the color maps 
 normalization = 1    ## normalize to the integral over omega from 0 to infty 
-load_normalization = 0
+load_normalization = 1
     
 label_png = '_real'
 material = 'Si'   ## default
@@ -221,12 +221,13 @@ for j in range(len(list_b_nm)):
  
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.xticks(np.arange(0,12,2))
-plt.yticks(np.arange(0,120,20))
+plt.yticks(np.arange(0,180,20))
 #plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 label_figure = 'EELS_int_energy_' + total_label
 # plt.xscale('log')
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
+plt.savefig(label_figure + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
 
 #%% 
@@ -275,6 +276,7 @@ if normalization == 1:
     # plt.xscale('log')
     os.chdir(path_save)
     plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
+    plt.savefig(label_figure + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
     plt.show() 
 
 

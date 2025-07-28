@@ -61,22 +61,21 @@ wp_norm_w = 0.5 ## w'/w
 d_norm_w = 0.2  ## d/w distance between the side wires normalized to w
 h_norm_w = 0.5   ## aspect ratio height/w
 Nc = 400   ## discretization points.
-epsilon=2 ## permittivity = 9 --> glass
 x0 = xe_norm_w    ## V(xe,z) with z from z0 to z1
  
 # x=0 is in the middle of the center waveguide
 # z=0 is at the interface
                              
-bmin_norm_w = 50/w
+bmin_norm_w = 50/w ## 80/w ## 100/w
 z_min_val_norm_w = bmin_norm_w + h_norm_w
 ###################################################################################
 h=h_norm_w*w
 # mode = 1
 # index_mode = -mode ## if mode = 1, is the highest one because is the last element of the list (the array is sorted from min to max)
-plot_figure = 1    ## plot the lorentzian fitting
+plot_figure = 0    ## plot the lorentzian fitting
 step2 = 0.001      ## thinner range to integrate over energy
 
-list_mode = [1,2]
+list_mode = [1]
 # list_mode = [3]
 
 if xe_norm_w == 0.4:  

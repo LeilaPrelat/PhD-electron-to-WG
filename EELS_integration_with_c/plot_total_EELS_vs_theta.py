@@ -55,7 +55,6 @@ wp_norm_w = 0.5 ## w'/w
 d_norm_w = 0.2  ## d/w distance between the side wires normalized to w
 h_norm_w = 0.5   ## aspect ratio height/w
 Nc = 400   ## discretization points.
-epsilon=2 ## permittivity = 9 --> glass
 x0 = xe_norm_w    ## V(xe,z) with z from z0 to z1
  
 # x=0 is in the middle of the center waveguide
@@ -78,8 +77,10 @@ label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
 
 # Ntot = 3mode0 = 1
 bmin_vals0 = 50/w
+mode0=1
 #list_bmin = [0.1, 0.15, 0.2]
-list_bmin = [bmin_vals0]
+list_bmin = [50/w]
+list_bmin = [50/w, 80/w, 100/w]
 list_mode = [1,2] 
 
 #%%
@@ -168,7 +169,7 @@ plt.title(title1 + ', ' + title3,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 for bmin in list_bmin: 
-    info_label = '_mode%i_w%inm' %(mode0,w)  + label_Ee + label_txt + '_bmin%.3f' %(bmin_vals0)
+    info_label = '_mode%i_w%inm' %(mode0,w)  + label_Ee + label_txt + '_bmin%.3f' %(bmin)
     table_P_integrated_over_energy = np.loadtxt('P_integrated_over_z_over'  + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
     table_P_integrated_over_energy2 = np.transpose(table_P_integrated_over_energy)
     listV0 = table_P_integrated_over_energy2[0]

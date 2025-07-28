@@ -3,10 +3,10 @@
 # Unified Script: Generate potential data and run Python processing
 
 # --- Settings ---
-w=500 ## nm
+w=400 ## nm
 wp_norm_w=0.5
 d_norm_w=0.2
-h_norm_w=0.6
+h_norm_w=0.5
 Np=400
 x0_norm_w=0.0  # Options: 0.0, 0.2, 0.4, 0.6, respect to the width of the middle waveguide
 x1_norm_w=$x0_norm_w
@@ -16,7 +16,7 @@ nz=200
 nx=1
 epsilon=9 ## DC of saphire for the voltage of the waveguides
 Ee_electron_keV=200
-bmin_norm_w=$(echo "scale=8; 100/$w" | bc)
+bmin_norm_w=$(echo "scale=8; 50/$w" | bc)
 
 # Set xe label
 #labelxe="_xe$(printf "%.0f" "$(echo "$x0_norm_w * 100" | bc -l)")W"

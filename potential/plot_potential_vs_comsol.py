@@ -87,7 +87,7 @@ list_x0 = [0,100,200,400]   ## nm
 # list_x0 = [100,200,400]   ## nm
 # list_x0 = [0,100,200]   ## nm
 list_Vair = [5,10]   ## boundary condition placed at 5 microns or 10 microns
-Vair = list_Vair[1]  ## boundary condition placed at 5 microns or 10 microns
+Vair = list_Vair[0]  ## boundary condition placed at 5 microns or 10 microns
 
 os.chdir(path_data)
 list_comsol_z_norm_tot = []
@@ -105,7 +105,7 @@ list_Vcomsol_tot = []
 
 
 labelx = r'$z/W$'
-labely = r'$V/V_0$'
+labely = r'$\phi(x,z)/V_0$'
 
 print('Import data from Comsol')
 for x0 in list_x0:
@@ -167,16 +167,17 @@ for j in range(len(list_x0_norm)):
     plt.plot(np.array(list_comsol_z_norm_tot[j]), np.array(list_Vcomsol_tot[j]) ,'--',color = color1[j])
     
     
-plt.plot([],[],'--',color='black',label='comsol')
-plt.plot([],[],'-',color='black',label='c++')
+plt.plot([],[],'--',color='black',label='COMSOL')
+plt.plot([],[],'-',color='black',label='BEM')
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 # plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
-plt.grid(1)
+# plt.grid(1)
 plt.savefig('Vz_vs_x_Vair%ium.png' %(Vair), format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vz_vs_x_Vair%ium.pdf' %(Vair), format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 del x0
@@ -199,6 +200,6 @@ plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
-plt.grid(1)
+# plt.grid(1)
 plt.savefig('Vz_vs_x_ratio_Vair%ium.png' %(Vair), format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
