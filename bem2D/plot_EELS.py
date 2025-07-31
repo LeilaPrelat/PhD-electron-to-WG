@@ -11,6 +11,7 @@ import os
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline,interp1d
 import matplotlib as mpl
+from scipy.signal import find_peaks
 
 path_basic = os.getcwd()
 os.chdir(path_basic)
@@ -61,8 +62,8 @@ h=200 ## nm
 
 
 listN = [500,700,800,1000]
-listN = [500]
-listL = [500,700,800,1000]
+listN = [500,700]
+listL = [500,1000]
 N0=500
 L0=500
 
@@ -82,7 +83,7 @@ xticks=np.arange(0.5,3.5,0.5)
 
 labelx=r'$\omega W/c$'
 labely='EELS from BEM2D'
-title = r'$W$ = %i nm, $h$ = %i nm, $L$ = %i nm, $E_{\rm e}$ = %i keV' %(W,h,L0,Ee_electron_keV)
+title = r'$W$ = %i nm, $h$ = %i nm, $E_{\rm e}$ = %i keV' %(W,h,Ee_electron_keV)
 Nint = 50
 
 #%%
@@ -155,11 +156,12 @@ print('Plot EELS vs N with L=%i'%(L0))
 
 L=L0
 plt.figure(figsize=tamfig)
-# plt.title(title,fontsize=tamtitle)
+plt.title(title,fontsize=tamtitle)
 plt.xlabel(r'$\hbar\omega$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'EELS with L = %i nm'%(L),fontsize=tamletra,labelpad =labelpady)
 for N in listN:
     name3 = 'EELS_N%i_W%inm_h%inm_L%inm_Ee%ikeV.dat' %(N,W,h,L,Ee_electron_keV) ## virtual geometry
+    name3 = 'EELS_comsol_spectrum_N%i_W%inm_h%inm_L%inm_Ee%ikeV.dat' %(N,W,h,L,Ee_electron_keV) ## virtual geometry
     #name3 = 'EELS_N%i_W%inm_h%inm_L%inm_R%inm_Ee%ikeV.dat' %(N,W,h,L,R,Ee_electron_keV) ## virtual geometry
     os.chdir(path_data)
     try:
@@ -187,12 +189,30 @@ for N in listN:
 
     listeV_correct = []
     listEELS_correct = []
+    
     for k in range(len(listEELS)):
         if listEELS[k]>0: 
             listeV_correct.append(listeV[k])
             listEELS_correct.append(listEELS[k])
-            
+    
+    peaks, _ = find_peaks(listEELS , height=np.max(listEELS)*0.1)
+    listeV  = np.array(listeV )
+    listEELS  = np.array(listEELS )
+                          
+    
     plt.plot(listeV, listEELS,'.-',lw=lw,label = r'$N = %i$' %(N))
+    plt.plot(listeV[peaks], listEELS[peaks], "x")
+
+
+    ## IMPORTANT: sort the y-values from minimum to maximum --> mode = -1 is the highest (last one), mode = -2 is the previous one, and so on, .. 
+    sorted_index = np.argsort( listEELS[peaks])
+    # listy_peaks_sorted = np.sort(listy_peaks) 
+    # listx_peaks_sorted = list_energy0[peaks[sorted_index]]
+    list_index_peaks = peaks[sorted_index]
+
+    listx_peaks_sorted = listeV[peaks[sorted_index]]
+    
+    print(N, W,h,listx_peaks_sorted)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.xticks(xticks)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1)
@@ -206,11 +226,12 @@ print('Plot EELS vs L (length of the virtual geometry) with N=%i'%(N0))
 
 N=N0
 plt.figure(figsize=tamfig)
-# plt.title(title,fontsize=tamtitle)
+plt.title(title,fontsize=tamtitle)
 plt.xlabel(r'$\hbar\omega$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'EELS with N = %i nm'%(N),fontsize=tamletra,labelpad =labelpady)
 for L in listL:
     name3 = 'EELS_N%i_W%inm_h%inm_L%inm_Ee%ikeV.dat' %(N,W,h,L,Ee_electron_keV) ## virtual geometry
+    name3 = 'EELS_comsol_spectrum_N%i_W%inm_h%inm_L%inm_Ee%ikeV.dat' %(N,W,h,L,Ee_electron_keV) ## virtual geometry
     os.chdir(path_data)
     try:
         tabla1 = np.loadtxt(name3, delimiter=' ',dtype=None)

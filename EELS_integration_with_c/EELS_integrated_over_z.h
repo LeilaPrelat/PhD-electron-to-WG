@@ -176,7 +176,8 @@ double P_integrated(double zmin_norm_w, double energy_eV, double w, double wp_no
         }
         
         // interpolation to evalute in zval
-        double Vz_norm_V0 =  linear_interp(listz_norm_w_program, listV_norm_V0_program, Nz_program_real, zval);
+      //  double Vz_norm_V0 =  linear_interp(listz_norm_w_program, listV_norm_V0_program, Nz_program_real, zmin_norm_w); // THIS WITH PHI(bmin)
+        double Vz_norm_V0 =  linear_interp(listz_norm_w_program, listV_norm_V0_program, Nz_program_real, zval);        // OR THIS WITH PHI(z) ????
         double EELSz = linear_interp(listz_norm_dat, listEELS_dat, Nz_EELS_real, zval);
         
         

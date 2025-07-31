@@ -63,17 +63,21 @@ def find_theta_V0(w, wp_norm_w, d_norm_w, h_norm_w, N, epsilon, x0_norm_w, Ee_el
         partB = V_norm_V0
         return partA + partB
 
-    if Ee_electron_keV == 200:
-        Nvals = 300
-        theta_mrad_vals = np.linspace(0.01, 2.25, Nvals)
-        V0_vals = np.linspace(0.01, 1, Nvals)
-    elif Ee_electron_keV == 100:
-        Nvals = 300
-        theta_mrad_vals = np.linspace(0.01, 3, Nvals)
-        V0_vals = np.linspace(0.01, 1, Nvals)
-    else:
-        print("Unsupported Ee_electron_keV value.")
-        sys.exit(1)
+    # if Ee_electron_keV == 200:
+    #     Nvals = 300
+    #     theta_mrad_vals = np.linspace(0.01, 2.25, Nvals)
+    #     V0_vals = np.linspace(0.01, 1, Nvals)
+    # elif Ee_electron_keV == 100:
+    #     Nvals = 300
+    #     theta_mrad_vals = np.linspace(0.01, 3, Nvals)
+    #     V0_vals = np.linspace(0.01, 1, Nvals)
+    # else:
+    #     print("Unsupported Ee_electron_keV value.")
+    #     sys.exit(1)
+        
+    Nvals = 300   
+    theta_mrad_vals = np.linspace(0.01, 3, Nvals)
+    V0_vals = np.linspace(0.01, 1, Nvals)
 
     zmin = h_norm_w
     zmax = np.max(list_z_norm_w_sh)
@@ -189,7 +193,10 @@ def find_theta_V0(w, wp_norm_w, d_norm_w, h_norm_w, N, epsilon, x0_norm_w, Ee_el
     plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
     plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
     plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-    plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
+    #plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
+ 
+    plt.text(0.55, 0.12, r"$E_{\text{e}} = %i$ keV" %(Ee_electron_keV),color = 'black',fontsize = tamletra)
+    plt.text(0.55, 0.42, r"$x = %i$ nm" %(x0_norm_w*w),color = 'black',fontsize = tamletra)
     plt.savefig('zmin' + label_Ee + label_txt + '.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
     plt.savefig('zmin' + label_Ee + label_txt + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
     plt.show()

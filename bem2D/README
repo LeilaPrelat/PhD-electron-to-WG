@@ -1,0 +1,15 @@
+Electron-coupling-to-WG: list of peaks for different width and heigth 
+	
+width (nm)	height (nm)	peaks (m=3 .. m = 1)
+500		200 		[1.535 0.36  0.78 ]
+500		300		[0.3   1.135 0.585]
+
+
+Si with: im(epsi) = 0.2 | re(epsi) =  12.25
+
+run in computer 4-21: 
+#!/bin/sh
+#$ -cwd
+#$ -j y
+#$ -l h=compute-4-21 --> remove the !
+

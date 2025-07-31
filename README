@@ -130,6 +130,12 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
 	    	- genbemax_EELS_rect_wg_sonic1: for "xe=W*0.4"
 	    	- genbemax_EELS_rect_wg_sonic2: for "xe=W*0.8"
 	    	- run_EELS_rect_wg
+	    	
+	    - virtual geometry: we add a substrate at the end (glass) and to make the substrate infinite we have something called
+	    virtual geometry in the bem2d code. For comparison of the EELS with COMSOL (from Saad) we use a constant permittivity: 
+	                 permittivity of Si with n=3.5 and k=0.01
+                         -- im(epsi) = 2*n*k = 0.07 | re(epsi) = n^2 - k^2 = 12.25
+                         -- w = 500 nm and h = 200 nm --> running
 	    
 ========================================================================================================================
 EXTRA :
