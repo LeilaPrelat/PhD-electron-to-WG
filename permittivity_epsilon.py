@@ -18,7 +18,7 @@ pwd = os.path.dirname(__file__)
 data_path = os.path.join(pwd,'permittivities')
 
 convert_nk_to_epsilon = 0
-plot_epsilon = 0
+plot_epsilon = 1
 
 #%%
 
@@ -89,6 +89,7 @@ def epsilon(hbw,delta,material='Si'):
     
     min_Elist, max_Elist = np.min(eV_list), np.max(eV_list)
     
+ 
     #delta = 1e-1
     if hbw<min_Elist:
         rta = f_real(min_Elist) + 1j*(f_imag(min_Elist) + delta)
@@ -123,14 +124,14 @@ if plot_epsilon == 1:
     import matplotlib.pyplot as plt
     
     material = 'Si'
-    material = 'Ge'
+    # material = 'Ge'
     
     N = int(1e3)
     ev_max = 10
     listx = np.linspace(1, ev_max, N)
     listy_re = []
     listy_im = []
-    delta = 0.1
+    delta = 0.2
     for x in listx:
         epsi = epsilon(x,delta,material)
         listy_re.append(np.real(epsi))

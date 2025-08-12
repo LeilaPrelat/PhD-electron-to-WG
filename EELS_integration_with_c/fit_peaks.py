@@ -46,8 +46,8 @@ def find_width_of_peak(listx,listy,index_mode,title1,plot_figure):
 
     ind_max = list_index_peaks[index_mode]
 
-    ind0 = int(ind_max*0.8)
-    ind1 = int(ind_max*1.1)
+    ind0 = int(ind_max*0.5)
+    ind1 = int(ind_max*1.5)
     x_data = list_energy0[ind0:ind1] ## we fit around the maximum
     y_data = list_P_integrated_over_z[ind0:ind1]
     
@@ -104,6 +104,7 @@ def find_width_of_peak(listx,listy,index_mode,title1,plot_figure):
     if plot_figure == 1:
         labelx = 'Electron energy loss $\hbar\omega$ (eV)'
         labely = 'EELS per electron (1/eV)'
+        labely=r'$\Gamma_{\text{EELS}}$ (s/eV)'
     
         tamfig = [4.5, 3.5]
         tamletra = 13
@@ -123,13 +124,15 @@ def find_width_of_peak(listx,listy,index_mode,title1,plot_figure):
         plt.plot(list_energy0, list_P_integrated_over_z, '.-')
     
         if fit_success:
-            plt.plot(x_data, lorentzian(x_data, *popt), 'r-')
+            plt.plot(x_data, lorentzian(x_data, *popt), 'r-',label = 'Lorentzian fit')
             plt.plot([x_left], [0], "x", color='black')
             plt.plot([x_right], [0], "x", color='black')
     
-        # plt.xticks(np.arange(0.5, 3.5, 0.5))
+        plt.xticks(np.arange(list_energy0[0], list_energy0[-1]+0.05, 0.05))
         plt.tick_params(labelsize=tamnum, length=2, width=1, direction="in", which='both', pad=pad)
+        plt.legend(loc = 'best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.2, handlelength=1)
         plt.savefig('EELS_integrated_over_z_fit_width.png', bbox_inches='tight', pad_inches=0.01, format='png', dpi=dpi)
+        plt.savefig('EELS_integrated_over_z_fit_width.pdf', bbox_inches='tight', pad_inches=0.01, format='pdf', dpi=dpi)
     
     
 

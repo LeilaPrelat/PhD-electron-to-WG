@@ -1,0 +1,6 @@
+## list of modes for a Si waveguide with im(epsi) = 0.2 | re(epsi) =  12.25 and substrate below with epsilon = 2  ##
+## width (nm), height (nm) | [w1 left, w1 right, w1] (eV) | [w2 left, w2 right, w2] (eV) | [w3 left, w3 right, w3] (eV)   
+[500, 200]	[0.7, 0.84, 0.78]	[0.28, 0.44, 0.36]	[1.45, 1.61, 1.53]
+[500, 300]
+[400, 200]
+[400, 300]

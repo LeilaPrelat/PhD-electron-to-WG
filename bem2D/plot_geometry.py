@@ -76,6 +76,7 @@ plt.tight_layout()
 # plt.axis('scaled')
 os.chdir(path_data)
 plt.savefig( 'geometry.png',bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
+plt.savefig( 'geometry.pdf',bbox_inches='tight',pad_inches = 0.01, format='pdf', dpi=dpi)
 plt.show()
 
  

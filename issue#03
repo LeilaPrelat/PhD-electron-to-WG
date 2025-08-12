@@ -1,0 +1,5 @@
+2025/07/31
+
+EELS from bem2d of the virtual geometry depends on the parameter L which is the lentgh of the virtual geometry (infinite) 
+We include the substrate at the end so we need a virtual geometry to consider it 
+solutions : include 

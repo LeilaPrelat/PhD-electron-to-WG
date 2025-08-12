@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# ./genbemax EELS rectangular waveguide varying ze (impact parameter)
+
+Nlist=(500 700 1000)
+Wlist=(500)
+hlist=(200)
+#zelist=($(seq 10 5 100)) ## meV
+Llist=(1000 5000 10000) ## nm
+Eelectronlist=(200)
+Elist=($(seq 0.46 0.05 1.1)) ## eV ## FOR THE FIRST MODE. see README inside bem2d local folder
+
+for N in ${Nlist[@]}; do
+for W in ${Wlist[@]}; do
+for h in ${hlist[@]}; do
+for L in ${Llist[@]}; do
+for Eelectron in ${Eelectronlist[@]}; do
+for energy in ${Elist[@]}; do
+#  echo genbemax_electron $a $b $m $E0meV $E0meV $N
+  ./genbemax_EELS_vs_z_rect_wg_compare_COMSOL2 $N $W $h $L $Eelectron $energy
+   echo genbemax_EELS_vs_z_rect_wg_compare_COMSOL2 $N $W $h $L $Eelectron $energy
+done
+done
+done
+done
+done
+done

@@ -25,7 +25,7 @@ material = 'Si'     ## default
 # material = 'Ge'  
 zoom = 0
 
-delta = 1e-1 ## extra loss for the imaginary part of the permittivity
+delta = 0.2 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
@@ -111,7 +111,7 @@ for b_nm in list_b_nm:
 
 
 labelx = r'$k_x/k$'
-labely = r'$\Gamma_{\parallel}(k_x)/L_0$ (s/$\mu$m)'
+labely = r'$\Gamma(k_x)/L_0$ (s/$\mu$m)'
 
 title = r'EELS for $\hbar\omega = %.2f$ eV, $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(energy0,d,material,beta)
  
@@ -156,7 +156,7 @@ for b_nm in list_b_nm:
 from scipy.signal import find_peaks
 
 labelx = r'Electron energy loss $\hbar\omega$ (eV)'
-labely = r'$\Gamma_{\parallel}/L_0$ (fs/$\mu$m)'
+labely = r'$\Gamma/L_0$ (fs/$\mu$m)'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
  

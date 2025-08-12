@@ -102,11 +102,11 @@ void load_energy_from_EELS_files(int w, double h, double x0_norm_w, int Eelectro
 int main() {
     double wp_norm_w = 0.5;  // example value
     double d_norm_w = 0.2;   // example value
-    double h_norm_w = 0.5;   // example value
+    double h_norm_w = 0.6;   // example value
     double x0_norm_w = 0.0;  // example value
     int Eelectron_keV = 200; // example value
     int N = 500;             // example value
-    double w = 400;             // example value
+    double w = 500;             // example value
     double bmin_norm_w = 50.0/w; // example value
     double z_min_val_norm_w = bmin_norm_w + h_norm_w;
     double h=h_norm_w*w ;

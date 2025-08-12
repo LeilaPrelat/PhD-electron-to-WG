@@ -28,7 +28,7 @@ material = 'Si'   ## default
 # material = 'Ge'  
 zoom = 0
 
-delta = 1e-1 ## extra loss for the imaginary part of the permittivity
+delta = 0.2 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
@@ -56,7 +56,7 @@ if zoom == 0:
 else:
     list_upper_eV_limit = np.linspace(0.1,2,N) ## cutoff energy
 
-list_b_nm = [0,10,50]
+list_b_nm = [0,1,10,50]
 
  
 total_label = material + label_png + label_Ee  + 'zoom%i' %(zoom)
@@ -164,8 +164,8 @@ print('1-Plot the EELS integrated over k_par, over the trajectory, and over ener
 
 labelx = r'Upper integration limit $\hbar\omega_{\text{f}}$ (eV)'
 labelx = r'Cutoff energy $\hbar\omega_f$ (eV)'
-labely = r'$\Gamma_{\parallel}/L_0$ (1/$\mu$m)'
-labely2 = r'$\Gamma_{\parallel}/\Gamma_{\text{tot}}$'
+labely = r'$\Gamma/L_0$ (1/$\mu$m)'
+labely2 = r'$\Gamma/\Gamma_{\text{tot}}$'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
 header = title + r', $\beta$ = %.2f. Re(EELS) from paper 149 Eq. 25 divided by L0 in Gaussian units (1/microns), integrated over k_par, trajectory, and eV' %(beta)

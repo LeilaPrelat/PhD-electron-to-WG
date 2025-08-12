@@ -100,8 +100,8 @@ def EELS_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     Returns
     -------
     Re(EELS) from paper 228 Eq. 3
-    divided by L/c and in Gaussian units
-    (dimensionless) without integration
+    divided by L  and in Gaussian units
+    (seconds) without integration over k
     using the QE approx (kz = i*k_par)
     """
     # epsi2 = epsilon(hbw,material)
@@ -126,8 +126,9 @@ def EELS_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     # print(Integral_s,Integral_p)
 
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    factor_Gamma_norm_L  = alpha*2*L/(np.pi*beta**2*c) ## without L/c multipliying
 
-    return  (function_p+function_s)*factor_Gamma_norm_Lc
+    return  (function_p+function_s)*factor_Gamma_norm_L/omegac
 
 # EELS per unit lenght
 def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
@@ -143,8 +144,8 @@ def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     Returns
     -------
     Re(EELS) from paper 149 Eq. 25
-    divided by Leff/c and in Gaussian units
-    (dimensionless) without integration
+    divided by L and in Gaussian units
+    (seconds) without integration over k
     no QE approximation made
     """
     # epsi2 = epsilon(hbw,material)
@@ -186,9 +187,10 @@ def EELS_no_QE(energy,kx_norm_k,ze,d,beta,epsi2):
     
     # final_function =  np.real(kz(1)*np.exp(2*1j*kz(1)*k*ze)*(r123_s*factor_s - r123_p/epsi1))/(u*kx_norm_k)
     
-    factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    # factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    factor_Gamma_norm_L  = alpha*2*L/(np.pi*beta**2*c) ## without L/c multipliying
     
-    return final_function*factor_Gamma_norm_Lc/omegac
+    return final_function*factor_Gamma_norm_L/omegac
 
 # EELS per unit lenght
 def EELS_integrated_over_k_par_QE(energy,ze,d,beta,epsi2):
@@ -203,8 +205,8 @@ def EELS_integrated_over_k_par_QE(energy,ze,d,beta,epsi2):
     Returns
     -------
     Re(EELS) from paper 228 Eq. 3
-    divided by Leff/c and in Gaussian units
-    (dimensionless)
+    divided by L and in Gaussian units
+    (seconds/microns) integrated over kx
     using the QE approx (kz = i*k_par)
     """
     # epsi2 = epsilon(hbw,material)
@@ -230,8 +232,9 @@ def EELS_integrated_over_k_par_QE(energy,ze,d,beta,epsi2):
     # print(Integral_s,Integral_p)
 
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    factor_Gamma_norm_L  = alpha*2*L/(np.pi*beta**2*c) ## without L/c multipliying
 
-    return  (Integral_s + Integral_p)*factor_Gamma_norm_Lc 
+    return  (Integral_s + Integral_p)*factor_Gamma_norm_L 
 
 
 # EELS per unit lenght
@@ -247,8 +250,8 @@ def EELS_integrated_over_kx_no_QE(energy,ze,d,beta,epsi2):
     Returns
     -------
     Re(EELS) from paper 149 Eq. 25
-    divided by L/c and in Gaussian units
-    (dimensionless) integrated over kx
+    divided by L and in Gaussian units
+    (seconds/microns) integrated over kx
     """
     # epsi2 = epsilon(hbw,material)
     L = 1
@@ -282,6 +285,8 @@ def EELS_integrated_over_kx_no_QE(energy,ze,d,beta,epsi2):
 
 
     factor_Gamma_norm_Lc  = alpha*2*L/(np.pi*beta**2) ## without L/c multipliying
+    factor_Gamma_norm_L  = alpha*2*L/(np.pi*beta**2*c) ## without L/c multipliying
+
     
     
     limit1 = 1e-4*omegac ## variable is qx integral from 0

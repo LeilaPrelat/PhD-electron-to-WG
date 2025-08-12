@@ -96,47 +96,29 @@ FIG 3 : Potential and BEM Simulations OF A RECTANGULAR WAVEGUIDE
                 and to find the frequency of the modes vs h/W. Similar to "plot_EELS_integrated_over_z_1mode_vs_theta.py"
                 without the integration over z and as a function of h/W. Here the potential is not involved, only with 
                 data from BEM2D. 
-         
-         - c++ codes: to run everything in sonic, without the need of dowloading things 
+
+.- /EELS_integration_with_c :  c++ codes: to run everything in sonic, without the need of dowloading the bem files 
                 - e.h and e.cpp and e.out : new potential with 3 wires (two positives and 1 negative, see figures/scheme/scheme_plane3.png)
-                - split_eels2.h : split the EELS data in different frequencies 
-                - EELS_integrated_over_z.h : integration of the EELS over z
-                - EELS_integrated_over_z.cpp : execute the EELS_integrated_over_z.h
-                      
-                HAS TO BE DONE: 
-      		- .sh to split the EELS in frequencies
-      		- .sh to run the potential and save the data 
-      		- .sh to run the potential at z=h,x=0 to normalize the V to V0
-      		- .cpp of EELS_integrated with loading the data from c++ (similar fuction as BEM files)
-      
-                
-                
-.- /bem2D : B) EELS of ribbon (rectangular waveguide) made of Si with extra loss for different values of impact
-   parameter (distance between the electron and the 0,0 placed at the center of the waveguide) 
+                - SONIC/change_name_positive_eels.h : change the name of the EELS (replace "033 by "0.33") and filter the negative EELS
+                - SONIC/EELS_integrated_over_z.h : integration of the EELS over z
+                - SONIC/EELS_integrated_over_z.cpp : execute the EELS_integrated_over_z.h
+                - Electron-coupling-to-WG: explication of the code.pdf : read 
+                     
+.- /bem2D : B) EELS of ribbon (rectangular waveguide) made of Si above a substrate (glass). To make the substrate infinite we have something called
+	    virtual geometry in the bem2d code. w = 500 nm and h = 200 nm 
 	
-	    -. /geometry : check the geometry of the rectangular waveguide
+	    -. /geometry : check the geometry of the rectangular waveguide 
 	    -. /datfiles_EELS : check the convergency of the EELS for different N 
 	    
-	    - plot_EELS.py : check the convergency of the EELS as a function of N 
+	    - plot_geometry.py : check the geometry (virtual substrate)
 	    
-	    - plot_EELS_vs_h.py : EELS as a function of W*\omega/c for different h/W to see how the peaks change. 
+	    - plot_EELS.py : check the convergency of the EELS as a function of N and L (virtual geometry) + fit the peaks with a Lorentzian
+	    to obtaint the width of each mode. the label "EELS_comsol2.." means the permittivity of Si is 12.25 + i*0.2. More loss facilites 
+	    the convergency (see notes). In addition we plot the EELS vs z for a fixed frequency. 
 	    
-	    - plot_field_electron_position.py : maps of the EELS 
-	    
-	    - genbemax files + run: run in BEM2D the EELS for a fixed point "xe" for many values of h, for Ee = (100, 200)keV,
-	    for W = (300,400,500) nm. 
-	    
-	    	- genbemax_EELS_rect_wg_sonic: for "xe=0"
-	    	- genbemax_EELS_rect_wg_sonic1: for "xe=W*0.4"
-	    	- genbemax_EELS_rect_wg_sonic2: for "xe=W*0.8"
-	    	- run_EELS_rect_wg
-	    	
-	    - virtual geometry: we add a substrate at the end (glass) and to make the substrate infinite we have something called
-	    virtual geometry in the bem2d code. For comparison of the EELS with COMSOL (from Saad) we use a constant permittivity: 
-	                 permittivity of Si with n=3.5 and k=0.01
-                         -- im(epsi) = 2*n*k = 0.07 | re(epsi) = n^2 - k^2 = 12.25
-                         -- w = 500 nm and h = 200 nm --> running
-	    
+	    - data_modes.txt : range of frequencies of the modes for different width (W) and height (h) 
+                         
+	    Read the README file inside bem2D for more details. 
 ========================================================================================================================
 EXTRA :
 ========================================================================================================================

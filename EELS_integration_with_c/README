@@ -24,4 +24,4 @@ upload the V0_solutions/theta_solutions to sonic
 
 3) integration over z: EELS_integrated_over_z.h (EELS + potential + V0_solutions/theta_solutions) + EELS_integrated_over_z.cpp
 
-4) integration over energy/mode: fit_peaks.py to fit the peaks as a lorentzian and find the width to integrate over energy
+4) integration over energy/mode: calculate_total_EELS_vs_theta.py to fit the peaks as a lorentzian and find the width to integrate the EELS over energy

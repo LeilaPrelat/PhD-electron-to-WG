@@ -43,7 +43,7 @@ values = tamfig,tamtitle,tamletra,tamnum,labelpadx,labelpady,pad,deltax,deltay
 print('1-Define the parameters')
 
 ############## BEM ############################################################## 
-w = 400
+w = 500
 Ee_electron_keV = 200
 Ee_electron = Ee_electron_keV*1e3
 position_of_the_electron = [0,0.4,0.6]
@@ -53,7 +53,7 @@ N=500
 ##### potential from c++ code  ##################################################
 wp_norm_w = 0.5 ## w'/w
 d_norm_w = 0.2  ## d/w distance between the side wires normalized to w
-h_norm_w = 0.5   ## aspect ratio height/w
+h_norm_w = 0.4   ## aspect ratio height/w
 Nc = 400   ## discretization points.
 x0 = xe_norm_w    ## V(xe,z) with z from z0 to z1
  
@@ -81,7 +81,8 @@ mode0=1
 #list_bmin = [0.1, 0.15, 0.2]
 list_bmin = [50/w]
 list_bmin = [50/w, 80/w, 100/w]
-list_mode = [1,2] 
+list_mode = [1,2]
+list_mode = [1]
 
 #%%
 os.chdir(path_data_EELS_integrated)
@@ -89,6 +90,8 @@ print('2-Plot total EELS from the code plot_EELS_integrated_1mode_vs_theta.py fo
 
 labelx=r'$\theta$ (mrad)'
 labely='Number of photons' 
+labely=r'$\Gamma_{\text{EELS}}$ (s)'
+
 title1 = r'$W_{\text{p}}/W$ = %.2f, $h/W$ = %.2f, $d/W$ = %.2f, x/W = %.1f, $E_{\rm e}$ = %i keV' % (wp_norm_w,h_norm_w,d_norm_w,x0,Ee_electron_keV)
 title2 = r'$b_{\text{min}} = %i$ nm' %(bmin_vals0*w)
 # fig, ax1 = plt.subplots(figsize=tamfig)
@@ -110,7 +113,7 @@ ax1.set_xticks(angle_ticks)
 ax1.set_xlabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpadx)
 
 for mode in list_mode: 
-    info_label = '_mode%i_w%inm' %(mode,w)  + label_Ee + label_txt + '_bmin%.3f' %(bmin_vals0)
+    info_label = '_mode%i_w%inm' %(mode,w)  + label_Ee + label_txt + '_bmin%.2f' %(bmin_vals0)
     
     table_P_integrated_over_energy = np.loadtxt('P_integrated_over_z_over' + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
     table_P_integrated_over_energy2 = np.transpose(table_P_integrated_over_energy)
@@ -169,7 +172,7 @@ plt.title(title1 + ', ' + title3,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 for bmin in list_bmin: 
-    info_label = '_mode%i_w%inm' %(mode0,w)  + label_Ee + label_txt + '_bmin%.3f' %(bmin)
+    info_label = '_mode%i_w%inm' %(mode0,w)  + label_Ee + label_txt + '_bmin%.2f' %(bmin)
     table_P_integrated_over_energy = np.loadtxt('P_integrated_over_z_over'  + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
     table_P_integrated_over_energy2 = np.transpose(table_P_integrated_over_energy)
     listV0 = table_P_integrated_over_energy2[0]

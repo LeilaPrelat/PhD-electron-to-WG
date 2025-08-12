@@ -35,7 +35,7 @@ if if_real_material == 1:
 else:
     real_units = 0
     
-zoom = 1 # zoom in energy (if = 1 better definition of the modes in the dispersion relation) 
+zoom = 0 # zoom in energy (if = 1 better definition of the modes in the dispersion relation) 
 
 if if_real_material == 1:
     
@@ -47,18 +47,20 @@ else:
     
     if material == 'Si':
         Re_epsi2 = 2.13
-        Re_epsi2 = 15
+        Re_epsi2 = 12.25
     elif material == 'Ge':
         Re_epsi2 = 17.38
     else:
         Re_epsi2 = 12    ## default if if_real_material == 0
     label_png = ''
-    Im_epsi2 = 1e-1  ## value of EELS depends on this Im_epsi2
+    Im_epsi2 = 0.2  ## value of EELS depends on this Im_epsi2
 
-delta = 1e-1  ## extra loss for the imaginary part of the permittivity
+delta = 0.2  ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
 
+almost_zero = 1e-21 ## small number  (cannot use zero because I use log scale)
+ 
 #%%
 hb,c,alpha,me_c2_eV = constants()
 aux = hb*c
@@ -86,7 +88,7 @@ if zoom == 0:
 else:
     N = 100
 
-N = 200
+N = 400
 list_ze_nm =  np.linspace(0.1,200,N)
 if ind == 1:
     list_ze_nm =  np.logspace(-1,np.log10(200),N)
@@ -103,6 +105,7 @@ ze_0 = 10*1e-3 ## microns
 ze_0 = 25*1e-3 ## microns 
 ze_0 = 50*1e-3 ## microns 
 ze0_nm = ze_0*1e3
+list_ze0nm = [0,1,10,50]
 
 if if_real_material == 1:
     epsi2 = epsilon2(energy_0,delta,material) 
@@ -167,8 +170,7 @@ else:
     list_energy_eV_2 = np.linspace(0.01,4*energy_WG,N) ## paper 370. Fig S6
     list_k_parallel = np.linspace(0.01,8*omegac_WG,N)  ## paper 370. Fig S6
  
-    
-list_energy_eV_2 = np.linspace(1e-1,10,N) 
+ 
 
 #%%
 
@@ -203,7 +205,7 @@ for kx_norm in list_u:
         
         value = EELS_no_QE(energy_0,kx_norm,ze_0,d,beta,epsi2)
     else:
-        value = 1e-9 ## small number  (cannot use zero because I use log scale)
+        value = almost_zero ## small number  (cannot use zero because I use log scale)
     # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
     list_EELS_re.append(np.real(value))
     list_EELS_im.append(np.imag(value))
@@ -257,7 +259,7 @@ def EELS_color_map(k_par,energy):
         kx_norm_k = np.sqrt(u**2-(1/beta)**2)
         value = EELS_no_QE(energy,kx_norm_k,ze_0,d,beta,epsi2)
     else:
-        value = 1e-9 ## small number  (cannot use zero because I use log scale)
+        value = almost_zero ## small number  (cannot use zero because I use log scale)
     return np.real(value)
 
 listx, listy = list_k_parallel, list_energy_eV_2 
@@ -267,10 +269,17 @@ Z_EELS = f_EELS(X, Y)
 
 #%%
 
+second_to_femto = 1e15
+
+Z_EELS = np.array(Z_EELS)*second_to_femto
+
+#%%
+
 labelx = r'Parallel wave vector $k_\parallel$ (1/$\mu$m)'
 # labelx = r'Wave vector $k_x$ (1/$\mu$m)'
 labely = r'Electron energy loss $\hbar\omega$ (eV)'
 labelz = r'$\text{d}\Gamma_{\parallel}(k_\parallel)c/\text{d}y$'
+labelz = r'$L^{-1}\text{d}\Gamma(k_\parallel)/\text{d}y$ (fs)'
 
 if if_real_material == 0:
     Z_EELS = np.array(Z_EELS)/np.max(Z_EELS)
@@ -279,22 +288,22 @@ if if_real_material == 0:
     # so i normalized by the maximum
 
 saturation_number_inf = -5
-saturation_number_up = -2
-delta = 1e-8 ## vmin can be zero
+saturation_number_up = 0
+ 
 limits = [np.nanmin(listx) , np.nanmax(listx),np.nanmin(listy) , np.nanmax(listy)]
 cmap = plt.cm.hot  # define the colormap
 n_color = 21
 vmin1, vmax1 = np.nanmin(Z_EELS), np.nanmax(Z_EELS)
-vmin = vmin1 + delta
-vmax = vmax1 + delta
+# vmin = vmin1 + delta
+# vmax = vmax1 + delta
 bounds =   np.logspace(  np.log10(vmin1), np.log10(vmax1) , n_color)
 bounds =   np.logspace( saturation_number_inf, saturation_number_up , n_color)
 
 norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
 
-maxlog = int(np.ceil( np.log10( np.abs(vmax) )))
-minlog = int(np.ceil( np.log10( np.abs(vmin) ))) 
-ticks_z = [(10.0**x) for x in np.linspace(minlog,maxlog-1, int(np.sign(vmax1)*maxlog) -  int(np.sign(vmin1)*minlog) ) ]
+# maxlog = int(np.ceil( np.log10( np.abs(vmax) )))
+# minlog = int(np.ceil( np.log10( np.abs(vmin) ))) 
+# ticks_z = [(10.0**x) for x in np.linspace(minlog,maxlog-1, int(np.sign(vmax1)*maxlog) -  int(np.sign(vmin1)*minlog) ) ]
 ticks_z = [(10.0**x) for x in np.linspace(saturation_number_inf,saturation_number_up, int(saturation_number_up) -  int(saturation_number_inf) +1 ) ]
  
 
@@ -308,7 +317,7 @@ if if_real_material == 0:
         plt.xticks(np.arange(1,8,1))
         plt.yticks(np.arange(0.1,0.8,0.1))
 else:
-    im_EELS = plt.imshow(Z_EELS, extent = limits, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower'  ,norm = norm   ) 
+    im_EELS = plt.imshow(Z_EELS, extent = limits, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm    ) 
     
     # plt.xticks(np.arange(1,7,1))
     # plt.yticks(np.arange(0.1,0.9,0.1))
@@ -374,10 +383,10 @@ def EELS_integrated_over_k_par_color_map(energy,ze_nm):
 #%% 
 tamfig = [3.45, 3]
 labelx = r'Electron energy loss $\hbar\omega$ (eV)'
-labely = r'$\text{d}\Gamma_{\parallel}c/\text{d}y$'
+labely = r'$L^{-1}\text{d}\Gamma/\text{d}y$ (s/$\mu$m)'
 
 from mycolorpy import colorlist as mcp
-color1 = mcp.gen_color(cmap="hot",n=5)
+color1 = mcp.gen_color(cmap="hot",n=6)
 
 if if_real_material == 0:
     title1 = r'EELS for $h = %.1f$ $\mu$m, Re($\epsilon_2$) = %i, Im($\epsilon_2$) = %.1e' %(d,Re_epsi2,Im_epsi2)
@@ -391,7 +400,7 @@ if if_real_material == 0:
     ## to the maximum because the value is arbitrary 
     labely = r'$\Gamma_{\parallel}(k_\parallel)/\Gamma_{\text{max}}$'
 
-list_ze0nm = [1,10,50]
+
  
 plt.figure(figsize=tamfig)
 #plt.title(title1 + '\n' + title2,fontsize=tamtitle)
@@ -424,8 +433,65 @@ plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches =
 plt.savefig(label_figure + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
 
+
+
+
 #%%
 
+fig = plt.figure(figsize=tamfig)
+ax = fig.add_subplot(111)
+
+# ax.set_title(title1 + '\n' + title2, fontsize=tamtitle)
+ax.set_xlabel(labelx, fontsize=tamletra, labelpad=labelpadx)
+ax.set_ylabel(labely, fontsize=tamletra, labelpad=labelpady)
+
+k = 0
+for ze0_nm in list_ze0nm: 
+    list_EELS_int_re = []
+    for energy in list_energy_eV_2: 
+        value = EELS_integrated_over_k_par_color_map(energy, ze0_nm)
+        list_EELS_int_re.append(np.real(value))
+    
+    ax.plot(list_energy_eV_2, np.array(list_EELS_int_re),
+            '-', lw=1.5, color=color1[k], label=rf'$b = {ze0_nm} \ \mathrm{{nm}}$')
+    k += 1
+
+# Tick params — both sides ticks, numbers only on right, label on right
+ax.yaxis.set_ticks_position('both')
+ax.tick_params(axis='y', which='both', direction='in', right=True, left=True)
+ax.yaxis.tick_right()
+ax.yaxis.set_label_position("right")
+
+ax.tick_params(labelsize=tamnum, length=2, width=1, direction="in", which='both', pad=pad)
+
+ax.set_xticks(np.arange(0, 12, 2))
+if d_microns == 0.2:
+    ax.set_yticks(np.arange(0, 0.03, 0.005))
+else:
+    ax.set_yticks(np.arange(0, 0.03, 0.005))
+
+ax.legend(loc='best', markerscale=2, fontsize=tamlegend,
+          frameon=False, handletextpad=0.2, handlelength=1)
+
+# Save
+os.chdir(path_save)
+data_figure = title2
+total_label = label_png + label_Ee + f'_zoom{zoom}'
+label_figure = 'EELS_2D' + material + total_label
+np.savetxt(f"info_of_{label_figure}.txt", [data_figure], fmt='%s')
+
+fig.savefig(label_figure + '.png', format='png', bbox_inches='tight',
+            pad_inches=0.04, dpi=dpi)
+fig.savefig(label_figure + '.pdf', format='pdf', bbox_inches='tight',
+            pad_inches=0.04, dpi=dpi)
+
+plt.show()
+
+
+
+#%%
+
+"""
 os.chdir(pwd)
 import time
 
@@ -459,7 +525,7 @@ else:
     # listx2 = np.transpose(listx2)
     # listy2 = np.transpose(listy2)
     
-#%%
+ 
 labelx = r'Electron energy loss $\hbar\omega$ (eV)'
 labely = r'Electron-plane distance $z_{\rm e}$ (nm)'
 labelz = r'$\text{d}\Gamma_{\parallel}c/\text{d}y$'
@@ -509,10 +575,11 @@ plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches =
 plt.savefig(label_figure + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show()
         
- #%%   
+  
  
 time.sleep(1)
 end = time.time()
 if create_data == 1:
     print("Total runtime of the program is ", end - start ," seconds")
 
+"""

@@ -1,0 +1,62 @@
+#!/bin/bash
+# /////////////////// defining parameters for a rectangular wg . geometry in ribbon.bem /////////////////////////////
+# //     N   = the total number of parametrization points
+# //     w   = total width of wg      || x 
+# //     h   = total thickness of wg  || z
+#//     L   = lenght of the substrate is 2*L+W  || x
+#//     R = radius of the virtual geometry (arc)
+# //     ze  = impact parameter is h/2+ze. ze distance between electron and wg surface 
+
+N=${1:-300}
+W=${2:-500}
+h=${3:-300}
+L=${4:-500}
+H=${5:-1000}
+Eelectron_keV=${6:-200}
+
+NOFraw='EELS_N'${N}'_W'${W}'nm_h'${h}'nm_L'${L}'nm_H'${H}'nm_Ee'${Eelectron_keV}'keV'
+NOF=$(echo $NOFraw | sed -e 's/\.//g')
+
+NOFfiles='_EELS'
+
+#bem file
+mkdir -p bemfiles${NOFfiles}
+mkdir -p datfiles${NOFfiles}
+mkdir -p shfiles${NOFfiles}
+
+cat > bemfiles${NOFfiles}/${NOF}.bem << EOF
+
+N=$N
+W=$W
+h=$h
+L=$L
+H=$H
+Eelectron_keV=$Eelectron_keV
+E1eV=0.2
+E2eV=3
+
+delta=10
+NE=561
+ 
+
+x0=0 // rectangular waveguide center at 0,0
+z0=0
+EeV=Eelectron_keV*1e3 // electron energy in eV
+ 
+
+photon-energy E1eV E2eV NE
+grid 0 0 1 h+50 h+50 1                    // position of the electron , dont put a grid with EELS, changes the position of the electron
+incident-electron-z EeV 0 h+50                     // the electron is everywhere if I put a grid 
+
+include rectangular_two_wg_substrate.bem
+
+ 
+begin-calculation
+calc EELS datfiles${NOFfiles}/${NOF}.dat
+end-calculation                                                  
+
+
+end
+EOF
+
+time ./bem2D bemfiles${NOFfiles}/${NOF}.bem

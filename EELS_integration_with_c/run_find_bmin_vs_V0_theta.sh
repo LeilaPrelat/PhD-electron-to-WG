@@ -3,12 +3,12 @@
 # Unified Script: Generate potential data and run Python processing
 
 # --- Settings ---
-w=400 ## nm
+w=500 ## nm
 wp_norm_w=0.5
 d_norm_w=0.2
-h_norm_w=0.5
+h_norm_w=0.4
 Np=400
-x0_norm_w=0 # Options: 0.0, 0.2, 0.4, 0.6, respect to the width of the middle waveguide
+x0_norm_w=0.0 # Options: 0.0, 0.2, 0.4, 0.6, respect to the width of the middle waveguide
 x1_norm_w=$x0_norm_w
 z0_norm_w=$(echo "$h_norm_w * 1.001" | bc) # z0 close to h (z=0 at the interface between waveguide and substrate)
 z1_norm_w=$(echo "$z0_norm_w + 400 / $w" | bc -l) # z1 = z0 + 400 / w 

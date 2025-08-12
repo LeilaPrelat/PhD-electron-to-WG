@@ -99,7 +99,7 @@ void load_EELS_from_file(double energy_eV, int w, int h, double x0_norm_w, int E
     
     // Open the file
     //sprintf(filename, "datfiles_EELS_along_z/new_files/EELS_along_z_Si_N%i_a%inm_h%inm_ze%inm_Ee%ikeV%s_energy_%.7f.txt",N,w,h,ze,Eelectron_keV,labelxe,energy_rounded);    
-    sprintf(filename, "datfiles_EELS/new_files/EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe%.2f_energy%.3f.dat",N,w,h,L,Eelectron_keV,x0_norm_w,energy_rounded);    
+    sprintf(filename, "datfiles_EELS/new_files/EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe%.2f_energy_%.4f.dat",N,w,h,L,Eelectron_keV,x0_norm_w,energy_rounded);    
     
     inputFile=fopen(filename,"r"); 
  if (inputFile == NULL) { // CHANGED: Added file open check
@@ -129,11 +129,6 @@ void load_EELS_from_file(double energy_eV, int w, int h, double x0_norm_w, int E
     if (x_temp != xe) { 
      printf("[ERROR] position of electron in x = %.0f is not matching the one in bem files ( = %.0f)\n", xe, x_temp);
     }
-    
-    if (Nz_EELS_real=0){
-    printf("[ERROR]: empty EELS for eV=%.4f eV", energy_eV);
-    }
-    
 
     fclose(inputFile);
 
@@ -163,10 +158,6 @@ double P_integrated(double zmin_norm_w, double energy_eV, double w, double wp_no
     double h=h_norm_w*w;
     load_EELS_from_file(energy_eV, w, h, x0_norm_w, Eelectron_keV, N); 
     
-    if (Nz_EELS_real=0){
-    Nz_EELS_real=400;
-    }
-    
     int Nint = Nz_EELS_real*10; // increase numbers to integrate as a sum using linear interpolation of the data
     double zmax_norm_w = listz_norm_dat[Nz_EELS_real - 1];
     double dz = (zmax_norm_w - zmin_norm_w) / (Nint - 1);
@@ -185,11 +176,12 @@ double P_integrated(double zmin_norm_w, double energy_eV, double w, double wp_no
         }
         
         // interpolation to evalute in zval
-        double Vz_norm_V0 =  linear_interp(listz_norm_w_program, listV_norm_V0_program, Nz_program_real, zval);
+      //  double Vz_norm_V0 =  linear_interp(listz_norm_w_program, listV_norm_V0_program, Nz_program_real, zmin_norm_w); // THIS WITH PHI(bmin)
+        double Vz_norm_V0 =  linear_interp(listz_norm_w_program, listV_norm_V0_program, Nz_program_real, zval);        // OR THIS WITH PHI(z) ????
         double EELSz = linear_interp(listz_norm_dat, listEELS_dat, Nz_EELS_real, zval);
         
         
-        printf("z/w=%.8f, EELS(z/w)=%.8f", zval, EELSz);
+      //  printf("z/w=%.8f, EELS(z/w)=%.8f", zval, EELSz);
 
         double arg = ABS(aux * aux + 2.0 * Vz_norm_V0 * V0 / (me_c2_eV * gamma_e));  
         double denom = sqrt(arg);
