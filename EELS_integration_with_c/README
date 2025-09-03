@@ -5,23 +5,41 @@ read the slide "Electron-coupling-to-WG: explication of the code.pdf" :
 all the codes needed for EELS integrated over z 
 P_integrated_over_z(z_min_val_norm_w, energy, w, h, xe, Ee_electron_keV, N, theta, V0, list_z_norm_w, listV_normU, V0_over_U)
 
-1) THIS I WILL RUN LOCALLY IN MY COMPUTER AND WILL UPLOAD TO SONIC: run_find_bmin_vs_V0_theta.sh
+1) run_potential_and_find_bmin.sh: THIS I WILL RUN LOCALLY IN MY COMPUTER AND WILL UPLOAD THE OUTPUT TO SONIC
 
-A) run_potential_norm_V0.sh to run the potential (list_z_norm_w, listV_normV0) and save the data normalized to V0_over_U 
-   chmod +x run_potential_norm_V0.sh
+                    a) Run e.out to create normalized potential data (list_z_norm_w, listV_normV0)
+                    and save the data normalized to U 
+                       g++ -o e.out e.cpp
+                       files e.cpp and e.h 
+                       
+                       -first part: finds the value factor = V0/U and uses it to normalize phi/U --> phi/V0
+		       -second part: saves data (1 column z/w | 2 column V/V0) 
+                     
+                    b) Run Python script to obtain bmin(V0,theta)
+                       find_bmin_vs_V0_theta.py ---> save data of (V0_solutions, theta_solutions)
  
-# g++ -o e.out e.cpp
-a) first part: finds the value V0_over_U
-b) second part: saves data (1 column z/w | 2 column V/V0) 
- ------ test: compare data from c vs python : plot_potential_from_c_vs_python.py. done 
-     
-B) run_bmin_vs_theta_V0.sh to run python code, bmin(V0,theta), for different bmin, xe, d/W, h/W:
----> save data of V0_solutions/theta_solutions
-
-upload the V0_solutions/theta_solutions to sonic
+upload the V0_solutions/theta_solutions to sonic + potential 
 
 2) split_positive_eels.sh to split the EELS vs (z,energy) in 1 .txt per energy and save them in /new_files + only save the EELS>0  
 
 3) integration over z: EELS_integrated_over_z.h (EELS + potential + V0_solutions/theta_solutions) + EELS_integrated_over_z.cpp
 
 4) integration over energy/mode: calculate_total_EELS_vs_theta.py to fit the peaks as a lorentzian and find the width to integrate the EELS over energy
+
+"..fixed_mode" : (Modification for a fixed mode) the energy_list is around a certain mode (see load_energy_from_EELS_files from the .cpp and  "data_modes.txt/README" in bem2d in local computer 
+
+
+read the slide "Electron-coupling-to-WG: explication of the code-approximation.pdf" : 
+---------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+
+1) run_potential_approx.sh: THIS I WILL RUN LOCALLY IN MY COMPUTER AND WILL UPLOAD THE OUTPUT TO SONIC
+
+	a) Run Python script to obtain a1 (slope), b1 (offset) from approximation of potential to a linear function 
+                       fit_potential_as_linear.py ---> save data of a1 (slope), b1 (offset)
+                                      
+2) same as before
+
+3) integration over z: EELS_integrated_over_z_fixed_mode_approx.h (EELS + potential = a1*z/W+b1 + zmin is analytical now) + EELS_integrated_over_z_fixed_mode_approx.cpp
+
+4) same as before

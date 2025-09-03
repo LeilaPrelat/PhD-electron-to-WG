@@ -10,13 +10,13 @@ Electron-coupling-to-WG: list of peaks for different width and heigth
 	
 width (nm)	height (nm)	peaks (m=3 .. m = 1)
 500		200 		[1.535 0.36  0.78 ]   --> for m = 1 range of eV: 0.46-1.1 with steps of 0.05: 14 points. delta = 0.64
-                                                          more precise: xleft = 0.7 eV, xright = 0.84 eV in steps of 0.001, peak at 0.78 eV. [COMPLETE 08/12]
+                                                          more precise: xleft = 0.7 eV, xright = 0.84 eV in steps of 0.001, peak at 0.78 eV.
                                                            
                                                       --> for m = 2 range of eV: 0.04-0.68 with steps of 0.05: 14 points. delta = 0.64
-                                                          more precise: xleft = 0.28 eV, xright = 0.44 eV in steps of 0.001, peak at 0.36 eV. [MISSING 1 08/12]
+                                                          more precise: xleft = 0.28 eV, xright = 0.44 eV in steps of 0.001, peak at 0.36 eV.  [RUNNING FOR BIGGER N FOR NEGATIVE PARTS]
                                                       
                                                       --> for m = 3 range of eV: 1.215-1.855 with steps of 0.05: 14 points. delta = 0.64 
-                                                          more precise: xleft = 1.45 eV, xright = 1.61 eV in steps of 0.001, peak at 1.53 eV. [MISSING 17 08/12]
+                                                          more precise: xleft = 1.45 eV, xright = 1.61 eV in steps of 0.001, peak at 1.53 eV.
                                                           
 500		300		[0.3   1.135 0.585]
 

@@ -60,7 +60,8 @@ def find_theta_V0(w, wp_norm_w, d_norm_w, h_norm_w, N, epsilon, x0_norm_w, Ee_el
         function = aux_function ** 2 * me_c2_eV * gamma_e / 2
         V_norm_V0 = V_interp(value_z_norm_w)
         partA = function / V0
-        partB = V_norm_V0
+        partB = V_norm_V0 # this is negative 
+        #partB = -np.abs(V_norm_V0) # this is negative 
         return partA + partB
 
     # if Ee_electron_keV == 200:

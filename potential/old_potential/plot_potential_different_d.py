@@ -77,7 +77,7 @@ c =  2.99792458*10**(14)      ### light velocity in micron/seg
 me_c2_eV = 510998.95069       ### me*c**2 in eV
 
 
-bb0 = 1 ## ratio between width and height 
+bb0 = 0.5 ## ratio between width and height 
 dd0 = 0.2
 
 list_dd = [0.2,0.5,1,2,5]
@@ -92,7 +92,7 @@ ss = 0.1 ## 10% of W
 print('Plot V(z) for different d/W for a fixed h/W = %.2f' %(bb0))
 
 labelx = r'$z/W$'
-labely = r'$V/V_0$'
+labely = r'$\phi(z)/V_0$'
 
 # aux_ejey = np.linspace(np.min(listV_normV0),np.max(listV_normV0),10)
 title0 = r'h/W = %.2f, $s/W$ = %.1f' % (bb0,ss)
@@ -123,6 +123,7 @@ plt.xticks(np.arange(0,0.3,0.05))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 plt.savefig('Vy_vs_d.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vy_vs_d.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 #%%
@@ -130,7 +131,7 @@ plt.show()
 print('Plot V(z) for different h/W for a fixed d/W = %.2f' %(dd0))
 
 labelx = r'$z/W$'
-labely = r'$V/V_0$'
+labely = r'$\phi(z)/V_0$'
 
 # aux_ejey = np.linspace(np.min(listV_normV0),np.max(listV_normV0),10)
 title0 = r'd/W = %.2f, $s/W$ = %.1f' % (dd0,ss)
@@ -161,6 +162,7 @@ plt.xticks(np.arange(0,0.3,0.05))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 plt.savefig('Vy_vs_ratio.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('Vy_vs_ratio.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
 
 #%%

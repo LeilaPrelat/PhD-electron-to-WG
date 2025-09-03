@@ -74,7 +74,7 @@ void load_energy_from_EELS_files(int w, double h, double x0_norm_w, int Eelectro
  //   }
     
     // Open the energy file to loop over all energies
-    sprintf(filename_energy, "datfiles_EELS/new_files/energy_list_mode%i_N%i_W%.0dnm_h%.0fnm_L%inm_Ee%ikeV_xe%.2f.txt",mode,N,w,h,L,Eelectron_keV,x0_norm_w);    
+    sprintf(filename_energy, "datfiles_EELS_along_z/new_files/energy_list_mode%i_N%i_W%.0dnm_h%.0fnm_L%inm_Ee%ikeV_xe%.2f.txt",mode,N,w,h,L,Eelectron_keV,x0_norm_w);    
        
     inputFile_energy=fopen(filename_energy,"r"); 
  if (inputFile_energy == NULL) { // CHANGED: Added file open check
@@ -114,7 +114,7 @@ int main() {
     int mode=1; // mode one is the highest peak. more resolution in energy for each mode. see "data_modes.txt" in bem2d in local computer 
     
     char label_txt[200];
-    sprintf(label_txt, "mode%i_Ee%ikeV_wp%.2f_h%.2f_d%.2f_xe%.2f", mode, Eelectron_keV, wp_norm_w, h_norm_w, d_norm_w, x0_norm_w);
+    sprintf(label_txt, "_mode%i_Ee%ikeV_wp%.2f_h%.2f_d%.2f_xe%.2f", mode, Eelectron_keV, wp_norm_w, h_norm_w, d_norm_w, x0_norm_w);
 
     // Load V0 and theta         
     load_solutions_V0_theta_from_file(wp_norm_w, d_norm_w, h_norm_w, x0_norm_w, Eelectron_keV, bmin_norm_w);
@@ -157,13 +157,13 @@ int main() {
         sprintf(filename_Pintegrated, "EELS_integrated/P_integrated_over_z%s.dat", all_info_label);
         FILE* output_file = fopen(filename_Pintegrated, "w");
         
-        fprintf(output_file, "# Energy(eV)\tP_integrated for V0 = %.4f eV, theta = %.4f mrad\n", V0,theta_mrad);
+        fprintf(output_file, "# Energy(eV)\tP_integrated for V0 = %.5f eV, theta = %.5f mrad\n", V0,theta_mrad);
         for (int i = 0; i < num_energy_points; i++) {
         fprintf(output_file, "%.10f %.10f\n", list_energies_P_integrated_over_z[i], list_P_integrated_over_z[i]);
         }
 
         fclose(output_file); 
-        printf("Data saved for j = %d, V0 = %.3f eV, theta_mrad = %.3f\n", j, V0, theta_mrad);
+        printf("Data saved for j = %d, V0 = %.5f eV, theta_mrad = %.5f\n", j, V0, theta_mrad);
   
     }
         
@@ -172,6 +172,6 @@ int main() {
 
 // 1-./run_bmin_vs_theta_V0.sh to run python code, bmin(V0,theta), for different bmin, xe, d/W, h/W + potential data
 // 2-./split_positive_eels.sh to separate the EELS files in energies
-// 3-g++ -o EELS_integrated_over_z.out EELS_integrated_over_z.cpp
+// 3-g++ -o EELS_integrated_over_z_fixed_mode.out EELS_integrated_over_z_fixed_mode.cpp
 // 4-./EELS_integrated_over_z.out
 

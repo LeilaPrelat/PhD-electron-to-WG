@@ -18,7 +18,7 @@ pwd = os.path.dirname(__file__)
 data_path = os.path.join(pwd,'permittivities')
 
 convert_nk_to_epsilon = 0
-plot_epsilon = 1
+plot_epsilon = 0
 
 #%%
 
@@ -150,11 +150,15 @@ if plot_epsilon == 1:
     plt.figure(title,figsize=tamfig)
     plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
     plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
-    plt.plot(listx,listy_re,'-',label = r'Re($\epsilon$)')
-    plt.plot(listx,listy_im,'-',label = r'Im($\epsilon$)')
+    plt.plot(listx,listy_re,'-',color = 'blue',label = r'Re($\epsilon$)')
+    plt.plot(listx,listy_im,'-',color = 'orange',label = r'Im($\epsilon$)')
+    
+    plt.plot(listx,np.ones(len(listx))*0.2,'--',color = 'orange')
+    plt.plot(listx,np.ones(len(listx))*12.25,'--',color = 'blue')
+    
     plt.xticks(ticksx)
     plt.yticks(ticksy)
-    plt.xscale('log')
+    # plt.xscale('log')
     plt.tick_params(labelsize = tamnum,direction="in", width=1, length = 1.5,pad = 1)
     plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1)
     plt.savefig('permittivity_%s.png' %(material), format='png',bbox_inches='tight',pad_inches = 0.008,dpi = dpi)

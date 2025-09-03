@@ -279,7 +279,7 @@ labelx = r'Parallel wave vector $k_\parallel$ (1/$\mu$m)'
 # labelx = r'Wave vector $k_x$ (1/$\mu$m)'
 labely = r'Electron energy loss $\hbar\omega$ (eV)'
 labelz = r'$\text{d}\Gamma_{\parallel}(k_\parallel)c/\text{d}y$'
-labelz = r'$L^{-1}\text{d}\Gamma(k_\parallel)/\text{d}y$ (fs)'
+labelz = r'$\text{d}\Gamma(k_\parallel)/\text{d}y$ (fs)'
 
 if if_real_material == 0:
     Z_EELS = np.array(Z_EELS)/np.max(Z_EELS)
@@ -383,7 +383,7 @@ def EELS_integrated_over_k_par_color_map(energy,ze_nm):
 #%% 
 tamfig = [3.45, 3]
 labelx = r'Electron energy loss $\hbar\omega$ (eV)'
-labely = r'$L^{-1}\text{d}\Gamma/\text{d}y$ (s/$\mu$m)'
+labely = r'$\text{d}\Gamma/\text{d}y$ (s/$\mu$m)'
 
 from mycolorpy import colorlist as mcp
 color1 = mcp.gen_color(cmap="hot",n=6)

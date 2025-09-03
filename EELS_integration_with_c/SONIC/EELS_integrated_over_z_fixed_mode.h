@@ -56,7 +56,6 @@ double linear_interp(double *x, double *y, int n, double x_query) {
 void load_potential_from_file(double wp_norm_w, double d_norm_w, double h_norm_w, double xe_norm_w){
     FILE *inputFile_potential;
     char filename_potential[120];     // Define file names for important the data (strings of lenght up to 1000)
-    char labelxe_name[40];
     
     sprintf(filename_potential, "potential_data/potential_wp%.1f_d%.1f_h%.1f_N%i_xe%.1f.txt",wp_norm_w,d_norm_w,h_norm_w,Ncode,xe_norm_w);    
     inputFile_potential=fopen(filename_potential,"r");
@@ -99,7 +98,7 @@ void load_EELS_from_file(double energy_eV, int w, int h, double x0_norm_w, int E
     
     // Open the file
     //sprintf(filename, "datfiles_EELS_along_z/new_files/EELS_along_z_Si_N%i_a%inm_h%inm_ze%inm_Ee%ikeV%s_energy_%.7f.txt",N,w,h,ze,Eelectron_keV,labelxe,energy_rounded);    
-    sprintf(filename, "datfiles_EELS/new_files/EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe%.2f_energy_%.4f.dat",N,w,h,L,Eelectron_keV,x0_norm_w,energy_rounded);    
+    sprintf(filename, "datfiles_EELS_along_z/new_files/EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe%.2f_energy%.4f.dat",N,w,h,L,Eelectron_keV,x0_norm_w,energy_rounded);    
     
     inputFile=fopen(filename,"r"); 
  if (inputFile == NULL) { // CHANGED: Added file open check
@@ -202,7 +201,7 @@ double P_integrated(double zmin_norm_w, double energy_eV, double w, double wp_no
    sprintf(label_txt, "_Ee%ikeV_wp%.2f_h%.2f_d%.2f_xe%.2f", Eelectron_keV, wp_norm_w, h_norm_w, d_norm_w, x0_norm_w);
     
    char info_bmin[310];
-   sprintf(info_bmin, "_V0_%.2feV_theta%.2fmrad_zmin%.2f", V0, theta_mrad, zmin_norm_w);
+   sprintf(info_bmin, "_V0_%.5feV_theta%.5fmrad_zmin%.2f", V0, theta_mrad, zmin_norm_w);
 
    char all_info_label[830];
    sprintf(all_info_label, "_energy%.4feV_w%.0fnm%s%s", energy_eV, w, label_txt, info_bmin);

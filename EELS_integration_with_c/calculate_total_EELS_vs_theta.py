@@ -23,9 +23,14 @@ path_data_EELS = os.path.join(path_basic, 'datfiles_EELS_along_z/new_files')
 path_data_EELS_integrated = os.path.join(path_basic, 'EELS_integrated')
 path_data_zmin = os.path.join(path_basic, 'potential_data')
 
+approximated = False ### potential approximated to a linear 
+compare_both = False  ## compare real potential and linear one  
+if compare_both == True :
+    approximated = True
+    
 #%%
 
-tamfig = [4.5,3.5]
+tamfig = [4,3]
 tamletra = 14
 tamtitle  = 8
 tamnum = tamletra
@@ -66,7 +71,7 @@ x0 = xe_norm_w    ## V(xe,z) with z from z0 to z1
 # x=0 is in the middle of the center waveguide
 # z=0 is at the interface
                              
-bmin_norm_w = 100/w ## 80/w ## 100/w
+bmin_norm_w = 50/w ## 80/w ## 100/w
 z_min_val_norm_w = bmin_norm_w + h_norm_w
 ###################################################################################
 h=h_norm_w*w
@@ -75,7 +80,7 @@ h=h_norm_w*w
 plot_figure = 0    ## plot the lorentzian fitting
 step2 = 0.001      ## thinner range to integrate over energy
 
-list_mode = [1]
+list_mode = [3]
 # list_mode = [3]
 
 if xe_norm_w == 0.4:  
@@ -141,11 +146,12 @@ plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
 plt.savefig('zmin_aux' + label_Ee + label_txt + '.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('zmin_aux' + label_Ee + label_txt + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 plt.show()
 
 header = title
 Ntot = len(listx_sorted)
-# Ntot = 495
+# Ntot = 1
  
 #%%
 
@@ -163,33 +169,74 @@ for mode in list_mode:
         V0 = listx_sorted[j]
         theta_mrad = listy_sorted[j]
         theta = theta_mrad*1e-3
+        
+        if compare_both == True: 
+            V0 = 0.01331 ## eV
+            theta_mrad = 0.25858 ## mrad
+        
         info_bmin = '_V0_%.5feV_theta%.5fmrad_bmin%.2f' %(V0,theta_mrad,bmin_norm_w) ## info from contour plot from plot_bmin_vs_V0_theta.py
         
         all_info_label = '_mode%i_w%inm' %(mode,w) + label_Ee + label_txt + info_bmin
         
-        os.chdir(path_data_EELS_integrated)
-        name_P_integrated_over_z = 'P_integrated_over_z_w%inm_mode%i_Ee%ikeV_wp%.2f_h%.2f_d%.2f_xe%.2f' %(w,mode,Ee_electron_keV,wp_norm_w,h_norm_w,d_norm_w,xe_norm_w) + info_bmin + '.dat'
- 
-        tabla_P = np.loadtxt(name_P_integrated_over_z, delimiter=' ',dtype=None,skiprows=1)
-        tabla_P_2 = np.transpose(tabla_P)
-        list_energy0_EELS_positive,list_P_integrated_over_z = tabla_P_2
+        name_P_integrated_over_z1 = 'P_integrated_over_z_w%inm_mode%i_Ee%ikeV_wp%.2f_h%.2f_d%.2f_xe%.2f' %(w,mode,Ee_electron_keV,wp_norm_w,h_norm_w,d_norm_w,xe_norm_w) + info_bmin + '.dat'
+        name_P_integrated_over_z2 = 'P_integrated_over_z_approx_w%inm_mode%i_Ee%ikeV_wp%.2f_h%.2f_d%.2f_xe%.2f' %(w,mode,Ee_electron_keV,wp_norm_w,h_norm_w,d_norm_w,xe_norm_w) + info_bmin + '.dat'
+        list_Pnames = [name_P_integrated_over_z1,name_P_integrated_over_z2]
         
+        os.chdir(path_data_EELS_integrated)
+        if approximated == False:    
+            if compare_both == False: 
+                name_P_integrated_over_z = list_Pnames[0] ## bem potential
+        else:
+            if compare_both == False: 
+                name_P_integrated_over_z = list_Pnames[1] ## linear potential
+                
+        
+        if compare_both == False: 
+            tabla_P = np.loadtxt(name_P_integrated_over_z, delimiter=' ',dtype=None,skiprows=1)
+            tabla_P_2 = np.transpose(tabla_P)
+            list_energy0_EELS_positive,list_P_integrated_over_z = tabla_P_2
+        else:
+            tabla_P1 = np.loadtxt(name_P_integrated_over_z1, delimiter=' ',dtype=None,skiprows=1)
+            tabla_P1_2 = np.transpose(tabla_P1)
+            list_energy0_EELS_positive1,list_P_integrated_over_z1 = tabla_P1_2
+        
+            tabla_P2 = np.loadtxt(name_P_integrated_over_z2, delimiter=' ',dtype=None,skiprows=1)
+            tabla_P2_2 = np.transpose(tabla_P2)
+            list_energy0_EELS_positive2,list_P_integrated_over_z2 = tabla_P2_2
         
         if j == 0:
             print('5-Find the dw of the mode = %i by fitting it with a Lorenztian' %(mode))
+    
+        if compare_both == False: 
+            ######### find peaks and sort them by the highest to minimum (then we identify each mode according to its amplitude) by fitting the curve with a lorentzian
+            results = find_width_of_peak(list_energy0_EELS_positive,list_P_integrated_over_z,index_mode,title,plot_figure)
+            
+        else:
+            results = find_width_of_peak(list_energy0_EELS_positive1,list_P_integrated_over_z1,index_mode,title,plot_figure,
+                                                                                           list_energy0_EELS_positive2,list_P_integrated_over_z2)
         
-
-        ######### find peaks and sort them by the highest to minimum (then we identify each mode according to its amplitude) by fitting the curve with a lorentzian
-        x_left, x_right, x0_fit, function_lorentzian, fit_success = find_width_of_peak(list_energy0_EELS_positive,list_P_integrated_over_z,index_mode,title,plot_figure)
-        # Integration by summation (small steps)
-        x_integrate = np.arange(x_left, x_right + step2, step2)
+            list_energy0_EELS_positive, list_P_integrated_over_z = list_energy0_EELS_positive1, list_P_integrated_over_z1
+            ## when we have both, lets calculate the real potential 
+            
+            
+        x_left, x_right, x0_fit, function_lorentzian, fit_success = results["dataset1"][:5]
+        x_integrate = np.arange(x_left, x_right + step2, step2) ## width of the lorenztian
+        ## function_lorentzian is the integration of the fit (the lorentzian)
         
         if fit_success:
-            ############### interpolation of P(omega) after integration over z ###############
-            EELS_vs_energy = interp1d(list_energy0_EELS_positive, list_P_integrated_over_z)
-            integration_over_energy = np.sum(EELS_vs_energy(x_integrate))*(step2)
+            ############### interpolation of P(omega) after integration over z --> integration over mode ###############
+            try: 
+                EELS_vs_energy = interp1d(list_energy0_EELS_positive, list_P_integrated_over_z)
+                integration_over_energy = np.sum(EELS_vs_energy(x_integrate))*(step2) # Integration by summation (small steps)
+            except ValueError:
+                integration_over_energy = function_lorentzian
             
-            np.savetxt('list_energy_for_P_integration'  + all_info_label + '.txt', x_integrate, fmt='%.10f', delimiter='\t', header = header, encoding=None)
+            if approximated == 0:
+                name_list_energy = 'list_energy_for_P_integration'  + all_info_label + '.txt'
+            else:
+                name_list_energy = 'list_energy_for_P_integration_approx'  + all_info_label + '.txt'
+            
+            np.savetxt(name_list_energy, x_integrate, fmt='%.10f', delimiter='\t', header = header, encoding=None)
             list_Pvalue.append(function_lorentzian) ## integration using the lorentzian fit 
             
             print(j,V0,theta_mrad,integration_over_energy,function_lorentzian)
@@ -202,7 +249,12 @@ for mode in list_mode:
     ind_max = len(list_Pvalue)
     table_P_integrated_over_energy = np.transpose([listx_sorted[0:ind_max],listy_sorted[0:ind_max], list_Pvalue])
     header1 = 'V0 (eV)    theta (mrad)    P_mode1, '
-    np.savetxt('P_integrated_over_z_over' + info_label + '.txt', table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
+    if approximated == 0:
+        final_name = 'P_integrated_over_z_over' + info_label + '.txt'
+    else:
+        final_name = 'P_integrated_over_z_over_approx' + info_label + '.txt'
+        
+    np.savetxt(final_name, table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
 
 
 #%%

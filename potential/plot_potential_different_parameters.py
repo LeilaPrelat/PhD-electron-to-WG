@@ -34,6 +34,7 @@ import os
 color1 = mcp.gen_color(cmap="hot",n=8)
 
 tamfig = [4, 3]
+tamfigure2 = [3.6,3]
 tamletra = 13
 tamtitle  = tamletra - 2
 tamnum = tamletra
@@ -143,16 +144,35 @@ nz = 200
 # x=0 is in the middle of the center waveguide
 # z=0 is at the interface 
 
-list_x0 = [0,0.2,0.4,0.5,0.6,0.8,1]   ## norm to w
+list_x0 = [0,0.4,0.6,0.8,1]   ## norm to w
 list_z0 = [h_0*0.5, h_0*1.001,h_0*1.5,h_0*2,h_0*3]   ## norm to w
-list_wp = [0.1,0.2,0.4,0.6,0.8,1]  ## norm to w
-list_d = [0.1,0.2,1,2,5,7]  ## norm to w
-list_h = list_wp  ## norm to w
+list_z0  = [0.5,0.8,1,1.5]
+list_z0  = [ h_0*1.001, h_0*1.5, h_0*2, h_0*3]
+z_values = [  h_0*1.001, h_0*1.5, h_0*2, h_0*3]  # example values
+
+list_wp = [0.2,0.4,0.6,0.8]  ## norm to w
+list_d = [0.2,1,2,3]  ## norm to w
+list_h = [0.2,0.4,0.6,0.8,1]  ## norm to w
 
 list_N = [200,600,800]
 
+ticks_y = np.arange(-1.5,0.25,0.25)
+ticks_y_label = [r'$-1.50$' , r'$-1.25$', r'$-1.00$'  , r'$-0.75$', r'$-0.50$' , r'$-0.25$', r'$0.00$'  ]
+ylim_inf1, ylim_sup1 = -1.5, 0.01
+xlim_inf1, xlim_sup1 = 0.05,3.15
+
+ticks_y2 = np.arange(-1.5,0.75,0.25)
+ticks_y2_label = [r'$-1.5$' , '', r'$-1.0$'  , '', r'$-0.5$' , '', '0.0' , '', '0.5'  ]
+ylim_inf2, ylim_sup2 = -1.65, 0.65
+
 labelx = r'$z/W$'
 labely = r'$\phi(x,z)/U$'
+
+# Build a normalization across the full range of x0 values
+from matplotlib import cm
+from matplotlib.colors import Normalize
+norm = Normalize(vmin=0, vmax=3.5)
+cmap = cm.hot  # or "plasma", "turbo", etc.
 
 #%%
     
@@ -171,15 +191,18 @@ for x0 in list_x0:
 
 plt.figure(figsize=tamfig)
 plt.title(title1,fontsize=tamtitle)
-for j in range(len(list_x0)):
+for j, x0 in enumerate(list_x0):
+    color = cmap(norm(x0))  # map x0 to a consistent color
     x0 = list_x0[j]
-    plt.plot(np.array(list_z_norm_w_tot1[j]), np.array(listV_normV0_tot_1[j]) ,'.-',color = color1[j] ,label = r'$x/W$ = %.1f' %(x0))
+    plt.plot(np.array(list_z_norm_w_tot1[j]), np.array(listV_normV0_tot_1[j]) ,'.-',color = color ,label = r'$x/W$ = %.1f' %(x0))
  
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.yticks(ticks_y2,ticks_y2_label)
+plt.ylim(ylim_inf2, ylim_sup2)
 os.chdir(path_data)
 plt.savefig('Vz_vs_x.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.savefig('Vz_vs_x.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
@@ -204,15 +227,19 @@ for wp in list_wp:
 
 plt.figure(figsize=tamfig)
 plt.title(title2,fontsize=tamtitle)
-for j in range(len(list_wp)):
+for j, x0 in enumerate(list_wp):
+    color = cmap(norm(x0))  # map x0 to a consistent color
     wp = list_wp[j]
-    plt.plot(np.array(list_z_norm_w_tot2[j]), np.array(listV_normV0_tot2[j]) ,'.-',color = color1[j] ,label = r'$W_{\text{p}}/W$ = %.1f' %(wp))
+    plt.plot(np.array(list_z_norm_w_tot2[j]), np.array(listV_normV0_tot2[j]) ,'.-',color = color ,label = r'$W_{\text{p}}/W$ = %.1f' %(wp))
  
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.yticks(ticks_y2,ticks_y2_label)
+plt.ylim(ylim_inf2, ylim_sup2)
+plt.xlim(xlim_inf1, xlim_sup1)
 os.chdir(path_data)
 plt.savefig('Vz_vs_wp.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.savefig('Vz_vs_wp.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
@@ -237,15 +264,18 @@ for d in list_d:
 
 plt.figure(figsize=tamfig)
 plt.title(title3,fontsize=tamtitle)
-for j in range(len(list_d)):
+for j, x0 in enumerate(list_d):
+    color = cmap(norm(x0))  # map x0 to a consistent color
     d = list_d[j]
-    plt.plot(np.array(list_z_norm_w_tot3[j]), np.array(listV_normV0_tot3[j]) ,'.-',color = color1[j] ,label = r'$d/W$ = %.1f' %(d))
+    plt.plot(np.array(list_z_norm_w_tot3[j]), np.array(listV_normV0_tot3[j]) ,'.-',color = color ,label = r'$d/W$ = %.1f' %(d))
  
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.yticks(ticks_y,ticks_y_label)
+plt.ylim(ylim_inf1, ylim_sup1)
 os.chdir(path_data)
 plt.savefig('Vz_vs_d.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.savefig('Vz_vs_d.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
@@ -271,15 +301,19 @@ for h in list_h:
 
 plt.figure(figsize=tamfig)
 plt.title(title4,fontsize=tamtitle)
-for j in range(len(list_h)):
+for j, x0 in enumerate(list_h):
+    color = cmap(norm(x0))  # map x0 to a consistent color
     h = list_h[j]
-    plt.plot(np.array(list_z_norm_w_tot4[j]), np.array(listV_normV0_tot4[j]) ,'.-',color = color1[j] ,label = r'$h/W$ = %.1f' %(h))
+    plt.plot(np.array(list_z_norm_w_tot4[j]), np.array(listV_normV0_tot4[j]) ,'.-',color = color ,label = r'$h/W$ = %.1f' %(h))
  
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.yticks(ticks_y,ticks_y_label)
+plt.ylim(ylim_inf1, ylim_sup1)
+plt.xlim(xlim_inf1, xlim_sup1)
 os.chdir(path_data)
 plt.savefig('Vz_vs_h.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.savefig('Vz_vs_h.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
@@ -304,15 +338,18 @@ for N in list_N:
 
 plt.figure(figsize=tamfig)
 plt.title(title4,fontsize=tamtitle)
-for j in range(len(list_N)):
+for j,x0 in enumerate(list_N):
+    color = cmap(norm(x0))  # map x0 to a consistent color
     N = list_N[j]
-    plt.plot(np.array(list_z_norm_w_tot0[j]), np.array(listV_normV0_tot_0[j]) ,'.-',color = color1[j] ,label = r'$N$ = %i' %(N))
+    plt.plot(np.array(list_z_norm_w_tot0[j]), np.array(listV_normV0_tot_0[j]) ,'.-',color = color ,label = r'$N$ = %i' %(N))
  
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(labely,fontsize=tamletra,labelpad =labelpady)
 plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.yticks(ticks_y,ticks_y_label)
+plt.ylim(ylim_inf1, ylim_sup1)
 os.chdir(path_data)
 plt.savefig('Vz_vs_N.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.savefig('Vz_vs_N.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
@@ -376,6 +413,7 @@ plt.tick_params(labelsize = tamnum, length = 3 , width=1, direction="in",which =
 # plt.plot([xleft],[h_0],'o',color =  'purple')
 # plt.plot([xright],[h_0],'o',color =  'purple')
 plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
+# plt.yticks(ticks_y,ticks_y_label)
 plt.xlim(np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5))
 plt.ylim(np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5))
 # plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
@@ -400,19 +438,23 @@ for z0 in list_z0:
 
 #%%
 
-plt.figure(figsize=tamfig)
+plt.figure(figsize=tamfigure2)
 plt.title(title1,fontsize=tamtitle)
-for j in range(len(list_z0)):
+for j,x0 in enumerate(list_z0):
+    color = cmap(norm(x0))  # map x0 to a consistent color
     z0 = list_z0[j]
-    plt.plot(np.array(list_x_norm_w_tot6[j]), np.array(listV_normV0_tot_6[j]) ,'.-',color = color1[j] ,label = r'$z/W$ = %.1f' %(z0))
+    plt.plot(np.array(list_x_norm_w_tot6[j]), np.array(listV_normV0_tot_6[j]) ,'.-',color = color ,label = r'$z/W$ = %.1f' %(z0))
  
 plt.xlabel(r'$x/W$',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel( r'$\phi(x,z)/U$',fontsize=tamletra,labelpad =labelpady)
 # plt.xticks(np.arange(h_0,z1+0.5,0.5))
 plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
+plt.yticks(ticks_y2,ticks_y2_label)
+# plt.ylim(ylim_inf2, ylim_sup2)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+#plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
+plt.xlim(-2,2)
 plt.savefig('Vx_vs_z.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.savefig('Vx_vs_z.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 plt.show()
@@ -434,7 +476,7 @@ v = np.array(listV_normV0_tot5)
 interp_V = LinearNDInterpolator(list(zip(x, z)), v)
 interp_V2 = CloughTocher2DInterpolator(list(zip(x, z)), v)
 # Choose evaluation points (can be original points or a regular grid)
-dx = 1e-6  # small step for finite difference
+dx = 1e-8  # small step for finite difference
 
 # Derivative w.r.t. x using central difference
 dV_dx = (interp_V(x + dx, z) - interp_V(x - dx, z)) / (2 * dx)
@@ -496,6 +538,7 @@ plt.tick_params(labelsize = tamnum, length = 3 , width=1, direction="in",which =
 # plt.plot([xleft],[h_0],'o',color =  'purple')
 # plt.plot([xright],[h_0],'o',color =  'purple')
 plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
+plt.xlim(-2,2)
 plt.xlim(np.min(list_x_norm_w_tot5) , np.max(list_x_norm_w_tot5))
 plt.ylim(np.min(list_z_norm_w_tot5) , np.max(list_z_norm_w_tot5))
 # plt.plot(np.ones(10)*(-1/2),ejey_z,'--',color =  'black')
@@ -507,29 +550,34 @@ plt.show()
 
  #%%
  
+
+ 
 # Define range of x-values where to evaluate the cut
 x_cut = x
-plt.figure(figsize=tamfig)
+plt.figure(figsize=tamfigure2)
 plt.title(title5,fontsize=tamtitle)
 # Create constant z array
-z_values = [h_0*1.001, h_0*1.5, h_0*2, h_0*3]  # example values
 
-j = 0
-for zc in z_values:
+# z_values = [0.5,0.8,1,1.5]  # example values
+
+for j,x0 in enumerate(z_values):  
+    zc = z_values[j]
+    color = cmap(norm(x0))  # map x0 to a consistent color
     z_cut = np.full_like(x_cut, zc)
     dV_dx_cut = (interp_V(x_cut + dx, z_cut) - interp_V(x_cut - dx, z_cut)) / (2 * dx)
-    plt.plot(x_cut, dV_dx_cut, '-',color = color1[j], label=fr'$z/W$ = {zc:.1f}')
-    j = j + 1
+    plt.plot(x_cut, dV_dx_cut, '-',color = color, label=fr'$z/W$ = {zc:.1f}')
+
     
 plt.xlabel(r'$x/W$',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\partial_x \phi/U$',fontsize=tamletra,labelpad =labelpady)
 plt.xticks([-2,-1.5,-1,-0.5,0,0.5,1,1.5,2],[r"$-2$","",r"$-1$","","0","","1","","2"])
+# plt.yticks(ticks_y,ticks_y_label)
+plt.xlim(-2,2)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.legend(loc ='best',markerscale=2,fontsize=tamlegend-2,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
+plt.legend(loc ='best',markerscale=2,fontsize=tamletra,frameon=0,handletextpad=0.1, handlelength=1.3,labelspacing = 0.2) 
 os.chdir(path_data)
-plt.savefig('dVxz_dx_cut_along_x.png', format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
-plt.savefig('dVxz_dx_cut_along_x.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
+plt.savefig('dVxz_dx_cut_along_x.png', format='png',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
+plt.savefig('dVxz_dx_cut_along_x.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.02, dpi=dpi)  
 # plt.grid(True)
 plt.show()
-
 

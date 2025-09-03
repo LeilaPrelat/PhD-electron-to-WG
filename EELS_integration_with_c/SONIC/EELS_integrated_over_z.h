@@ -99,7 +99,7 @@ void load_EELS_from_file(double energy_eV, int w, int h, double x0_norm_w, int E
     
     // Open the file
     //sprintf(filename, "datfiles_EELS_along_z/new_files/EELS_along_z_Si_N%i_a%inm_h%inm_ze%inm_Ee%ikeV%s_energy_%.7f.txt",N,w,h,ze,Eelectron_keV,labelxe,energy_rounded);    
-    sprintf(filename, "datfiles_EELS/new_files/EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe%.2f_energy_%.4f.dat",N,w,h,L,Eelectron_keV,x0_norm_w,energy_rounded);    
+    sprintf(filename, "datfiles_EELS_along_z/new_files/EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe%.2f_energy%.4f.dat",N,w,h,L,Eelectron_keV,x0_norm_w,energy_rounded);    
     
     inputFile=fopen(filename,"r"); 
  if (inputFile == NULL) { // CHANGED: Added file open check
@@ -183,7 +183,7 @@ double P_integrated(double zmin_norm_w, double energy_eV, double w, double wp_no
         
       //  printf("z/w=%.8f, EELS(z/w)=%.8f", zval, EELSz);
 
-        double arg = ABS(aux * aux + 2.0 * Vz_norm_V0 * V0 / (me_c2_eV * gamma_e));  
+        double arg = ABS(aux * aux + 2.0 * Vz_norm_V0 * V0 / (me_c2_eV * gamma_e));   // second term is with + because Vz_norm_V0 < 0 
         double denom = sqrt(arg);
         
         double integrand = 2.0 * beta * EELSz / denom;

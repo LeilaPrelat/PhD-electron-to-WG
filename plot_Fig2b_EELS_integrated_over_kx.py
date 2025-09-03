@@ -25,6 +25,8 @@ material = 'Si'     ## default
 # material = 'Ge'  
 zoom = 0
 
+load_data = 0 ## load data or create data 
+
 delta = 0.2 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
 path_save =  os.path.join(pwd,'plots_EELS_permittivity_extra_loss_%.2f'%(delta))
@@ -42,15 +44,16 @@ ind = 2
 list_Ee_electron = [30 , 100 , 200]   ## keV
 Ee_electron_keV = list_Ee_electron[ind]
 Ee_electron = Ee_electron_keV*1e3
-label_Ee = label_png + '_d%inm_Ee%i' %(d*1e3,ind+1)
+label_Ee = '_d%inm_Ee%i' %(d*1e3,ind+1)
 
 beta = np.sqrt( 1- (1 + Ee_electron/me_c2_eV)**(-2) )  ## beta = v/c
 gamma_e = 1/np.sqrt(1-epsi1*beta**2)
 
-N = 100
+N = 500
 if d == 0.2:
     if zoom == 0:
-        list_energy_eV = np.linspace(0.1,10,N) ## cutoff energy
+        list_energy_eV = np.linspace(0.1,15,N) ## cutoff energy
+        list_energy_eV = np.arange(0.01,20,0.001) ## cutoff energy
     else:
         list_energy_eV = np.linspace(0.1,2,N) ## cutoff energy
 else:
@@ -58,6 +61,8 @@ else:
         list_energy_eV = np.linspace(0.1,10,N) ## cutoff energy
     else:
         list_energy_eV = np.linspace(0.1,4,N) ## cutoff energy
+
+list_energy_eV = np.arange(0.01,20,0.0005) ## cutoff energy
 
 list_b_nm = [50,100,200]
 list_b_nm = [0,10,50,80]
@@ -135,22 +140,48 @@ color1 = mcp.gen_color(cmap="hot",n=5)
 
 print('2-Fig. 2b) Plot the EELS integrated over k_par and the trajectory as a function of energy, for different b')
 
-list_EELS_re_tot = []
-list_EELS_im_tot = []
-for b_nm in list_b_nm:
-    b = b_nm*1e-3
-    list_EELS_re = []
-    list_EELS_im = []
-    for eV in list_energy_eV: 
-        epsi2 = epsilon2(eV,delta,material) 
-        value = EELS_integrated_over_electron_trayectory(eV,b,d,beta,epsi2)
-        # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
-        list_EELS_re.append(np.real(value))
-        list_EELS_im.append(np.imag(value))
-        
-    list_EELS_re_tot.append(list_EELS_re)
-    list_EELS_im_tot.append(list_EELS_im)
 
+if load_data == 0:
+
+    list_EELS_re_tot = []
+    list_EELS_im_tot = []
+    for b_nm in list_b_nm:
+        b = b_nm*1e-3
+        list_EELS_re = []
+        list_EELS_im = []
+        for eV in list_energy_eV: 
+            # print(b_nm,eV)
+            epsi2 = epsilon2(eV,delta,material) 
+            value = EELS_integrated_over_electron_trayectory(eV,b,d,beta,epsi2)
+            # value = Fresnel_coefficient(omegac,u,d,mode,Im_epsi2)
+            list_EELS_re.append(np.real(value))
+            list_EELS_im.append(np.imag(value))
+            
+        list_EELS_re_tot.append(list_EELS_re)
+        list_EELS_im_tot.append(list_EELS_im)
+
+
+    print("Save data")
+    header = title + r', $\beta$ = %.2f. Re(EELS) from paper 149 Eq. 25 divided by L0 in Gaussian units (1/microns), integrated over k_par' %(beta)
+    
+    os.chdir(path_save)
+    for j in range(len(list_b_nm)):
+        b_nm = list_b_nm[j]    
+        np.savetxt('list_EELS_over_L0_vs_energy_' + total_label + '_b%inm.txt' %(b_nm) ,list_EELS_re_tot[j], fmt='%.10e', delimiter='\t', header = header, encoding=None)
+     
+    np.savetxt('list_energy_' + total_label + '.txt' , list_energy_eV, delimiter='\t', header = header, encoding=None)
+    
+else:
+    list_EELS_re_tot  = []
+    
+    os.chdir(path_save)
+    for j in range(len(list_b_nm)):
+        b_nm = list_b_nm[j]    
+        list_EELS_re = np.loadtxt('list_EELS_over_L0_vs_energy_' + total_label + '_b%inm.txt' %(b_nm) , delimiter='\t', skiprows = 1, encoding=None)
+        list_EELS_re_tot.append(list_EELS_re)
+    list_energy_eV = np.loadtxt('list_energy_' + total_label + '.txt' , delimiter='\t',  skiprows = 1, encoding=None)
+    
+    
 #%% 
 
 from scipy.signal import find_peaks
@@ -198,15 +229,22 @@ for j in range(len(list_b_nm)):
                 # plt.plot(np.ones(10)*mean_x, aux_eje_y, "-")
 
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.xticks(np.arange(0,12,2))
-plt.yticks(np.arange(0,45,5))
+# # plt.xticks(np.arange(0,12,2))
+# plt.xticks(np.arange(0,20,10))
+plt.xlim(0,20)
+plt.ylim(1e-12,1e3)
+# plt.yticks(np.arange(0,45,5))
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 label_figure = 'EELS_tot_' + total_label
 # plt.xscale('log')
+plt.yscale("log")
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.savefig(label_figure + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.show() 
+
+#%% 
+
 
 
 # print('2b-Extra: Plot the EELS integrated over k_par, over the trajectory, and over energy close to the highest peak for different b')
