@@ -1,0 +1,50 @@
+read the slide "Electron-coupling-to-WG: explication of the code-using-exp-fit.pdf" : 
+---------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+
+all the codes needed for EELS integrated over the trajectory of the electron using the exponential fit of the EELS as a function of z
+ 
+1) dEELS/dy = A*exp(-2*kappa*(z-h)) where A and kappa are fitting parameters and they depend on the frequency
+
+../bem2D : plot_EELS_fitted_exp.py finds A(omega) and kappa(omega) using the EELS files from datfiles_EELS/along_z
+
+STEP 1) copy fitted_parameters_w500nm_h200nm_N700_Ee200keV_mode1_energy0.7800eV.txt from bem2D/datfiles_EELS/along_z
+
+2) run_potential_and_find_bmin.sh:
+
+                    a) Run e.out to create normalized potential data (list_z_norm_w, listV_normV0)
+                    and save the data normalized to U 
+                       g++ -o e.out e.cpp
+                       files e.cpp and e.h 
+                       
+                       -first part: finds the value factor = V0/U and uses it to normalize phi/U --> phi/V0
+		       -second part: saves data (1 column z/w | 2 column V/V0) 
+                     
+                    b) Run Python script to obtain bmin(V0,theta)
+                       find_bmin_vs_V0_theta.py ---> save data of (V0_solutions, theta_solutions)
+ 
+step 2) upload the V0_solutions/theta_solutions to sonic + potential 
+
+
+3) integration over z: EELS_integrated_over_z.h (EELS + potential + V0_solutions/theta_solutions) + EELS_integrated_over_z.cpp
+
+
+4) integration over energy/mode: calculate_total_EELS_vs_theta.py to fit the peaks as a lorentzian and find the width to integrate the EELS over energy
+
+"..fixed_mode" : (Modification for a fixed mode) the energy_list is around a certain mode (see load_energy_from_EELS_files from the .cpp and  "data_modes.txt/README" in bem2d in local computer 
+
+
+read the slide "Electron-coupling-to-WG: explication of the code-approximation.pdf" : 
+---------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------
+
+1) run_potential_approx.sh: THIS I WILL RUN LOCALLY IN MY COMPUTER AND WILL UPLOAD THE OUTPUT TO SONIC
+
+	a) Run Python script to obtain a1 (slope), b1 (offset) from approximation of potential to a linear function 
+                       fit_potential_as_linear.py ---> save data of a1 (slope), b1 (offset)
+                                      
+2) same as before
+
+3) integration over z: EELS_integrated_over_z_fixed_mode_approx.h (EELS + potential = a1*z/W+b1 + zmin is analytical now) + EELS_integrated_over_z_fixed_mode_approx.cpp
+
+4) same as before

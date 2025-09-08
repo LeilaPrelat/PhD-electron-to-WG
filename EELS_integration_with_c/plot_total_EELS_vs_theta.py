@@ -19,7 +19,8 @@ from scipy.interpolate import make_interp_spline
 path_basic = os.getcwd()
 path_data_EELS_integrated = os.path.join(path_basic, 'EELS_integrated')
 
-compare_with_approx = 0 ## compare the results with the approximation wtih V(z)/V0 = a*z/W + b
+compare_with_approx = 0 ## compare with the approximation of linear potential with V(z)/V0 = a*z/W + b
+compare_with_exp_fit = 1 ## compare with the EELS as an exponential
 
 # Function to smooth data
 def smooth_curve(x, y, points=200):
@@ -82,8 +83,6 @@ z_min_val_norm_w = bmin_norm_w + h_norm_w
 h=h_norm_w*w
 # mode = 1
 # index_mode = -mode ## if mode = 1, is the highest one because is the last element of the list (the array is sorted from min to max)
-plot_figure = 1    ## plot the lorentzian fitting
-step2 = 0.001      ## thinner range to integrate over energy
 
 list_mode = [1,3]
 # list_mode = [3]
@@ -96,9 +95,10 @@ bmin_vals0 = 50/w
 mode0=1
 #list_bmin = [0.1, 0.15, 0.2]
 list_bmin = [50/w, 80/w, 100/w]
+list_bmin = [50/w]
 #list_bmin = [50/w, 80/w, 100/w]
 list_mode = [1,2]
-list_mode = [1,3]
+list_mode = [1]
 
 #%%
 os.chdir(path_data_EELS_integrated)
@@ -133,6 +133,8 @@ for mode in list_mode:
     info_label = '_mode%i_w%inm' %(mode,w)  + label_Ee + label_txt + '_bmin%.2f' %(bmin_vals0)
     
     table_P_integrated_over_energy = np.loadtxt('P_integrated_over_z_over' + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
+    table_P_integrated_over_energy = np.loadtxt('P_integrated_approx_lorentziana_over_z_over' + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
+
     table_P_integrated_over_energy2 = np.transpose(table_P_integrated_over_energy)
     listV0 = table_P_integrated_over_energy2[0]
     list_theta = table_P_integrated_over_energy2[1]
@@ -146,9 +148,9 @@ for mode in list_mode:
     photons_smooth2 = savgol_filter(photons_smooth, window_length=4, polyorder=3)
  
     if compare_with_approx == 0: 
-        plt.plot(list_theta, photons_smooth ,'.-' , label =  r'$n = %i$' %(mode))
+        plt.plot(list_theta, list_Pvalue ,'.-' , label =  r'$n = %i$' %(mode))
     else:
-        plt.plot(list_theta, photons_smooth ,'.-' )
+        plt.plot(list_theta, list_Pvalue ,'.-' )
     
     if compare_with_approx == 1: 
         table_P_integrated_over_energy_approx = np.loadtxt('P_integrated_over_z_over_approx' + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
@@ -160,13 +162,21 @@ for mode in list_mode:
         list_Pvalue_approx_smooth = smooth_curve(list_theta_approx, list_Pvalue_approx)
         photons_approx_smooth = savgol_filter(list_Pvalue_approx, window_length=9, polyorder=3)
         
-        plt.plot(list_theta_approx, photons_approx_smooth ,'-' )
+        plt.plot(list_theta_approx, list_Pvalue_approx ,'-' )
         index = np.argmin(np.abs(list_theta_approx - 0.25858))
         ## 0.25858 used to compare both EELS
         
         
-        plt.plot(list_theta_approx[index],photons_approx_smooth[index],'o',color = 'black')
+        plt.plot(list_theta_approx[index],list_Pvalue_approx[index],'o',color = 'black')
+    
+    if compare_with_exp_fit == 1: 
+        table_P_integrated_over_energy_exp_fit = np.loadtxt('P_integrated_exp_fit_over_z_over' + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
+        table_P_integrated_over_energy2_exp_fit = np.transpose(table_P_integrated_over_energy_exp_fit)
+        listV0_exp_fit = table_P_integrated_over_energy2_exp_fit[0]
+        list_theta_exp_fit = table_P_integrated_over_energy2_exp_fit[1]
+        list_Pvalue_exp_fit = table_P_integrated_over_energy2_exp_fit[2]
         
+        plt.plot(list_theta_exp_fit,np.array(list_Pvalue_exp_fit),'.-', label="EELS from exp. fit")
 # ax1.plot(x_filtered, y_filtered ,'.')
 
 # Create second x-axis sharing the same y-axis
@@ -220,7 +230,7 @@ angle_ticks = np.arange(0.1,2.2,0.4)
 V0_ticks = np.arange(0.2,1.2,0.2)
 
 # Create a second x-axis sharing the same y
-ax1.set_xticks(angle_ticks)
+#ax1.set_xticks(angle_ticks)
 ax1.set_xlabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpadx)
 plt.yticks(np.arange(5,35,5))
 for bmin in list_bmin: 
@@ -236,7 +246,7 @@ for bmin in list_bmin:
     photons_smooth = savgol_filter(list_Pvalue, window_length=9, polyorder=3)
     photons_smooth2 = savgol_filter(photons_smooth, window_length=4, polyorder=3)
     
-    plt.plot(list_theta, photons_smooth ,'.-' ,label =  r'$b_{\text{min}} = %i$ nm' %(bmin*w))
+    plt.plot(list_theta, list_Pvalue ,'.-' ,label =  r'$b_{\text{min}} = %i$ nm' %(bmin*w))
     
     
     if compare_with_approx == 1: 
@@ -248,7 +258,15 @@ for bmin in list_bmin:
     
         plt.plot(list_theta_approx, list_Pvalue_approx ,'-' )
     
-    
+    if compare_with_exp_fit == 1: 
+        table_P_integrated_over_energy_exp_fit = np.loadtxt('P_integrated_exp_fit_over_z_over' + info_label + '.txt', delimiter='\t', skiprows=1, encoding=None)
+        table_P_integrated_over_energy2_exp_fit = np.transpose(table_P_integrated_over_energy_exp_fit)
+        listV0_exp_fit = table_P_integrated_over_energy2_exp_fit[0]
+        list_theta_exp_fit = table_P_integrated_over_energy2_exp_fit[1]
+        list_Pvalue_exp_fit = table_P_integrated_over_energy2_exp_fit[2]
+        
+        plt.plot(list_theta_exp_fit,list_Pvalue_exp_fit,'.-', label="EELS from exp. fit")
+        
 # Move ax2 to the bottom
 ax2 = ax1.twiny()
 # ax2.spines["bottom"].set_position(("outward", 40))

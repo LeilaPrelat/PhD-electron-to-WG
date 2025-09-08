@@ -62,6 +62,10 @@ ss = s/a
 dd = 10/(a*1e-3) ## = d/a  ### a = 400 nm : 12.5 for d = 5 microns / 25 for d = 10 microns / 50 for d = 20 microns 
            ### a = 300 nm : 3.33 for d = 1 microns
            ### a = 400 nm : 2.5 for d = 1 microns
+           
+
+dd = 20
+
 N = 400
 Ee_electron_keV = 200
 label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
@@ -113,12 +117,6 @@ else:
     xe_real = 0
     
 
-ze=50
-name_list_energy = 'energy_list_N%i_a%inm_h%inm_ze%inm_Ee%ikeV%s'%(N,a,h,ze,Ee_electron_keV,labelxe) + '.txt'
-os.chdir(path_data)
-tabla_energy = np.loadtxt(name_list_energy, delimiter=' ',dtype=None)
-tabla_energy_2 = np.transpose(tabla_energy)
-list_energy0 = tabla_energy_2
 # list_energy0 = tabla_energy_2[0:-1]
 
 
@@ -163,9 +161,19 @@ cbar2.ax.set_title(r'$b_{\text{min}}$ ($\mu$m)',fontsize=tamletra-1)
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
+# plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
 plt.savefig('zmin_aux' + label_Ee + 'bmin%.2f_dd%i_hh%.2f.png' %(bmin_vals0,dd,bb), format='png',bbox_inches='tight',pad_inches = 0.09, dpi=dpi)  
 plt.show()
+
+
+
+ze=50
+name_list_energy = 'energy_list_N%i_a%inm_h%inm_ze%inm_Ee%ikeV%s'%(N,a,h,ze,Ee_electron_keV,labelxe) + '.txt'
+os.chdir(path_data)
+tabla_energy = np.loadtxt(name_list_energy, delimiter=' ',dtype=None)
+tabla_energy_2 = np.transpose(tabla_energy)
+list_energy0 = tabla_energy_2
+
 
 header = title1
 Ntot = len(listx_sorted)

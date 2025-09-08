@@ -1,0 +1,8 @@
+# # Linear fit of V(z)/V0
+#     # Parameters:
+#     # wp = 0.5, h/W = 0.4, d/W = 0.2, epsilon = 9.0
+#     # x0 = 0.0, w = 500.0 nm, b_norm_w = 0.1    
+#     # Fit window delta = 0.1
+#     # Columns: slope(a), offset(b) such as V(z)/V0 = a*(z/w) + b
+#     
+1.330287710664479706e+00 -1.529882858412757507e+00

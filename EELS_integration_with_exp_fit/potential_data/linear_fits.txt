@@ -1,0 +1,7 @@
+# # Linear fits of V(z)
+# # Parameters:
+# # wp = 0.5, h/W = 0.4, d/W = 0.2, epsilon = 9
+# # x0 = 0, w = 500 nm, Ee = 200 keV
+# # Fit window delta = 0.05
+# # Columns: z0, slope(a1), offset(b1)
+# 

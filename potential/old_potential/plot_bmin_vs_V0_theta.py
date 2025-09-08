@@ -47,6 +47,8 @@ import os
 # from scipy.interpolate import RegularGridInterpolator
 # import numpy.ma as ma
 
+scale_log = 0
+
 tamfig = [4, 3]
 tamletra = 13
 tamtitle  = tamletra - 5
@@ -65,6 +67,8 @@ dpi = 500
 path_basic = os.getcwd()
 path_data = os.path.join(path_basic, 'zmin_solutions')
 
+add_more_points_near_Nan = 0
+
 #%%
 
 print('IMPORTANT: change the lines to numero ymax=bb/2+15*dd numero ymin=-bb/2-dd inside the dy.cpp and compile it')
@@ -73,23 +77,24 @@ print('1-Run the c++ code to plot the potential of a rectangular waveguide')
 def run_dy_out(bb,ss,dd, N):
     # Run the C++ program name dy.out and save a list of x, z, V
     #cmd = ["./d.out", str(bb), str(ss), str(dd), str(N)]
-    cmd = ["./e.out", str(bb), str(ss), str(dd), str(N)]
+    if scale_log == 1:
+        cmd = ["./dy_log.out", str(bb), str(ss), str(dd), str(N)]
+    else:
+        cmd = ["./dy.out", str(bb), str(ss), str(dd), str(N)]
     
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
     lines = result.stdout.strip().split('\n')
-    list_x = []
     list_z = []
     list_V = []
     for line in lines:
         try:
-            xvalue, zvalue, Vvalue = map(float, line.strip().split())
-            list_x.append(xvalue)
+            zvalue, Vvalue = map(float, line.strip().split())
             list_z.append(zvalue)
             list_V.append(Vvalue)  
         except ValueError:
             continue
 
-    return list_x, list_z, list_V
+    return list_z, list_V
 
 #%%
 
@@ -102,27 +107,25 @@ label_Ee = '_Ee%ikeV' %(Ee_electron_keV)
 
 a=500 ## 100 400 600  
 
+bb = 0.6 ## 0.1 0.25 0.5 0.75 1  ## bb = 0.2 goes lower than 0.1 and lower than 0.4 (not linear)
+ss = 0.1 ## 10% of the width
+dd = 0.001/(a*1e-3)   ## = d/a  ### a = 400 nm : 12.5 for d = 5 microns / 25 for d = 10 microns / 50 for d = 20 microns 
+           ### a = 300 nm : 3.33 for d = 1 microns
+           ### a = 400 nm : 2.5 for d = 1 microns
+dd = 20
 
 wp = 0.5 ## w'/w
-d = 0.2  ## d/w distance between the side wires normalized to w
-h = 0.6  ## aspect ratio height/w
 N = 200   ## discretization points.
 epsilon=9 ## permittivity = 9
 N = 200   ## discretization points.
 x0 = 0    ## x0/w
 x1 = 2    ##x1/w
 nx = 200 
-z0 = h    ## z0/w ## start outside the waveguide
+z0 = bb    ## z0/w ## start outside the waveguide
 z1 = 2    ## z1/w 
 nz = 200
 # x=0 is in the middle of the center waveguide
 # z=0 is at the interface
-
-bb = 0.6 ## 0.1 0.25 0.5 0.75 1  ## bb = 0.2 goes lower than 0.1 and lower than 0.4 (not linear)
-ss = 0.1 ## 10% of the width
-dd = 1/(a*1e-3)   ## = d/a  ### a = 400 nm : 12.5 for d = 5 microns / 25 for d = 10 microns / 50 for d = 20 microns 
-           ### a = 300 nm : 3.33 for d = 1 microns
-           ### a = 400 nm : 2.5 for d = 1 microns
 
 
 N = 500
@@ -166,17 +169,17 @@ elif bb == 0.75:
 
 bmin_vals0 = 50/a  ## 50 nm
 # bmin_vals0 = 60/a
-# bmin_vals0 = 80/a
+bmin_vals0 = 80/a
 
 Nvals = 300
-theta_mrad_vals = np.linspace(0.001, 2.5, Nvals)
-V0_vals = np.linspace(0.001, 0.6, Nvals)
+theta_mrad_vals = np.linspace(0.01, 2.5, Nvals)
+V0_vals = np.linspace(0.01, 0.6, Nvals)
 
     # bmin_vals0 = 0.1
 label_txt = '_dd%.2f_hh%.2f.txt' %(dd,bb)
 
 tol = 1e-6 ## zero of the function 
-tol = 5*1e-1 ## zero of the function 
+tol = 1e-1 ## zero of the function 
 
 density = 50 ## add more points to the interface of (nan-not nan) values 
 
@@ -362,63 +365,69 @@ if len(valid_paths)>1:
 
 
 #%%
-print('4-Add more points near the interface of nan-non nan values')
 
-from scipy.ndimage import binary_dilation
-from scipy.interpolate import griddata
-
-Z = X_vals_transpose
-X = V0_vals
-Y = theta_mrad_vals
-# Step 2: Detect NaN interface
-if X.ndim == 1 or Y.ndim == 1:
-    X, Y = np.meshgrid(X, Y)
-nan_mask = np.isnan(Z)
-nan_edge = binary_dilation(nan_mask, iterations=1) & ~nan_mask
-interface_coords = np.array([X[nan_edge], Y[nan_edge]]).T
-
-# Step 3: Create refined points around interface
-# Use a small radius to add more points near the edge
-def add_local_refined_points(coords, radius=0.3, density=10):
-    points = []
-    for x0, y0 in coords:
-        # Local fine mesh around each interface point
-        x_local = np.linspace(x0 - radius, x0 + radius, density)
-        y_local = np.linspace(y0 - radius, y0 + radius, density)
-        Xl, Yl = np.meshgrid(x_local, y_local)
-        points.append(np.column_stack([Xl.ravel(), Yl.ravel()]))
-    return np.vstack(points)
-
-refined_pts = add_local_refined_points(interface_coords, radius=0.2, density=density)
-
-# Step 4: Evaluate function and apply NaN mask
-Xr, Yr = refined_pts[:, 0], refined_pts[:, 1]
-
-
-# Preallocate result arrays
-X_vals_refined = np.zeros(len(refined_pts))
-f_vals_refined = np.zeros(len(refined_pts))
-
-# Loop over refined points
-for i, (V0, theta_mrad) in enumerate(zip(Xr, Yr)):
-    theta = theta_mrad * 1e-3
-    try:
-        x_root = brentq(function_to_be_zero, zmin, zmax, args=(theta, V0))
-        X_vals_refined[i] = x_root - bb / 2  # or whatever your transformation is
-        f_vals_refined[i] = function_to_be_zero(x_root, theta, V0)
-    except ValueError:
-        X_vals_refined[i] = np.nan
-        f_vals_refined[i] = np.nan
-
-Zr = X_vals_refined
-# Step 5: Combine original and refined points
-X_all = np.concatenate([X.ravel(), Xr])
-Y_all = np.concatenate([Y.ravel(), Yr])
-Z_all = np.concatenate([Z.ravel(), Zr])
-
-Xg, Yg = np.meshgrid(V0_vals, theta_mrad_vals)
-# Interpolate scattered data onto grid
-Zg = griddata((Xr, Yr), Zr, (Xg, Yg), method='linear')  # or 'cubic'
+if add_more_points_near_Nan == 1: 
+    print('4-Add more points near the interface of nan-non nan values')
+    
+    from scipy.ndimage import binary_dilation
+    from scipy.interpolate import griddata
+    
+    Z = X_vals_transpose
+    X = V0_vals
+    Y = theta_mrad_vals
+    # Step 2: Detect NaN interface
+    if X.ndim == 1 or Y.ndim == 1:
+        X, Y = np.meshgrid(X, Y)
+    nan_mask = np.isnan(Z)
+    nan_edge = binary_dilation(nan_mask, iterations=1) & ~nan_mask
+    interface_coords = np.array([X[nan_edge], Y[nan_edge]]).T
+    
+    # Step 3: Create refined points around interface
+    # Use a small radius to add more points near the edge
+    def add_local_refined_points(coords, radius=0.3, density=10):
+        points = []
+        for x0, y0 in coords:
+            # Local fine mesh around each interface point
+            x_local = np.linspace(x0 - radius, x0 + radius, density)
+            y_local = np.linspace(y0 - radius, y0 + radius, density)
+            Xl, Yl = np.meshgrid(x_local, y_local)
+            points.append(np.column_stack([Xl.ravel(), Yl.ravel()]))
+        return np.vstack(points)
+    
+    refined_pts = add_local_refined_points(interface_coords, radius=0.2, density=density)
+    
+    # Step 4: Evaluate function and apply NaN mask
+    Xr, Yr = refined_pts[:, 0], refined_pts[:, 1]
+    
+    
+    # Preallocate result arrays
+    X_vals_refined = np.zeros(len(refined_pts))
+    f_vals_refined = np.zeros(len(refined_pts))
+    
+    # Loop over refined points
+    for i, (V0, theta_mrad) in enumerate(zip(Xr, Yr)):
+        theta = theta_mrad * 1e-3
+        try:
+            x_root = brentq(function_to_be_zero, zmin, zmax, args=(theta, V0))
+            X_vals_refined[i] = x_root - bb / 2  # or whatever your transformation is
+            f_vals_refined[i] = function_to_be_zero(x_root, theta, V0)
+        except ValueError:
+            X_vals_refined[i] = np.nan
+            f_vals_refined[i] = np.nan
+    
+    Zr = X_vals_refined
+    # Step 5: Combine original and refined points
+    X_all = np.concatenate([X.ravel(), Xr])
+    Y_all = np.concatenate([Y.ravel(), Yr])
+    Z_all = np.concatenate([Z.ravel(), Zr])
+    
+    Xg, Yg = np.meshgrid(V0_vals, theta_mrad_vals)
+    # Interpolate scattered data onto grid
+    Zg = griddata((Xr, Yr), Zr, (Xg, Yg), method='linear')  # or 'cubic'
+    
+    Zfinal = Zg
+else:
+    Zfinal = X_vals_transpose
 
 #%%
 
@@ -431,19 +440,19 @@ ind2_bmin =  int(Nind/1.005)
 plt.figure(figsize=tamfig2)
 #plt.title(title1 + r', $E_{\text{e}}$ = %i keV' %(Ee_electron_keV),fontsize=tamtitle)
 # im_show = plt.imshow(X_vals_transpose, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' , norm = norm1  ) 
-im_show = plt.imshow(Zg, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' , norm = norm1  ) 
+im_show = plt.imshow(Zfinal, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' , norm = norm1  ) 
     #plt.clabel(contours, fmt='%.2f', colors='green', fontsize=tamletra, manual=[(0.5, 5) ])  # Label contours
 cbar = plt.colorbar(im_show, fraction=0.046, pad=0.18 , format = '%.2f') 
 im_show2 = plt.imshow(np.array(X_vals_transpose)*cte_cbar2, extent = limits1, cmap=cmap, aspect='auto', interpolation = 'bicubic',origin = 'lower' ,norm=norm2  )  ## second colorbar with real units 
 cbar2 = plt.colorbar(im_show2, fraction=0.046, pad=0.04, orientation = 'vertical')
-cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra-1)
+cbar.ax.set_title(r'$b_{\text{min}}/W$',fontsize=tamletra)
 cbar.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
 cbar2.ax.tick_params(labelsize = tamnum-2, width=0.1, direction="in",which = 'both', length = 2,pad = pad)
-cbar2.ax.set_title(r'$b_{\text{min}}$ ($\mu$m)',fontsize=tamletra-1)
+cbar2.ax.set_title(r'$b_{\text{min}}$ ($\mu$m)',fontsize=tamletra)
 plt.xlabel(r'$V_0$ (eV)',fontsize=tamletra,labelpad =labelpadx)
 plt.ylabel(r'$\theta$ (mrad)',fontsize=tamletra,labelpad =labelpady)
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
-plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
+# plt.plot(listx_sorted,listy_sorted,'--',color = 'green')
 # plt.plot(listx_sorted[ind0_bmin],listy_sorted[ind0_bmin],'o',color = 'purple')
 # plt.plot(listx_sorted[ind1_bmin],listy_sorted[ind1_bmin],'o',color = 'purple')
 # plt.plot(listx_sorted[ind2_bmin],listy_sorted[ind2_bmin],'o',color = 'purple')

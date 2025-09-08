@@ -2,7 +2,7 @@ read the slide "Electron-coupling-to-WG: explication of the code.pdf" :
 ---------------------------------------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------------------------------------
 
-all the codes needed for EELS integrated over z 
+all the codes needed for EELS integrated over the trajectory of the electron 
 P_integrated_over_z(z_min_val_norm_w, energy, w, h, xe, Ee_electron_keV, N, theta, V0, list_z_norm_w, listV_normU, V0_over_U)
 
 1) run_potential_and_find_bmin.sh: THIS I WILL RUN LOCALLY IN MY COMPUTER AND WILL UPLOAD THE OUTPUT TO SONIC

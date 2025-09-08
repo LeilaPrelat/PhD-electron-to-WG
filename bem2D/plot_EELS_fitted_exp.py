@@ -69,7 +69,10 @@ h=200 ## nm
 listL = [700,1000,1500]
 N0=500 ### plot vs L for N = N0
 L0=1000 ## plot vs N for L = L0 for mode = mode0 because mode0 has negative EELS
-mode0 = 2 
+mode0 = 2
+
+mode_for_fitting_exp = 1
+step_energy = 0.001  ## fitting EELS vs z with exponential for all frequencies 
 
 list_modes = [1,2,3]
 energy=1
@@ -128,6 +131,7 @@ df = pd.DataFrame({
 if width_height == [W,h]:
     x_left_limits = np.array([w1[0], w2[0],w3[0]])
     x_right_limits = np.array([w1[1], w2[1],w3[1]])
+    mode_resonances = np.array([w1[2], w2[2] ,w3[2]])
 
 #%%
 
@@ -377,7 +381,8 @@ plt.show()
 
 os.chdir(path_data2)
 
-print('Plot EELS vs L (length of the virtual geometry) with N=%i as a function of z, fitted with a exponential' %(N0))
+mode = mode_for_fitting_exp
+print('Plot EELS fitted with a exponential')
 
 
 from scipy.optimize import curve_fit
@@ -390,10 +395,9 @@ def fit_exponential(z, amp, k_par_times_w):
 
 ind_L = 1
 L2 = listL[ind_L] ## convergency
-energy_mode = [0.78,1] # see modes_data.txt
-energy, mode = energy_mode
-labelx2 = r'$z$ (nm)' 
 
+energy = mode_resonances[mode-1]
+labelx2 = r'$z$ (nm)' 
 
 name3 = 'EELS_along_z_N%i_W%inm_h%inm_L%inm_Ee%ikeV_xe0.00_energy%.4f.dat' %(N0,W,h,L2,Ee_electron_keV,energy) ## virtual geometry
 #name3 = 'EELS_comsol2_spectrum_N%i_W%inm_h%inm_L%inm_Ee%ikeV_mode%i.dat' %(N0,W,h,L,Ee_electron_keV,mode) ## virtual geometry
@@ -424,8 +428,7 @@ A_fit, k_par_times_W_fit = popt
 x_fit = np.linspace(min(x_data), max(x_data), 1000)
 y_fit = fit_exponential(x_fit, *popt)
 
-info = 'w%inm_h%inm_N%i_Ee%ikeV_mode%i_energy%.4feV' %(W,h,N,Ee_electron_keV,mode,energy)
-
+info = 'w%inm_h%inm_N%i_Ee%ikeV_mode%i' %(W,h,N0,Ee_electron_keV,mode)
 
 ############### interpolation of P(omega) after integration over z ###############
 EELS_vs_z = interp1d(list_z, listEELS)
@@ -455,14 +458,12 @@ bmin = 50 ## nm
 zmin = bmin + h
 
 step2=0.001 #integration over freq
-z_integrate = np.arange(x_left, x_right + step2, step2)
+energy_integrate = np.arange(x_left, x_right + step2, step2)
+
+list_energy = np.arange(x_left_limits[mode-1], x_right_limits[mode-1] , step_energy)
 
 
-
-
-
-list_energy = np.arange(0.7,0.84 + 0.001,0.001)
-list_integration_over_z = []
+#list_integration_over_z = []
 list_A_fit = []
 list_k_par_times_W_fit = []
 for energy in list_energy:
@@ -498,7 +499,7 @@ for energy in list_energy:
     
     
     
-    function_lorentzian = np.sum(fit_exponential(z_integrate, A_fit, k_par_times_W_fit))*step2
+    function_lorentzian = np.sum(fit_exponential(energy_integrate, A_fit, k_par_times_W_fit))*step2
     
     
     list_k_par_times_W_fit.append(k_par_times_W_fit)
@@ -508,8 +509,8 @@ for energy in list_energy:
     
     
 print("Save fit parameters as a function of energy")
-name_file = "fitted_parameters_%s_bmin%inm.txt" %(info,bmin)
-header = 'energy (eV)     A_fit     kappa*w     int_over_z'
+name_file = "fitted_parameters_%s.txt" %(info)
+header = 'energy (eV)     A_fit     kappa*w'
 table = np.column_stack((list_energy, list_A_fit, list_k_par_times_W_fit))
 # Save parameters
 np.savetxt(name_file, table, fmt='%.10f', delimiter='\t', header = header, encoding=None)
@@ -525,7 +526,12 @@ plt.plot(list_energy, list_k_par_times_W_fit, label=r"$\kappa\cdot W$ from fit")
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1)
 plt.tight_layout()
-plt.xticks(xticks1)
+if mode == 1: 
+    plt.xticks(xticks1)
+elif mode == 2: 
+    plt.xticks(xticks2)
+else:
+    plt.xticks(xticks3)
 plt.yscale("log")
 plt.savefig('fit_parameters_vs_energy_mode%i_N%i.png'%(mode,N0),bbox_inches='tight',pad_inches = 0.01, format='png', dpi=dpi)
 plt.savefig('fit_parameters_vs_z_mode%i_N%i.pdf'%(mode,N0),bbox_inches='tight',pad_inches = 0.01, format='pdf', dpi=dpi)

@@ -25,7 +25,7 @@ material = 'Si'     ## default
 # material = 'Ge'  
 zoom = 0
 
-load_data = 0 ## load data or create data 
+load_data = 1 ## load data or create data 
 
 delta = 0.2 ## extra loss for the imaginary part of the permittivity
 pwd = os.path.dirname(__file__) 
@@ -191,6 +191,8 @@ labely = r'$\Gamma/L_0$ (fs/$\mu$m)'
 
 title = r'EELS for $h = %.1f$ $\mu$m, $\epsilon_2 = \epsilon_{%s}(\omega)$, $v = %.2fc$' %(d,material,beta)
  
+index_cut = np.argmin(np.abs(np.array(list_energy_eV)-10))
+
 plt.figure(figsize=tamfig)
 #plt.title(title,fontsize=tamtitle)
 plt.xlabel(labelx,fontsize=tamletra,labelpad =labelpadx)
@@ -199,7 +201,7 @@ x_FHM1_tot = []
 x_FHM2_tot = []
 for j in range(len(list_b_nm)):
     listy =  np.array(list_EELS_re_tot[j])*1e15 ## fentosecond
-    plt.plot(list_energy_eV, listy ,'-',color = color1[j],lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
+    plt.plot(list_energy_eV[0:index_cut], listy[0:index_cut] ,'-',color = color1[j],lw = 1.5,label = r'$b = %i$ nm' %(list_b_nm[j]) )
     
     ## find peaks
     peaks, _ = find_peaks(listy, height=0)
@@ -230,14 +232,15 @@ for j in range(len(list_b_nm)):
 
 plt.tick_params(labelsize = tamnum, length = 2 , width=1, direction="in",which = 'both', pad = pad)
 # # plt.xticks(np.arange(0,12,2))
-# plt.xticks(np.arange(0,20,10))
-plt.xlim(0,20)
-plt.ylim(1e-12,1e3)
+plt.xticks(np.arange(0,12,2))
+plt.xlim(-0.5,10.5)
+plt.yticks(np.arange(0,70,10), [ "0", "", "20", "", "40", "", "60"])
+# plt.ylim(1e-12,1e3)
 # plt.yticks(np.arange(0,45,5))
 plt.legend(loc = 'best',markerscale=2,fontsize=tamlegend,frameon=0,handletextpad=0.2, handlelength=1) 
 label_figure = 'EELS_tot_' + total_label
 # plt.xscale('log')
-plt.yscale("log")
+# plt.yscale("log")
 os.chdir(path_save)
 plt.savefig(label_figure + '.png', format='png',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  
 plt.savefig(label_figure + '.pdf', format='pdf',bbox_inches='tight',pad_inches = 0.04, dpi=dpi)  

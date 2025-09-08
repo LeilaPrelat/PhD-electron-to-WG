@@ -216,18 +216,18 @@ def find_width_of_peak(listx1, listy1, index_mode, title1, plot_figure,
         x_integrate = np.arange(x_left, x_right + step2, step2)
         lorentz_integral = np.sum(lorentzian(x_integrate, A_fit, x0_fit, gamma_fit, offset_fit)) * step2
 
-        return (x_left, x_right, x0_fit, lorentz_integral, fit_success, (x_integrate, popt))
+        return (x_left, x_right, x0_fit, gamma_fit, A_fit, lorentz_integral, fit_success, (x_integrate, popt))
 
     # --- Process dataset 1 ---
     results = {}
     results['dataset1'] = process_dataset(listx1, listy1, index_mode)
  
-    x_left, x_right, x0_fit, lorentzian_integral, fit_success, (x_integrate, popt1) = results['dataset1']
+    x_left, x_right, x0_fit, gamma_fit, A_fit, lorentzian_integral, fit_success, (x_integrate, popt1) = results['dataset1']
 
     # --- Process dataset 2 if provided ---
     if listx2 is not None and listy2 is not None:
         results['dataset2'] = process_dataset(listx2, listy2, index_mode)
-        x_left2, x_right2, x0_fit2, lorentzian_integral2, fit_success2, (x_integrate2, popt2) = results['dataset2']
+        x_left2, x_right2, x0_fit2, gamma_fit2, A_fit2, lorentzian_integral2, fit_success2, (x_integrate2, popt2) = results['dataset2']
 
         
     # --- Plot ---
@@ -249,11 +249,11 @@ def find_width_of_peak(listx1, listy1, index_mode, title1, plot_figure,
         plt.ylabel(r'$\Gamma(\omega,x)$ (1/eV)', fontsize=tamletra)
 
         # Plot dataset 1
-        x_left, x_right, x0_fit, _, fit_success, (x_integrate, popt1) = results['dataset1']
+        x_left, x_right, x0_fit, gamma_fit, A_fit, _, fit_success, (x_integrate, popt1) = results['dataset1']
 
         # Plot dataset 2 (if any)
         if 'dataset2' in results:
-            x_left, x_right, x0_fit, _, fit_success, (x_integrate, popt2) = results['dataset2']
+            x_left, x_right, x0_fit, gamma_fit, A_fit, _, fit_success, (x_integrate, popt2) = results['dataset2']
             plt.plot(listx2, listy2, '--',color = 'blue', label=r"$\phi$ linear")
             if fit_success:
                 plt.plot(x_integrate, lorentzian(x_integrate, *popt2), 'r--')

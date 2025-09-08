@@ -77,10 +77,10 @@ z_min_val_norm_w = bmin_norm_w + h_norm_w
 h=h_norm_w*w
 # mode = 1
 # index_mode = -mode ## if mode = 1, is the highest one because is the last element of the list (the array is sorted from min to max)
-plot_figure = 0    ## plot the lorentzian fitting
-step2 = 0.001      ## thinner range to integrate over energy
+plot_figure = 1    ## plot the lorentzian fitting
+step2 = 0.0001      ## thinner range to integrate over energy
 
-list_mode = [3]
+list_mode = [1]
 # list_mode = [3]
 
 if xe_norm_w == 0.4:  
@@ -151,7 +151,10 @@ plt.show()
 
 header = title
 Ntot = len(listx_sorted)
-# Ntot = 1
+
+## check the oscilations ### 
+Ninitial = 83
+Ntot = 113
  
 #%%
 
@@ -163,16 +166,18 @@ for mode in list_mode:
     index_mode = -1 ## different arrays for each mode, so its always the highest peak 
     
     list_Pvalue = []
+    list_Pvalue_approx_lorentziana = [] ## approximate the integration over energy to
+                                        ## f(omega_j)*bandwidth_j
     header0 = 'energy (eV)    P(omega), '
     
-    for j in range(Ntot): ## Ntot
+    for j in range(Ninitial,Ntot): ## Ntot
         V0 = listx_sorted[j]
         theta_mrad = listy_sorted[j]
         theta = theta_mrad*1e-3
         
-        if compare_both == True: 
-            V0 = 0.01331 ## eV
-            theta_mrad = 0.25858 ## mrad
+        # if compare_both == True: 
+            # V0 = 0.01331 ## eV
+            # theta_mrad = 0.25858 ## mrad
         
         info_bmin = '_V0_%.5feV_theta%.5fmrad_bmin%.2f' %(V0,theta_mrad,bmin_norm_w) ## info from contour plot from plot_bmin_vs_V0_theta.py
         
@@ -218,10 +223,12 @@ for mode in list_mode:
             list_energy0_EELS_positive, list_P_integrated_over_z = list_energy0_EELS_positive1, list_P_integrated_over_z1
             ## when we have both, lets calculate the real potential 
             
-            
-        x_left, x_right, x0_fit, function_lorentzian, fit_success = results["dataset1"][:5]
+ 
+        x_left, x_right, x0_fit, gamma_fit, A_fit, function_lorentzian, fit_success = results["dataset1"][:7]
         x_integrate = np.arange(x_left, x_right + step2, step2) ## width of the lorenztian
         ## function_lorentzian is the integration of the fit (the lorentzian)
+        
+        bandwith_lorenztiana = x_right - x_left
         
         if fit_success:
             ############### interpolation of P(omega) after integration over z --> integration over mode ###############
@@ -239,7 +246,15 @@ for mode in list_mode:
             np.savetxt(name_list_energy, x_integrate, fmt='%.10f', delimiter='\t', header = header, encoding=None)
             list_Pvalue.append(function_lorentzian) ## integration using the lorentzian fit 
             
-            print(j,V0,theta_mrad,integration_over_energy,function_lorentzian)
+            
+            #### approximate the EELS by the w0 : L(eff) \approx L(w0)*delta_omegaj
+            maximum = np.argmax(list_P_integrated_over_z)
+            max_energy = list_energy0_EELS_positive[maximum]
+            
+            Pvalue_approx_lorentziana = np.pi*A_fit*gamma_fit 
+            
+            list_Pvalue_approx_lorentziana.append(Pvalue_approx_lorentziana)
+            print(j,V0,theta_mrad, A_fit,integration_over_energy,function_lorentzian,Pvalue_approx_lorentziana)
     
     
     print('6-EELS integrated over energy from x_left_peak, x_right_peak as a function of (theta,V0) for a fixed b_min = %.2f' %(bmin_norm_w))
@@ -250,11 +265,17 @@ for mode in list_mode:
     table_P_integrated_over_energy = np.transpose([listx_sorted[0:ind_max],listy_sorted[0:ind_max], list_Pvalue])
     header1 = 'V0 (eV)    theta (mrad)    P_mode1, '
     if approximated == 0:
-        final_name = 'P_integrated_over_z_over' + info_label + '.txt'
+        final_name1 = 'P_integrated_over_z_over' + info_label + '.txt'
+        np.savetxt(final_name1, table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
+        
+        ind_max2 = len(list_Pvalue)
+        table_P_integrated_over_energy_approx_lorentziana = np.transpose([listx_sorted[0:ind_max],listy_sorted[0:ind_max], list_Pvalue_approx_lorentziana])
+        final_name1b = 'P_integrated_approx_lorentziana_over_z_over' + info_label + '.txt'
+        np.savetxt(final_name1b, table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
+        
     else:
         final_name = 'P_integrated_over_z_over_approx' + info_label + '.txt'
-        
-    np.savetxt(final_name, table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
+        np.savetxt(final_name, table_P_integrated_over_energy, fmt='%.10f', delimiter='\t', header = header1 + header, encoding=None)
 
 
 #%%

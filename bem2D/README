@@ -23,6 +23,9 @@ width (nm)	height (nm)	peaks (m=3 .. m = 1)
 
 ------------------------------------------------------------------------------------------------------------------------------------------
 
+/convergency_negative_EELS: more points N and L for the negative part of the EELS, energy = 0.35 eV
+
+
 run in computer 4-21: 
 #!/bin/sh
 #$ -cwd

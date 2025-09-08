@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 //  numero ymax=bb/2+0.25;
 //  numero ymax=60;
 //  numero ymin=-6;
-  numero dy=(ymax-ymin)/50;
+  numero dy=(ymax-ymin)/100;
   if(argc>5) ymax=atof(argv[5]);
   if(argc>6) dy  =atof(argv[6]);
   if(argc>7) err =atof(argv[7]);
